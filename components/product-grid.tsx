@@ -31,9 +31,9 @@ export default function ProductGrid() {
                             key={product.id}
                             className="group bg-card rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 flex flex-col hover:shadow-lg hover:-translate-y-1"
                         >
-                            <div className="relative h-48 bg-gradient-to-br from-secondary/30 to-accent/30 flex items-center justify-center overflow-hidden">
+                            <div className="relative h-48 bg-linear-to-br from-secondary/30 to-accent/30 flex items-center justify-center overflow-hidden">
                                 <div className="text-6xl group-hover:scale-110 transition-transform duration-300">{product.image}</div>
-                                <button className="absolute top-3 right-3 bg-white/90 dark:bg-black/90 p-2 rounded-full hover:bg-primary hover:text-primary-foreground transition-colors opacity-0 group-hover:opacity-100 transform -translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                                <button className="absolute top-3 right-3 bg-white/90 dark:bg-black/90 p-2 rounded-full hover:bg-primary hover:text-primary-foreground opacity-0 group-hover:opacity-100 transform -translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                                     <Heart className="w-5 h-5" />
                                 </button>
                             </div>

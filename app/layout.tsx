@@ -7,7 +7,7 @@ import "./globals.css";
 const outfit = Outfit({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "EmpresaHub - Gestión Empresarial Integral",
+  title: "WJ Consultoria - Gestión Empresarial Integral",
   description: "Plataforma completa para gestión empresarial, tributaria y financiera con análisis en tiempo real.",
   generator: "v0.app",
   icons: {

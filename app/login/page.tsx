@@ -35,7 +35,7 @@ export default function LoginPage() {
                         <div className="w-8 h-8 bg-linear-to-br from-primary to-accent rounded-lg flex items-center justify-center text-primary-foreground font-bold">
                             <Building2 className="w-5 h-5" />
                         </div>
-                        <span className="font-bold text-lg">EmpresaHub</span>
+                        <span className="font-bold text-lg">WJ Consultoria</span>
                     </Link>
                     <ThemeToggle />
                 </div>
@@ -47,9 +47,9 @@ export default function LoginPage() {
                     <div className="space-y-8">
                         {/* Title Section */}
                         <div className="text-center space-y-3">
-                            <div className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold">
+                            {/* <div className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold">
                                 ✨ Gestión Empresarial Integral
-                            </div>
+                            </div> */}
                             <h1 className="text-4xl md:text-5xl font-bold text-balance">Bienvenido</h1>
                             <p className="text-muted-foreground text-lg">Inicia sesión en tu plataforma empresarial</p>
                         </div>
@@ -132,7 +132,17 @@ export default function LoginPage() {
                         {/* Social Login */}
                         <div className="grid grid-cols-2 gap-4">
                             <Button variant="outline" className="gap-2 bg-card hover:bg-muted">
-                                <span>🔵</span>
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                                        {/* CORRECCIÓN AQUÍ: fillRule y clipRule en lugar de fill-rule y clip-rule */}
+                                        <g fill="none" fillRule="evenodd" clipRule="evenodd">
+                                            <path fill="#f44336" d="M7.209 1.061c.725-.081 1.154-.081 1.933 0a6.57 6.57 0 0 1 3.65 1.82a100 100 0 0 0-1.986 1.93q-1.876-1.59-4.188-.734q-1.696.78-2.362 2.528a78 78 0 0 1-2.148-1.658a.26.26 0 0 0-.16-.027q1.683-3.245 5.26-3.86" opacity="0.987" />
+                                            <path fill="#ffc107" d="M1.946 4.92q.085-.013.161.027a78 78 0 0 0 2.148 1.658A7.6 7.6 0 0 0 4.04 7.99q.037.678.215 1.331L2 11.116Q.527 8.038 1.946 4.92" opacity="0.997" />
+                                            <path fill="#448aff" d="M12.685 13.29a26 26 0 0 0-2.202-1.74q1.15-.812 1.396-2.228H8.122V6.713q3.25-.027 6.497.055q.616 3.345-1.423 6.032a7 7 0 0 1-.51.49" opacity="0.999" />
+                                            <path fill="#43a047" d="M4.255 9.322q1.23 3.057 4.51 2.854a3.94 3.94 0 0 0 1.718-.626q1.148.812 2.202 1.74a6.62 6.62 0 0 1-4.027 1.684a6.4 6.4 0 0 1-1.02 0Q3.82 14.524 2 11.116z" opacity="0.993" />
+                                        </g>
+                                    </svg>
+                                </span>
                                 Google
                             </Button>
                             <Button variant="outline" className="gap-2 bg-card hover:bg-muted">

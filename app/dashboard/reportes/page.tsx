@@ -41,7 +41,7 @@ export default function ReportesPage() {
             <Navigation isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
             <main className="flex-1">
-                <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border-b border-border">
+                <div className="bg-linear-to-r from-primary/10 via-secondary/10 to-accent/10 border-b border-border">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <h1 className="text-3xl md:text-4xl font-bold">Reportes Financieros</h1>
                         <p className="text-muted-foreground mt-2">Análisis detallado de tu situación financiera</p>
