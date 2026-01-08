@@ -1,15 +1,12 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { BarChart3, TrendingUp, FileText, PieChart, AlertCircle, CheckCircle2, Users, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import Navigation from "@/components/navigation"
 import ThemeToggle from "@/components/theme-toggle"
 
 export default function Dashboard() {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     // Mock data for dashboard
     const stats = [
@@ -29,7 +26,6 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navigation isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
             <main className="flex-1">
                 {/* Header */}

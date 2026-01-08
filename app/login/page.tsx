@@ -26,7 +26,6 @@ export default function LoginPage() {
         try {
             const data = await authService.login(email, password)
             
-            // Guardamos tokens
             localStorage.setItem("accessToken", data.access)
             localStorage.setItem("refreshToken", data.refresh)
             
@@ -34,15 +33,11 @@ export default function LoginPage() {
             router.push("/dashboard")
             
         } catch (err: unknown) {
-            // MEJORA: Manejo de errores tipado (Sin 'any')
             if (err instanceof Error) {
-                // Si es un error estándar de JS/TS (como los que lanzamos en el servicio)
                 setError(err.message)
             } else if (typeof err === "string") {
-                // Si por alguna razón se lanzó un string directo
                 setError(err)
             } else {
-                // Fallback para errores desconocidos
                 setError("Ocurrió un error inesperado. Por favor intenta nuevamente.")
                 console.error("Error desconocido:", err)
             }

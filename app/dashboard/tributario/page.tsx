@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import Navigation from "@/components/navigation"
 import { FileText, TrendingUp, AlertCircle, CheckCircle2, Download, Plus, ArrowRight } from "lucide-react"
 
 export default function TributarioPage() {
@@ -61,7 +60,6 @@ export default function TributarioPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navigation isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
             <main className="flex-1">
                 {/* Header */}

@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import Navigation from "@/components/navigation"
 import { Plus, Mail, Shield, MoreVertical } from "lucide-react"
 
 export default function UsuariosPage() {
@@ -18,7 +17,6 @@ export default function UsuariosPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navigation isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
             <main className="flex-1">
                 <div className="bg-linear-to-r from-primary/10 via-secondary/10 to-accent/10 border-b border-border">
