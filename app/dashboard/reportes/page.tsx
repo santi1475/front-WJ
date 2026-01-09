@@ -1,12 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { PieChart, BarChart3, TrendingUp, Calendar } from "lucide-react"
 
 export default function ReportesPage() {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     const reportTypes = [
         {
