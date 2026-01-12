@@ -1,28 +1,86 @@
 "use client"
 
-import Link from "next/link"
-import { BarChart3, TrendingUp, FileText, PieChart, AlertCircle, CheckCircle2, Users, Settings } from "lucide-react"
+import { BarChart3, TrendingUp, AlertCircle, CheckCircle2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import ThemeToggle from "@/components/theme-toggle"
+import ClientsTable from "@/components/manage-clients/clients-table"
+import { useState, useEffect } from "react"
+import { Client } from "@/lib/interfaces/client"
+
 
 export default function Dashboard() {
 
-    // Mock data for dashboard
     const stats = [
         { label: "Ingresos Mensuales", value: "$125,480", change: "+12.5%", icon: TrendingUp, color: "text-green-500" },
         { label: "Gastos", value: "$48,920", change: "+3.2%", icon: BarChart3, color: "text-orange-500" },
         { label: "Impuestos Pendientes", value: "$15,340", change: "−2.1%", icon: AlertCircle, color: "text-red-500" },
         { label: "Balance Neto", value: "$76,560", change: "+8.3%", icon: CheckCircle2, color: "text-blue-500" },
     ]
+    interface DashboardStats {
+        totalClients: number
+        activeAccounts: number
+        credentialsStored: number
+        alertsCount: number
+    }
+    const [stats2, setStats] = useState<DashboardStats>({
+        totalClients: 0,
+        activeAccounts: 0,
+        credentialsStored: 0,
+        alertsCount: 0,
+    })
+    const [clients, setClients] = useState<Client[]>([])
+    const [loading, setLoading] = useState(true)
 
-    const recentTransactions = [
-        { id: 1, description: "Venta Producto A", amount: "$2,500", date: "2025-01-05", status: "Completado" },
-        { id: 2, description: "Pago Proveedor", amount: "$−1,200", date: "2025-01-04", status: "Procesando" },
-        { id: 3, description: "Servicio Profesional", amount: "$3,800", date: "2025-01-03", status: "Completado" },
-        { id: 4, description: "Alquiler Oficina", amount: "$−2,000", date: "2025-01-02", status: "Completado" },
-        { id: 5, description: "Comisión Ventas", amount: "$−850", date: "2025-01-01", status: "Completado" },
-    ]
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                // This would be your actual API call
+                // const response = await fetch('/api/dashboard')
+                // const data = await response.json()
+
+                // Mock data for now
+                setStats({
+                    totalClients: 24,
+                    activeAccounts: 156,
+                    credentialsStored: 892,
+                    alertsCount: 3,
+                })
+
+                setClients([
+                    {
+                        id: "1",
+                        name: "Acme Corporation",
+                        email: "admin@acme.com",
+                        status: "active",
+                        accountsCount: 8,
+                        lastUpdated: "2024-01-08",
+                    },
+                    {
+                        id: "2",
+                        name: "TechStart Inc",
+                        email: "contact@techstart.com",
+                        status: "active",
+                        accountsCount: 5,
+                        lastUpdated: "2024-01-07",
+                    },
+                    {
+                        id: "3",
+                        name: "Global Services",
+                        email: "info@global.com",
+                        status: "inactive",
+                        accountsCount: 12,
+                        lastUpdated: "2024-01-02",
+                    },
+                ])
+            } catch (error) {
+                console.error("Failed to fetch dashboard data:", error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchDashboardData()
+    }, [])
 
     return (
         <div className="min-h-screen bg-background">
@@ -33,10 +91,15 @@ export default function Dashboard() {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-3xl md:text-4xl font-bold text-balance">Dashboard Empresarial</h1>
+                                <h1 className="text-3xl md:text-4xl font-bold text-balance">Dashboard</h1>
                                 <p className="text-muted-foreground mt-2">Bienvenido de vuelta, Administrador</p>
                             </div>
-                            <ThemeToggle />
+                            <div className="flex items-center gap-3">
+                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Add Client
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -68,65 +131,9 @@ export default function Dashboard() {
                     </div>
 
                     {/* Main Content Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Transactions */}
-                        <div className="lg:col-span-2">
-                            <Card className="p-6">
-                                <h2 className="text-xl font-bold mb-6">Transacciones Recientes</h2>
-                                <div className="space-y-4">
-                                    {recentTransactions.map((tx) => (
-                                        <div
-                                            key={tx.id}
-                                            className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                                        >
-                                            <div className="flex-1">
-                                                <p className="font-semibold">{tx.description}</p>
-                                                <p className="text-sm text-muted-foreground">{tx.date}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className={`font-bold ${tx.amount.startsWith("−") ? "text-red-500" : "text-green-500"}`}>
-                                                    {tx.amount}
-                                                </p>
-                                                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">{tx.status}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Card>
-                        </div>
-
-                        {/* Quick Actions */}
-                        <div>
-                            <Card className="p-6 h-full flex flex-col">
-                                <h2 className="text-xl font-bold mb-6">Acciones Rápidas</h2>
-                                <div className="space-y-3 flex-1">
-                                    <Link href="/dashboard/tributario">
-                                        <Button variant="outline" className="w-full justify-start gap-2 bg-transparent hover:bg-muted">
-                                            <FileText className="w-5 h-5" />
-                                            Gestión Tributaria
-                                        </Button>
-                                    </Link>
-                                    <Link href="/dashboard/reportes">
-                                        <Button variant="outline" className="w-full justify-start gap-2 bg-transparent hover:bg-muted">
-                                            <PieChart className="w-5 h-5" />
-                                            Reportes Financieros
-                                        </Button>
-                                    </Link>
-                                    <Link href="/dashboard/usuarios">
-                                        <Button variant="outline" className="w-full justify-start gap-2 bg-transparent hover:bg-muted">
-                                            <Users className="w-5 h-5" />
-                                            Gestión de Usuarios
-                                        </Button>
-                                    </Link>
-                                    <Link href="/settings">
-                                        <Button variant="outline" className="w-full justify-start gap-2 bg-transparent hover:bg-muted">
-                                            <Settings className="w-5 h-5" />
-                                            Configuración
-                                        </Button>
-                                    </Link>
-                                </div>
-                            </Card>
-                        </div>
+                    <div className="bg-card rounded-lg border border-border p-6">
+                        <h2 className="text-lg font-semibold text-card-foreground mb-4">Recent Clients</h2>
+                        <ClientsTable clients={clients} loading={loading} />
                     </div>
                 </div>
             </main>

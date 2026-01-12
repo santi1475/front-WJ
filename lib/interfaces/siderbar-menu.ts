@@ -25,30 +25,23 @@ export const sidebarSections: NavSection[] = [
         ],
     },
     {
-        title: "Gestión",
-        sectionIcon: "FileText",
+        title: "Clientes",
+        sectionIcon: "Users",
         items: [
             {
-                id: "tributario",
-                label: "Gestión Tributaria",
-                href: "/dashboard/tributario",
+                id: "vista-general",
+                label: "Vista General",
+                href: "/dashboard/vista-general",
                 icon: "FileText",
                 color: "text-purple-500",
             },
             {
-                id: "reportes",
-                label: "Reportes Financieros",
-                href: "/dashboard/reportes",
+                id: "clientes",
+                label: "Clientes",
+                href: "/dashboard/clientes",
                 icon: "PieChart",
                 color: "text-green-500",
             },
-            {
-                id: "roles-permisos",
-                label: "Roles y Permisos",
-                href: "/dashboard/roles-permisos",
-                icon: "ShieldCheck",
-                color: "text-green-500",
-            }
         ],
     },
     {
@@ -62,6 +55,13 @@ export const sidebarSections: NavSection[] = [
                 icon: "Users",
                 color: "text-orange-500",
             },
+            {
+                id: "roles-permisos",
+                label: "Roles y Permisos",
+                href: "/dashboard/roles-permisos",
+                icon: "ShieldCheck",
+                color: "text-green-500",
+            }
         ],
     },
 ]
