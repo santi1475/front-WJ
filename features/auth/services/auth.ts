@@ -1,13 +1,23 @@
-import axios from "axios"
+import axios, { type AxiosError } from "axios"
 import type { ILoginCredentials, ILoginResponse } from "@/features/shared/types"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 const AUTH_ENDPOINT = "/api/auth"
 
 export const authService = {
   login: async (credentials: ILoginCredentials): Promise<ILoginResponse> => {
-    const response = await axios.post<ILoginResponse>(`${API_BASE_URL}${AUTH_ENDPOINT}/login/`, credentials)
-    return response.data
+    const loginUrl = `${API_BASE_URL}${AUTH_ENDPOINT}/token/`
+    console.log("🔐 Login URL:", loginUrl)
+    console.log("📤 Credentials:", credentials)
+    try {
+      const response = await axios.post<ILoginResponse>(loginUrl, credentials)
+      console.log("✅ Login Response:", response.data)
+      return response.data
+    } catch (error) {
+      const axiosError = error as AxiosError
+      console.error("❌ Login Error:", axiosError.response?.status, axiosError.response?.data)
+      throw error
+    }
   },
 
   logout: async () => {

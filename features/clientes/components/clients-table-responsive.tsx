@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ClientModal } from "./client-modal"
+import { ClientModal } from "@/features/clientes/components/client-modal"
 import { Loader2, Plus, Search, Edit2, ChevronDown } from "lucide-react"
 import { useResponsive } from "@/hooks/use-responsive"
+import axios, { AxiosError } from "axios"
 
 export function ClientsTableResponsive() {
     const [clients, setClients] = useState<ICliente[]>([])
@@ -31,9 +32,17 @@ export function ClientsTableResponsive() {
             setLoading(true)
             const data = await clientesService.getAll()
             setClients(data)
-        } catch (err: any) {
+        } catch (err: unknown) {
             setError("Error al cargar clientes")
-            console.error("Fetch error:", err)
+            
+            if (err instanceof AxiosError) {
+                const axiosError = err as AxiosError<{ detail?: string }>
+                console.error("API Error:", axiosError.response?.data?.detail || axiosError.message)
+            } else if (err instanceof Error) {
+                console.error("System Error:", err.message)
+            } else {
+                console.error("Unknown Error:", err)
+            }
         } finally {
             setLoading(false)
         }
@@ -172,7 +181,7 @@ export function ClientsTableResponsive() {
                                             <p className="text-white font-medium truncate">{client.razon_social}</p>
                                             <p className="text-slate-400 text-sm">{client.propietario}</p>
                                         </div>
-                                        <div className="flex gap-2 flex-shrink-0">
+                                        <div className="flex gap-2 shrink-0">
                                             <Button
                                                 onClick={() => handleEdit(client)}
                                                 size="sm"

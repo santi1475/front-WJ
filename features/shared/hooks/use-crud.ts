@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { ListFilters } from "../types/entities";
+import type {
+  ListFilters,
+  PaginatedResponse,
+  ICRUDService,
+} from "@/features/shared/types/entities";
+import { AxiosError } from "axios";
 
 interface UseCRUDOptions {
   onSuccess?: (message: string) => void;
@@ -16,9 +21,9 @@ interface UseCRUDState<T> {
   page: number;
   pageSize: number;
 }
-
-export function useCRUD<T extends { id?: number }>(
-  service: any,
+export function useCRUD<T, K extends keyof T, C = Partial<T>, U = Partial<T>>(
+  service: ICRUDService<T, C, U>,
+  pkField: K, // Campo obligatorio para saber cuál es el ID (ej: 'ruc')
   options?: UseCRUDOptions
 ) {
   const [state, setState] = useState<UseCRUDState<T>>({
@@ -30,15 +35,25 @@ export function useCRUD<T extends { id?: number }>(
     pageSize: 10,
   });
 
+  // Helper para extraer el mensaje de error de Axios sin usar any
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof AxiosError) {
+      return (
+        error.response?.data?.detail || error.message || "Error desconocido"
+      );
+    }
+    return error instanceof Error ? error.message : "Error inesperado";
+  };
+
   const fetchList = useCallback(
     async (filters?: ListFilters) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const response = await service.list({
+        const response: PaginatedResponse<T> = await service.list({
           page: filters?.page || state.page,
           page_size: filters?.page_size || state.pageSize,
           ...filters,
-        } as any);
+        });
 
         setState((prev) => ({
           ...prev,
@@ -47,8 +62,8 @@ export function useCRUD<T extends { id?: number }>(
           page: filters?.page || state.page,
           loading: false,
         }));
-      } catch (error: any) {
-        const message = error.response?.data?.detail || "Error al cargar datos";
+      } catch (error: unknown) {
+        const message = getErrorMessage(error);
         setState((prev) => ({ ...prev, error: message, loading: false }));
         options?.onError?.(message);
       }
@@ -57,7 +72,7 @@ export function useCRUD<T extends { id?: number }>(
   );
 
   const create = useCallback(
-    async (data: Partial<T>) => {
+    async (data: C) => {
       try {
         const newItem = await service.create(data);
         setState((prev) => ({
@@ -67,9 +82,8 @@ export function useCRUD<T extends { id?: number }>(
         }));
         options?.onSuccess?.("Creado exitosamente");
         return newItem;
-      } catch (error: any) {
-        const message =
-          error.response?.data?.detail || "Error al crear registro";
+      } catch (error: unknown) {
+        const message = getErrorMessage(error);
         setState((prev) => ({ ...prev, error: message }));
         options?.onError?.(message);
         throw error;
@@ -79,47 +93,50 @@ export function useCRUD<T extends { id?: number }>(
   );
 
   const update = useCallback(
-    async (id: number, data: Partial<T>) => {
+    async (id: string | number, data: U) => {
       try {
         const updated = await service.update(id, data);
         setState((prev) => ({
           ...prev,
-          items: prev.items.map((item) =>
-            (item as any).id === id ? updated : item
-          ),
+          items: prev.items.map((item) => {
+            // Comparación segura accediendo a la propiedad genérica pkField
+            const itemId = item[pkField] as unknown as string | number;
+            return itemId === id ? updated : item;
+          }),
         }));
         options?.onSuccess?.("Actualizado exitosamente");
         return updated;
-      } catch (error: any) {
-        const message =
-          error.response?.data?.detail || "Error al actualizar registro";
+      } catch (error: unknown) {
+        const message = getErrorMessage(error);
         setState((prev) => ({ ...prev, error: message }));
         options?.onError?.(message);
         throw error;
       }
     },
-    [service, options]
+    [service, pkField, options]
   );
 
   const remove = useCallback(
-    async (id: number) => {
+    async (id: string | number) => {
       try {
         await service.delete(id);
         setState((prev) => ({
           ...prev,
-          items: prev.items.filter((item) => (item as any).id !== id),
+          items: prev.items.filter((item) => {
+            const itemId = item[pkField] as unknown as string | number;
+            return itemId !== id;
+          }),
           total: prev.total - 1,
         }));
         options?.onSuccess?.("Eliminado exitosamente");
-      } catch (error: any) {
-        const message =
-          error.response?.data?.detail || "Error al eliminar registro";
+      } catch (error: unknown) {
+        const message = getErrorMessage(error);
         setState((prev) => ({ ...prev, error: message }));
         options?.onError?.(message);
         throw error;
       }
     },
-    [service, options]
+    [service, pkField, options]
   );
 
   return {

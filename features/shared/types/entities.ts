@@ -5,10 +5,10 @@ export interface BaseEntity {
 }
 
 export interface PaginatedResponse<T> {
-  count: number
-  next: string | null
-  previous: string | null
-  results: T[]
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
 }
 
 export interface ApiResponse<T> {
@@ -18,11 +18,11 @@ export interface ApiResponse<T> {
 }
 
 export interface ListFilters {
-  search?: string
-  page?: number
-  page_size?: number
-  ordering?: string
-  [key: string]: any
+  page?: number;
+  page_size?: number;
+  search?: string;
+  ordering?: string;
+  [key: string]: string | number | undefined; // Permite filtros adicionales pero controlados
 }
 
 export interface EntityState<T> {
@@ -31,4 +31,11 @@ export interface EntityState<T> {
   loading: boolean
   error: string | null
   filters: ListFilters
+}
+
+export interface ICRUDService<T, CreateDTO, UpdateDTO> {
+  list: (params?: ListFilters) => Promise<PaginatedResponse<T>>;
+  create: (data: CreateDTO) => Promise<T>;
+  update: (id: string | number, data: UpdateDTO) => Promise<T>;
+  delete: (id: string | number) => Promise<void>;
 }

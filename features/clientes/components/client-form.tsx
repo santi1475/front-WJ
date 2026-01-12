@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { type AxiosError } from "axios"
 import { useForm, Controller } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -56,8 +57,9 @@ export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
                 await clientesService.create(data)
             }
             onSuccess()
-        } catch (err: any) {
-            setError(err.response?.data?.detail || "Error al guardar el cliente")
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>
+            setError(axiosError.response?.data?.detail || "Error al guardar el cliente")
             console.error("Form error:", err)
         } finally {
             setIsSubmitting(false)

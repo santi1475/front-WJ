@@ -8,7 +8,6 @@ export interface RouteConfig {
   children?: RouteConfig[];
 }
 
-// Routes dictionary for easy access and management
 export const ROUTES = {
   LOGIN: {
     path: "/login",
@@ -53,7 +52,6 @@ export const ROUTES = {
   } as const satisfies RouteConfig,
 } as const;
 
-// Sidebar navigation routes (protected area)
 export const SIDEBAR_ROUTES: RouteConfig[] = [
   ROUTES.DASHBOARD,
   ROUTES.CLIENTES,
@@ -62,10 +60,8 @@ export const SIDEBAR_ROUTES: RouteConfig[] = [
   ROUTES.CONFIGURACION,
 ];
 
-// Public routes (no authentication required)
 export const PUBLIC_ROUTES = [ROUTES.LOGIN.path];
 
-// Protected routes (authentication required)
 export const PROTECTED_ROUTES = [
   ROUTES.DASHBOARD.path,
   ROUTES.CLIENTES.path,
@@ -74,5 +70,4 @@ export const PROTECTED_ROUTES = [
   ROUTES.CONFIGURACION.path,
 ];
 
-// Admin-only routes
 export const ADMIN_ROUTES = [ROUTES.REPORTES.path, ROUTES.CONFIGURACION.path];

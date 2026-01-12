@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { type AxiosError } from "axios"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -33,12 +33,15 @@ export function LoginForm() {
     e.preventDefault()
     setError("")
     setIsLoading(true)
+    console.log("📝 Form submitted:", { username: formData.username })
 
     try {
+      console.log("🔄 Calling authService.login...")
       const response = await authService.login({
         username: formData.username,
         password: formData.password,
       })
+      console.log("✅ Login successful, user:", response.user)
 
       setUser(response.user, {
         access: response.access,
@@ -46,15 +49,17 @@ export function LoginForm() {
       })
 
       router.push("/dashboard")
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Authentication failed. Please try again.")
+    } catch (err) {
+      const axiosError = err as AxiosError<{ detail: string }>
+      console.error("❌ Login failed:", err)
+      setError(axiosError.response?.data?.detail || "Authentication failed. Please try again.")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 to-slate-900">
+    <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-slate-950 to-slate-900">
       <Card className="w-full max-w-md border-slate-800 bg-slate-900">
         <CardHeader className="space-y-2">
           <CardTitle className="text-2xl text-white">Contable System</CardTitle>

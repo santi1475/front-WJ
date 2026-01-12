@@ -1,4 +1,4 @@
-import type { ModuleConfig } from "@/features/shared/types";
+import type { ModuleConfig, IUser} from "@/features/shared/types";
 
 export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   CLIENTES: {
@@ -86,14 +86,21 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   },
 } as const;
 
-// Helper to get modules for specific role
-export const getModulesByRole = (role: string) => {
+function isValidRole(role: string): role is IUser["role"] {
+  const validRoles: IUser["role"][] = ["ADMIN", "CONTADOR", "ASISTENTE"];
+  return validRoles.includes(role as IUser["role"]);
+}
+export const getModulesByRole = (role: string): ModuleConfig[] => {
+  if (!isValidRole(role)) {
+    console.warn(`Rol inválido detectado: ${role}`);
+    return [];
+  }
+  
   return Object.values(MODULE_REGISTRY).filter((module) =>
-    module.requiredRoles.includes(role as any)
+    module.requiredRoles.includes(role)
   );
 };
 
-// Helper to check if user can perform action
 export const canPerformAction = (
   module: ModuleConfig,
   action: "create" | "edit" | "delete"
