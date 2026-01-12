@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 
-export default function ReportesPage() {
+export default function ConfiguracionPage() {
     const { isAdmin } = useAuth()
 
     if (!isAdmin) {
@@ -19,7 +19,7 @@ export default function ReportesPage() {
                     <CardContent className="pt-6">
                         <div className="flex items-center gap-3">
                             <AlertCircle className="h-5 w-5 text-destructive" />
-                            <p className="text-sm">Solo administradores pueden ver reportes</p>
+                            <p className="text-sm">Solo administradores pueden acceder a configuración</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -31,8 +31,8 @@ export default function ReportesPage() {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold">Reportes</h1>
-                <p className="text-muted-foreground mt-2">Visualiza reportes contables y análisis de datos</p>
+                <h1 className="text-3xl font-bold">Configuración</h1>
+                <p className="text-muted-foreground mt-2">Gestiona la configuración del sistema</p>
             </div>
 
             {/* Placeholder */}
@@ -42,7 +42,7 @@ export default function ReportesPage() {
                         <div className="space-y-2">
                             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto" />
                             <h3 className="text-lg font-semibold">Módulo en desarrollo</h3>
-                            <p className="text-muted-foreground">Los reportes estarán disponibles próximamente</p>
+                            <p className="text-muted-foreground">La configuración del sistema estará disponible próximamente</p>
                         </div>
                     </div>
                 </CardContent>

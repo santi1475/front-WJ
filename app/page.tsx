@@ -1,16 +1,20 @@
 "use client"
-// import Link from "next/link"
-// import { TrendingUp, FileText, PieChart, Users, Settings } from "lucide-react"
-// import { Button } from "@/components/ui/button"
-// import { Card } from "@/components/ui/card"
-import { useRouter } from "next/navigation"
+
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
 
-export default function Dashboard() {
-  const router = useRouter()  
+export default function HomePage() {
+    const router = useRouter()
+    const { isAuthenticated } = useAuth()
 
-  useEffect(() => {
-    router.push("/login")
-  }, [router])
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.push("/dashboard")
+        } else {
+            router.push("/login")
+        }
+    }, [isAuthenticated, router])
 
+    return null
 }
