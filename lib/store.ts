@@ -13,7 +13,7 @@ interface AuthStore {
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   tokens: null,
   isAuthenticated: false,
@@ -50,8 +50,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
   },
 
-  logout: function () {
-    this.clearAuth();
+  logout: () => {
+    // Usar get() para invocar acciones del store en Zustand
+    const { clearAuth } = get();
+    clearAuth();
   },
 }));
 

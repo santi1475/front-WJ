@@ -2,20 +2,15 @@
 
 import { useEffect, useState } from "react"
 import { clientesService } from "@/features/clientes/services/clientes"
+import type { IClientStats } from "@/features/clientes/services/clientes"
 import { KPICard } from "@/components/dashboard/kpi-card"
 import { ClientsTableResponsive } from "@/features/clientes/components/clients-table-responsive"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 import { useResponsive } from "@/hooks/use-responsive"
 
-interface ClientStats {
-    total_activos: number
-    ingresos_totales: string
-    pendientes_declaracion: number
-}
-
 export default function DashboardPage() {
-    const [stats, setStats] = useState<ClientStats | null>(null)
+    const [stats, setStats] = useState<IClientStats | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string>("")
     const { isMobile } = useResponsive()

@@ -9,7 +9,7 @@ import type {
 const API_ENDPOINT = "/api/gestion/clientes";
 
 // Definimos stats interface aquí o en tipos compartidos
-interface IClientStats {
+export interface IClientStats {
     total_activos: number;
     ingresos_totales: string;
     pendientes_declaracion: number;
@@ -37,8 +37,8 @@ list: async (params?: ListFilters): Promise<PaginatedResponse<ICliente>> => {
 
 getAll: async (): Promise<ICliente[]> => {
     const axios = getAxiosInstance();
-    // Ajusta la URL si tu backend tiene un endpoint 'all' o si el root devuelve lista sin paginar
-    const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/all/`);
+    // Endpoint raíz devuelve lista sin paginar
+    const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/`);
     return response.data;
 },
 
