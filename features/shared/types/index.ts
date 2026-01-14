@@ -1,4 +1,18 @@
-// Authentication types
+export interface IPermission {
+  id: number;
+  name: string;
+  codename: string;
+  content_type: number;
+}
+
+export interface IRole {
+  id: number;
+  name: string;
+  permissions: number[]; // IDs de los permisos asignados
+  user_count?: number;   // Opcional: para saber cuántos usuarios tienen este rol
+}
+
+// --- 2. AUTHENTICATION TYPES ACTUALIZADOS ---
 export interface ILoginCredentials {
   username: string
   password: string
@@ -14,7 +28,10 @@ export interface IUser {
   id: number
   username: string
   email: string
-  role: "ADMIN" | "CONTADOR" | "ASISTENTE"
+  // CAMBIO CRÍTICO: Cambiamos de Union Type fijo a string para soportar roles dinámicos.
+  // Aún puedes usar un helper para verificar si es admin, pero el tipo base es string.
+  role: string; 
+  permissions: string[] // Lista de codenames: ['ver_clientes', 'editar_facturas']
 }
 
 export interface ITokens {
@@ -22,7 +39,7 @@ export interface ITokens {
   refresh: string
 }
 
-// Clients types
+// --- 3. CLIENTS TYPES (Se mantienen igual) ---
 export enum RegimenTributario {
   RMT = "RMT",
   ESPECIAL = "ESPECIAL",
@@ -77,14 +94,18 @@ export interface IClienteFormData extends Omit<ICliente, "credenciales"> {
   credenciales?: ICredenciales
 }
 
-// Module configuration types
+// --- 4. MODULE CONFIGURATION TYPES ACTUALIZADOS ---
 export interface ModuleConfig {
   id: string
   name: string
   path: string
   icon: string
   description: string
-  requiredRoles: IUser["role"][]
+  // CAMBIO: Ahora soportamos validación por Roles (macro) O Permisos (micro)
+  requiredRoles?: string[]; 
+  requiredPermissions?: string[]; // Nuevo campo: ['ver_reportes']
+  
+  // Estos flags booleanos siguen siendo útiles para UI interna del módulo
   hasCreatePermission?: boolean
   hasEditPermission?: boolean
   hasDeletePermission?: boolean

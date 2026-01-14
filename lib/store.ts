@@ -22,7 +22,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({
       user,
       tokens,
-      isAuthenticated: true,
+      isAuthenticated: true,  
     });
     // Persist to localStorage
     if (typeof window !== "undefined") {
