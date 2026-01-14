@@ -7,18 +7,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RolesTable } from "@/features/roles/components/roles-table"
 import { RoleModal } from "@/features/roles/components/role-modal"
 import { useRoles } from "@/hooks/use-roles"
+import type { IRolePopulated, IRoleFormData } from "@/features/shared/types/roles"
 
 export default function RolesPage() {
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [editingRole, setEditingRole] = useState<any>(null)
+    // Corregido: Especificamos que el estado puede ser un rol poblado o null
+    const [editingRole, setEditingRole] = useState<IRolePopulated | null>(null)
+    
     const { roles, isLoading, addRole, updateRole, deleteRole } = useRoles()
 
     const handleCreateNew = () => {
-        setEditingRole(null)
+        setEditingRole(null)    
         setIsModalOpen(true)
     }
 
-    const handleEdit = (role: any) => {
+    // Corregido: El rol que viene de la tabla es IRolePopulated
+    const handleEdit = (role: IRolePopulated) => {
         setEditingRole(role)
         setIsModalOpen(true)
     }
@@ -27,7 +31,8 @@ export default function RolesPage() {
         deleteRole(roleId)
     }
 
-    const handleSaveRole = (data: any) => {
+    // Corregido: Los datos que vienen del formulario son IRoleFormData
+    const handleSaveRole = (data: IRoleFormData) => {
         if (editingRole) {
             updateRole(editingRole.id, data)
         } else {
@@ -52,7 +57,7 @@ export default function RolesPage() {
                 </div>
 
                 {/* Content */}
-                <Card>
+                <Card className="border-slate-800 bg-slate-900/50">
                     <CardHeader>
                         <CardTitle>Roles del Sistema</CardTitle>
                         <CardDescription>
@@ -81,7 +86,12 @@ export default function RolesPage() {
             </div>
 
             {/* Modal */}
-            <RoleModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={handleSaveRole} editingRole={editingRole} />
+            <RoleModal 
+                open={isModalOpen} 
+                onOpenChange={setIsModalOpen} 
+                onSave={handleSaveRole} 
+                editingRole={editingRole} 
+            />
         </div>
     )
 }

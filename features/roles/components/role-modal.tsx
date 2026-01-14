@@ -10,7 +10,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { PermissionsSelector } from "./permissions-selector"
 import { usePermissions } from "@/hooks/use-permissions"
-import type { IRolePopulated, IPermission } from "@/features/shared/types"
+import type { IRolePopulated, IPermission } from "@/features/shared/types/roles"
 
 const roleSchema = z.object({
     name: z.string().min(1, "El nombre es obligatorio"),

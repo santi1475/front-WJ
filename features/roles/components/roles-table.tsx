@@ -14,7 +14,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { PermissionsBadges } from "./permissions-badges"
-import type { IRolePopulated } from "@/features/shared/types"
+import type { IRolePopulated } from "@/features/shared/types/roles"
 
 interface RolesTableProps {
     roles: IRolePopulated[]

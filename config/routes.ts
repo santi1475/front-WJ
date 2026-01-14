@@ -56,14 +56,14 @@ export const ROUTES = {
     type: "protected", 
     children: [
       {
-        path: "/dashboard/configuracion/roles",
+        path: "/dashboard/roles",
         label: "Roles y Permisos",
         icon: "Shield",
         type: "protected",
         permissions: ["ver_roles", "gestion_seguridad"],
       },
       {
-        path: "/dashboard/configuracion/usuarios",
+        path: "/dashboard/usuarios",
         label: "Usuarios",
         icon: "UserCog",
         type: "protected",

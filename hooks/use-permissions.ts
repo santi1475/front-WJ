@@ -1,21 +1,31 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { mockPermissions } from "@/lib/mock-data"
+import { useState, useEffect } from "react";
+import { permissionsService } from "@/features/roles/services/permissions.service";
+import type { IPermission } from "@/features/shared/types/roles";
+// Eliminado: import axios from "axios" (ya no se usa)
 
 export function usePermissions() {
-  const [permissions, setPermissions] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+    const [permissions, setPermissions] = useState<IPermission[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Simulate API delay
-    const timer = setTimeout(() => {
-      setPermissions(mockPermissions)
-      setIsLoading(false)
-    }, 300)
+    useEffect(() => {
+        const fetchPermissions = async () => {
+        try {
+            setIsLoading(true);
+            const data = await permissionsService.getAll();
+            setPermissions(data);
+        } catch (err: unknown) {
+            console.error("Error fetching permissions:", err);
+            setError("No se pudieron cargar los permisos.");
+        } finally {
+            setIsLoading(false);
+        }
+        };
 
-    return () => clearTimeout(timer)
-  }, [])
+        fetchPermissions();
+    }, []);
 
-  return { permissions, isLoading }
+    return { permissions, isLoading, error };
 }
