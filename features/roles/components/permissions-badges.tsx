@@ -2,9 +2,10 @@
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
+import type { IPermission } from "@/features/shared/types"
 
 interface PermissionsBadgesProps {
-    permissions: any[]
+    permissions: IPermission[]
 }
 
 export function PermissionsBadges({ permissions }: PermissionsBadgesProps) {

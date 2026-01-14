@@ -8,11 +8,11 @@ export interface IPermission {
 export interface IRole {
   id: number;
   name: string;
-  permissions: number[]; // IDs de los permisos asignados
-  user_count?: number;   // Opcional: para saber cuántos usuarios tienen este rol
+  permissions: number[];  
 }
-
-// --- 2. AUTHENTICATION TYPES ACTUALIZADOS ---
+export interface IRolePopulated extends Omit<IRole, 'permissions'> {
+  permissions: IPermission[];
+}
 export interface ILoginCredentials {
   username: string
   password: string
@@ -38,7 +38,6 @@ export interface ITokens {
   refresh: string
 }
 
-// --- 3. CLIENTS TYPES (Se mantienen igual) ---
 export enum RegimenTributario {
   RMT = "RMT",
   ESPECIAL = "ESPECIAL",
@@ -93,18 +92,14 @@ export interface IClienteFormData extends Omit<ICliente, "credenciales"> {
   credenciales?: ICredenciales
 }
 
-// --- 4. MODULE CONFIGURATION TYPES ACTUALIZADOS ---
 export interface ModuleConfig {
   id: string
   name: string
   path: string
   icon: string
   description: string
-  // CAMBIO: Ahora soportamos validación por Roles (macro) O Permisos (micro)
   requiredRoles?: string[]; 
-  requiredPermissions?: string[]; // Nuevo campo: ['ver_reportes']
-  
-  // Estos flags booleanos siguen siendo útiles para UI interna del módulo
+  requiredPermissions?: string[]; 
   hasCreatePermission?: boolean
   hasEditPermission?: boolean
   hasDeletePermission?: boolean

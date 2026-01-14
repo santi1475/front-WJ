@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { MoreHorizontal, Trash2, Edit2 } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,17 +14,11 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { PermissionsBadges } from "./permissions-badges"
-
-interface Role {
-    id: number
-    name: string
-    permissions: any[]
-    isSystem?: boolean
-}
+import type { IRolePopulated } from "@/features/shared/types"
 
 interface RolesTableProps {
-    roles: Role[]
-    onEdit: (role: Role) => void
+    roles: IRolePopulated[]
+    onEdit: (role: IRolePopulated) => void
     onDelete: (roleId: number) => void
 }
 
@@ -52,14 +45,7 @@ export function RolesTable({ roles, onEdit, onDelete }: RolesTableProps) {
                         {roles.map((role) => (
                             <TableRow key={role.id} className="hover:bg-muted/50">
                                 <TableCell>
-                                    <div className="flex items-center gap-3">
-                                        <div className="font-semibold text-foreground">{role.name}</div>
-                                        {role.isSystem && (
-                                            <Badge variant="secondary" className="text-xs">
-                                                Sistema
-                                            </Badge>
-                                        )}
-                                    </div>
+                                    <div className="font-semibold text-foreground">{role.name}</div>
                                 </TableCell>
                                 <TableCell>
                                     <PermissionsBadges permissions={role.permissions} />
@@ -76,12 +62,13 @@ export function RolesTable({ roles, onEdit, onDelete }: RolesTableProps) {
                                                 <Edit2 className="h-4 w-4" />
                                                 Editar
                                             </DropdownMenuItem>
-                                            {!role.isSystem && (
-                                                <DropdownMenuItem onClick={() => setDeleteConfirm(role.id)} className="gap-2 text-destructive">
-                                                    <Trash2 className="h-4 w-4" />
-                                                    Eliminar
-                                                </DropdownMenuItem>
-                                            )}
+                                            <DropdownMenuItem 
+                                                onClick={() => setDeleteConfirm(role.id)} 
+                                                className="gap-2 text-destructive focus:text-destructive"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                Eliminar
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
@@ -91,7 +78,6 @@ export function RolesTable({ roles, onEdit, onDelete }: RolesTableProps) {
                 </Table>
             </div>
 
-            {/* Delete Confirmation Dialog */}
             <AlertDialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogTitle>Eliminar Rol</AlertDialogTitle>
@@ -101,7 +87,7 @@ export function RolesTable({ roles, onEdit, onDelete }: RolesTableProps) {
                     <div className="flex gap-3 justify-end">
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={() => handleDeleteConfirm(deleteConfirm!)}
+                            onClick={() => deleteConfirm && handleDeleteConfirm(deleteConfirm)}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                             Eliminar

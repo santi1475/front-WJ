@@ -10,6 +10,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { PermissionsSelector } from "./permissions-selector"
 import { usePermissions } from "@/hooks/use-permissions"
+import type { IRolePopulated, IPermission } from "@/features/shared/types"
 
 const roleSchema = z.object({
     name: z.string().min(1, "El nombre es obligatorio"),
@@ -22,11 +23,12 @@ interface RoleModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     onSave: (data: RoleFormData) => void
-    editingRole?: any | null
+    editingRole?: IRolePopulated | null
 }
 
 export function RoleModal({ open, onOpenChange, onSave, editingRole }: RoleModalProps) {
-    const { permissions } = usePermissions()
+    // Forzamos el tipado del hook si no está inferido correctamente
+    const { permissions } = usePermissions() as { permissions: IPermission[] }
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const form = useForm<RoleFormData>({
@@ -42,7 +44,8 @@ export function RoleModal({ open, onOpenChange, onSave, editingRole }: RoleModal
             if (editingRole) {
                 form.reset({
                     name: editingRole.name,
-                    permissions: editingRole.permissions.map((p: any) => p.id),
+                    // Ya no es necesario (p: any) porque editingRole está tipado
+                    permissions: editingRole.permissions.map((p) => p.id),
                 })
             } else {
                 form.reset({

@@ -1,157 +1,95 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-
-interface Permission {
-    id: number
-    name: string
-    description?: string
-    module?: string
-    content_type?: string
-}
+import type { IPermission } from "@/features/shared/types"
 
 interface PermissionsSelectorProps {
-    permissions: Permission[]
+    permissions: IPermission[]
     selectedPermissions: number[]
     onChange: (permissions: number[]) => void
 }
 
 export function PermissionsSelector({ permissions, selectedPermissions, onChange }: PermissionsSelectorProps) {
-    const [searchQuery, setSearchQuery] = useState("")
+    
+    const groupedPermissions = permissions.reduce((acc, permission) => {
+        const parts = permission.codename.split('_');
+        const moduleName = parts.length > 1 ? parts.slice(1).join(' ') : 'General';
+        const formattedModule = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
 
-    const groupedPermissions = useMemo(() => {
-        // Filter permissions based on search
-        const filtered = permissions.filter(
-            (perm) =>
-                perm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (perm.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false),
-        )
+        if (!acc[formattedModule]) {
+            acc[formattedModule] = [];
+        }
+        acc[formattedModule].push(permission);
+        return acc;
+    }, {} as Record<string, IPermission[]>);
 
-        // Group by module or content_type
-        const groups: Record<string, Permission[]> = {}
-        filtered.forEach((perm) => {
-            const key = perm.module || perm.content_type || "Otros"
-            if (!groups[key]) {
-                groups[key] = []
-            }
-            groups[key].push(perm)
-        })
-
-        return Object.entries(groups).sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-    }, [permissions, searchQuery])
-
-    const togglePermission = (permissionId: number) => {
-        const updated = selectedPermissions.includes(permissionId)
-            ? selectedPermissions.filter((id) => id !== permissionId)
-            : [...selectedPermissions, permissionId]
-        onChange(updated)
+    const handleToggle = (permissionId: number) => {
+        if (selectedPermissions.includes(permissionId)) {
+            onChange(selectedPermissions.filter((id) => id !== permissionId))
+        } else {
+            onChange([...selectedPermissions, permissionId])
+        }
     }
 
-    const toggleGroupPermissions = (groupKey: string, permissionsInGroup: Permission[]) => {
-        const groupIds = permissionsInGroup.map((p) => p.id)
+    const handleGroupToggle = (groupPermissions: IPermission[]) => {
+        const groupIds = groupPermissions.map((p) => p.id)
         const allSelected = groupIds.every((id) => selectedPermissions.includes(id))
 
-        const updated = allSelected
-            ? selectedPermissions.filter((id) => !groupIds.includes(id))
-            : [...selectedPermissions, ...groupIds.filter((id) => !selectedPermissions.includes(id))]
-        onChange(updated)
-    }
-
-    const isGroupFullySelected = (permissionsInGroup: Permission[]) => {
-        const groupIds = permissionsInGroup.map((p) => p.id)
-        return groupIds.every((id) => selectedPermissions.includes(id))
-    }
-
-    const isGroupPartiallySelected = (permissionsInGroup: Permission[]) => {
-        const groupIds = permissionsInGroup.map((p) => p.id)
-        const selectedCount = groupIds.filter((id) => selectedPermissions.includes(id)).length
-        return selectedCount > 0 && selectedCount < groupIds.length
+        if (allSelected) {
+            onChange(selectedPermissions.filter((id) => !groupIds.includes(id)))
+        } else {
+            const newSelected = [...new Set([...selectedPermissions, ...groupIds])]
+            onChange(newSelected)
+        }
     }
 
     return (
-        <div className="space-y-4 border rounded-lg p-4">
-            {/* Search Input */}
-            <div>
-                <Input
-                    placeholder="Buscar permiso..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-9"
-                />
-            </div>
+        <div className="border rounded-md">
+            <Accordion type="multiple" className="w-full">
+                {Object.entries(groupedPermissions).map(([moduleName, modulePermissions]) => {
+                    const allSelected = modulePermissions.every((p) => selectedPermissions.includes(p.id))
+                    const someSelected = modulePermissions.some((p) => selectedPermissions.includes(p.id))
 
-            {/* Permissions Groups */}
-            <div className="space-y-2">
-                {groupedPermissions.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">No hay permisos que coincidan con tu búsqueda</div>
-                ) : (
-                    <Accordion type="single" collapsible defaultValue={groupedPermissions[0]?.[0]}>
-                        {groupedPermissions.map(([groupKey, groupPerms]) => (
-                            <AccordionItem key={groupKey} value={groupKey} className="border-b last:border-0">
-                                <div className="flex items-center gap-3 py-3">
-                                    {/* Group Checkbox */}
-                                    <Checkbox
-                                        id={`group-${groupKey}`}
-                                        checked={isGroupFullySelected(groupPerms)}
-                                        indeterminate={isGroupPartiallySelected(groupPerms)}
-                                        onCheckedChange={() => toggleGroupPermissions(groupKey, groupPerms)}
-                                        className="h-5 w-5"
-                                    />
-
-                                    {/* Group Header */}
-                                    <AccordionTrigger className="flex-1 hover:no-underline">
-                                        <Label
-                                            htmlFor={`group-${groupKey}`}
-                                            className="text-sm font-semibold cursor-pointer flex-1 text-left"
-                                        >
-                                            {groupKey}
-                                        </Label>
-                                    </AccordionTrigger>
-
-                                    {/* Count */}
-                                    <span className="text-xs text-muted-foreground">
-                                        {groupPerms.filter((p) => selectedPermissions.includes(p.id)).length}/{groupPerms.length}
+                    return (
+                        <AccordionItem value={moduleName} key={moduleName} className="border-b last:border-0">
+                            <div className="flex items-center px-4 py-2 hover:bg-muted/50">
+                                <Checkbox
+                                    checked={allSelected ? true : someSelected ? "indeterminate" : false}
+                                    onCheckedChange={() => handleGroupToggle(modulePermissions)}
+                                    className="mr-2"
+                                />
+                                <AccordionTrigger className="hover:no-underline py-0 flex-1">
+                                    <span className="text-sm font-medium">{moduleName}</span>
+                                    <span className="ml-2 text-xs text-muted-foreground font-normal">
+                                        ({modulePermissions.length} permisos)
                                     </span>
+                                </AccordionTrigger>
+                            </div>
+                            <AccordionContent className="px-4 pb-4 pt-1">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-6">
+                                    {modulePermissions.map((permission) => (
+                                        <div key={permission.id} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`perm-${permission.id}`}
+                                                checked={selectedPermissions.includes(permission.id)}
+                                                onCheckedChange={() => handleToggle(permission.id)}
+                                            />
+                                            <Label 
+                                                htmlFor={`perm-${permission.id}`} 
+                                                className="text-sm font-normal cursor-pointer"
+                                            >
+                                                {permission.name}
+                                            </Label>
+                                        </div>
+                                    ))}
                                 </div>
-
-                                {/* Permissions in Group */}
-                                <AccordionContent className="pb-3">
-                                    <div className="ml-8 space-y-3">
-                                        {groupPerms.map((permission) => (
-                                            <div key={permission.id} className="flex items-start gap-3">
-                                                <Checkbox
-                                                    id={`perm-${permission.id}`}
-                                                    checked={selectedPermissions.includes(permission.id)}
-                                                    onCheckedChange={() => togglePermission(permission.id)}
-                                                    className="mt-1"
-                                                />
-                                                <Label htmlFor={`perm-${permission.id}`} className="flex-1 cursor-pointer text-sm">
-                                                    <div className="font-medium">{permission.name}</div>
-                                                    {permission.description && (
-                                                        <div className="text-xs text-muted-foreground">{permission.description}</div>
-                                                    )}
-                                                </Label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
-                    </Accordion>
-                )}
-            </div>
-
-            {/* Summary */}
-            {selectedPermissions.length > 0 && (
-                <div className="pt-2 border-t text-sm text-muted-foreground">
-                    {selectedPermissions.length} permiso{selectedPermissions.length !== 1 ? "s" : ""} seleccionado
-                    {selectedPermissions.length !== 1 ? "s" : ""}
-                </div>
-            )}
+                            </AccordionContent>
+                        </AccordionItem>
+                    )
+                })}
+            </Accordion>
         </div>
     )
 }
