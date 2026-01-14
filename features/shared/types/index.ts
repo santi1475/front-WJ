@@ -28,10 +28,9 @@ export interface IUser {
   id: number
   username: string
   email: string
-  // CAMBIO CRÍTICO: Cambiamos de Union Type fijo a string para soportar roles dinámicos.
-  // Aún puedes usar un helper para verificar si es admin, pero el tipo base es string.
   role: string; 
-  permissions: string[] // Lista de codenames: ['ver_clientes', 'editar_facturas']
+  permissions: string[],
+  is_superuser: boolean;
 }
 
 export interface ITokens {

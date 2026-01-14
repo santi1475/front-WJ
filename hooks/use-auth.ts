@@ -10,11 +10,12 @@ export function useAuth() {
   const clearAuth = useAuthStore((state) => state.clearAuth)
   const logout = useAuthStore((state) => state.logout)
 
-  const isAdmin = user?.role === "ADMIN"
+  const isAdmin = user?.role === "ADMIN" || user?.is_superuser === true;
   const isContador = user?.role === "CONTADOR"
   const isAsistente = user?.role === "ASISTENTE"
 
   const can = (requiredRole: IUser["role"]) => {
+    if (user?.is_superuser) return true;
     const roleHierarchy: Record<IUser["role"], number> = {
       ADMIN: 3,
       CONTADOR: 2,

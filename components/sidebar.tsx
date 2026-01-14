@@ -7,8 +7,6 @@ import { useAuthStore } from "@/lib/store"
 import { useSidebarContext } from "@/app/dashboard/layout"
 import { SIDEBAR_ROUTES, type RouteConfig } from "@/config/routes"
 import { cn } from "@/lib/utils"
-
-// Componentes UI
 import { Button } from "@/components/ui/button"
 import {
     LogOut,
@@ -18,7 +16,7 @@ import {
     Menu,
     X
 } from "lucide-react"
-import * as Icons from "lucide-react" 
+import * as Icons from "lucide-react"
 
 type LucideIcon = typeof Icons.Activity
 
@@ -60,8 +58,8 @@ export function Sidebar() {
     const hasPermission = (route: RouteConfig): boolean => {
         if (!user) return false
 
-        if (user.role === "ADMIN") return true
-
+        if (user.is_superuser || user.role === "ADMIN") return true
+        
         if (route.permissions && route.permissions.length > 0) {
             const userPermissions = user.permissions || []
             const hasAccess = route.permissions.some((p) => userPermissions.includes(p))
