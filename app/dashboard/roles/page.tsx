@@ -11,7 +11,6 @@ import type { IRolePopulated, IRoleFormData } from "@/features/shared/types/role
 
 export default function RolesPage() {
     const [isModalOpen, setIsModalOpen] = useState(false)
-    // Corregido: Especificamos que el estado puede ser un rol poblado o null
     const [editingRole, setEditingRole] = useState<IRolePopulated | null>(null)
     
     const { roles, isLoading, addRole, updateRole, deleteRole } = useRoles()
@@ -21,7 +20,6 @@ export default function RolesPage() {
         setIsModalOpen(true)
     }
 
-    // Corregido: El rol que viene de la tabla es IRolePopulated
     const handleEdit = (role: IRolePopulated) => {
         setEditingRole(role)
         setIsModalOpen(true)
@@ -31,7 +29,6 @@ export default function RolesPage() {
         deleteRole(roleId)
     }
 
-    // Corregido: Los datos que vienen del formulario son IRoleFormData
     const handleSaveRole = (data: IRoleFormData) => {
         if (editingRole) {
             updateRole(editingRole.id, data)
@@ -47,8 +44,7 @@ export default function RolesPage() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Roles y Permisos</h1>
-                        <p className="text-muted-foreground mt-2">Gestiona los roles de usuario y sus permisos asociados</p>
+                        <h2 className="text-3xl font-bold tracking-tight">Roles y Permisos</h2>
                     </div>
                     <Button onClick={handleCreateNew} size="lg" className="gap-2">
                         <Plus className="h-5 w-5" />
@@ -57,7 +53,7 @@ export default function RolesPage() {
                 </div>
 
                 {/* Content */}
-                <Card className="border-slate-800 bg-slate-900/50">
+                <Card className="">
                     <CardHeader>
                         <CardTitle>Roles del Sistema</CardTitle>
                         <CardDescription>

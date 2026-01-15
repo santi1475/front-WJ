@@ -63,7 +63,7 @@ export const ROUTES = {
         permissions: ["ver_roles", "gestion_seguridad"],
       },
       {
-        path: "/dashboard/usuarios",
+        path: "/dashboard/users",
         label: "Usuarios",
         icon: "UserCog",
         type: "protected",
