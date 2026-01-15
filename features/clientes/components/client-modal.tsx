@@ -13,7 +13,7 @@ interface ClientModalProps {
 export function ClientModal({ isOpen, onClose, client, onSave }: ClientModalProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl border-slate-800 bg-slate-900">
+            <DialogContent className="max-w-6xl w-full border-slate-800 bg-slate-900">
                 <DialogHeader>
                     <DialogTitle className="text-white">{client ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle>
                 </DialogHeader>

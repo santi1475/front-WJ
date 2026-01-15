@@ -64,7 +64,7 @@ export interface ICliente {
   responsable?: number
   regimen_tributario: RegimenTributario
   tipo_empresa: TipoEmpresa
-  categoria?: "A" | "B" | "C"
+  categoria: "A" | "B" | "C" | "N/T"
   regimen_laboral_tipo?: string
   regimen_laboral_fecha?: string
   ingresos_mensuales: string
@@ -92,3 +92,35 @@ export interface ModuleConfig {
 }
 
 export type ModuleRegistry = Record<string, ModuleConfig>
+
+type CategoriaConfig = {
+    label: string;
+    className: string;
+};
+
+export const categoriaConfig: Record<
+    ICliente["categoria"] | "default",
+    CategoriaConfig
+> = {
+    A: {
+        label: "Activo",
+        className: "bg-green-900/30 text-green-400 border border-green-700/50",
+    },
+    B: {
+        label: "Pendiente",
+        className: "bg-yellow-900/30 text-yellow-400 border border-yellow-700/50",
+    },
+    C: {
+        label: "Inactivo",
+        className: "bg-red-900/30 text-red-400 border border-red-700/50",
+    },
+    "N/T": {
+        label: "No definido",
+        className: "bg-blue-900/30 text-blue-400 border border-blue-700/50",
+    },
+    default: {
+        label: "Sin categoría",
+        className: "bg-gray-900/30 text-gray-400 border border-gray-700/50",
+    },
+};
+

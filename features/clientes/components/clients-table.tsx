@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { ClientModal } from "./client-modal"
 import { Loader2, Plus, Search } from "lucide-react"
+import { type AxiosError } from "axios"
+import { categoriaConfig } from "@/features/shared/types"
 
 export function ClientsTable() {
     const [clients, setClients] = useState<ICliente[]>([])
@@ -27,8 +29,9 @@ export function ClientsTable() {
             setLoading(true)
             const data = await clientesService.getAll()
             setClients(data)
-        } catch (err: any) {
-            setError("Error al cargar clientes")
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>
+            setError(axiosError.response?.data?.detail || "Error al cargar los clientes.")
             console.error("Fetch error:", err)
         } finally {
             setLoading(false)
@@ -98,8 +101,12 @@ export function ClientsTable() {
                             <TableHead className="text-slate-300">RUC</TableHead>
                             <TableHead className="text-slate-300">Razón Social</TableHead>
                             <TableHead className="text-slate-300">Propietario</TableHead>
-                            <TableHead className="text-slate-300">Régimen</TableHead>
+                            <TableHead className="text-slate-300">Codigo de control</TableHead>
+                            <TableHead className="text-slate-300">Responsable</TableHead>
+                            <TableHead className="text-slate-300">Régimen Tributario</TableHead>
+                            <TableHead className="text-slate-300">Regime Laboral</TableHead>
                             <TableHead className="text-slate-300">Estado</TableHead>
+                            <TableHead className="text-slate-300">Categoria</TableHead>
                             <TableHead className="text-slate-300 text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -116,9 +123,16 @@ export function ClientsTable() {
                                     <TableCell className="font-mono text-blue-400">{client.ruc}</TableCell>
                                     <TableCell className="text-white">{client.razon_social}</TableCell>
                                     <TableCell className="text-slate-300">{client.propietario}</TableCell>
+                                    <TableCell className="text-slate-300">{client.codigo_control || "-"}</TableCell>
+                                    <TableCell className="text-slate-300">{client.responsable}</TableCell>
                                     <TableCell>
                                         <Badge variant="outline" className="border-slate-600 text-slate-300">
                                             {client.regimen_tributario}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className="border-slate-600 text-slate-300">
+                                            {client.regimen_laboral_tipo}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
@@ -131,6 +145,11 @@ export function ClientsTable() {
                                             variant="outline"
                                         >
                                             {client.estado ? "Activo" : "Inactivo"}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-slate-300">
+                                        <Badge className={categoriaConfig[client.categoria].className} variant="outline">
+                                            {categoriaConfig[client.categoria].label}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">

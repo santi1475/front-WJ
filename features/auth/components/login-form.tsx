@@ -62,7 +62,7 @@ export function LoginForm() {
     <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-slate-950 to-slate-900">
       <Card className="w-full max-w-md border-slate-800 bg-slate-900">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-2xl text-white">Contable System</CardTitle>
+          <CardTitle className="text-2xl text-white">WJ System</CardTitle>
           <CardDescription className="text-slate-400">Inicia sesión para acceder al sistema</CardDescription>
         </CardHeader>
         <CardContent>
