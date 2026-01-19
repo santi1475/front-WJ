@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ClientModal } from "@/features/clientes/components/client-modal"
-import { Loader2, Plus, Search, Edit2, ChevronDown } from "lucide-react"
+import { ClientForm } from "@/features/clientes/components/client-form"
+import { CredentialsViewer } from "@/features/clientes/components/credentials-viewer"
+import { Loader2, Plus, Search, Edit2, ChevronDown, Key } from "lucide-react"
 import { useResponsive } from "@/hooks/use-responsive"
 import axios, { AxiosError } from "axios"
 
@@ -21,6 +22,8 @@ export function ClientsTableResponsive() {
     const [selectedClient, setSelectedClient] = useState<ICliente | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
+    const [selectedCredentialsClient, setSelectedCredentialsClient] = useState<ICliente | null>(null)
+    const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false)
     const { isMobile } = useResponsive()
 
     useEffect(() => {
@@ -34,7 +37,7 @@ export function ClientsTableResponsive() {
             setClients(data)
         } catch (err: unknown) {
             setError("Error al cargar clientes")
-            
+
             if (err instanceof AxiosError) {
                 const axiosError = err as AxiosError<{ detail?: string }>
                 console.error("API Error:", axiosError.response?.data?.detail || axiosError.message)
@@ -60,6 +63,11 @@ export function ClientsTableResponsive() {
     const handleCreate = () => {
         setSelectedClient(null)
         setIsModalOpen(true)
+    }
+
+    const handleViewCredentials = (client: ICliente) => {
+        setSelectedCredentialsClient(client)
+        setIsCredentialsModalOpen(true)
     }
 
     if (loading && clients.length === 0) {
@@ -146,14 +154,25 @@ export function ClientsTableResponsive() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button
-                                                onClick={() => handleEdit(client)}
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-blue-400 hover:bg-blue-900/20"
-                                            >
-                                                Editar
-                                            </Button>
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    onClick={() => handleViewCredentials(client)}
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="text-yellow-400 hover:bg-yellow-900/20"
+                                                    title="Ver credenciales"
+                                                >
+                                                    <Key className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handleEdit(client)}
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="text-blue-400 hover:bg-blue-900/20"
+                                                >
+                                                    Editar
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -182,6 +201,15 @@ export function ClientsTableResponsive() {
                                             <p className="text-slate-400 text-sm">{client.propietario}</p>
                                         </div>
                                         <div className="flex gap-2 shrink-0">
+                                            <Button
+                                                onClick={() => handleViewCredentials(client)}
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-yellow-400 hover:bg-yellow-900/20 h-8 w-8 p-0"
+                                                title="Ver credenciales"
+                                            >
+                                                <Key className="h-4 w-4" />
+                                            </Button>
                                             <Button
                                                 onClick={() => handleEdit(client)}
                                                 size="sm"
@@ -234,15 +262,21 @@ export function ClientsTableResponsive() {
                 </div>
             )}
 
-            {/* Client Modal */}
-            <ClientModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+            {/* Client Form Modal */}
+            <ClientForm
+                open={isModalOpen}
+                onOpenChange={setIsModalOpen}
                 client={selectedClient}
-                onSave={() => {
-                    setIsModalOpen(false)
+                onSuccess={() => {
                     fetchClients()
                 }}
+            />
+
+            {/* Credentials Modal */}
+            <CredentialsViewer
+                open={isCredentialsModalOpen}
+                onOpenChange={setIsCredentialsModalOpen}
+                client={selectedCredentialsClient}
             />
         </div>
     )

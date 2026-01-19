@@ -42,8 +42,15 @@ export function LoginForm() {
         password: formData.password,
       })
       console.log("✅ Login successful, user:", response.user)
+      console.log("✅ Permissions received:", response.permissions)
 
-      setUser(response.user, {
+      // Agregar permisos al objeto user antes de guardarlo en el store
+      const userWithPermissions = {
+        ...response.user,
+        permissions: response.permissions || []
+      }
+
+      setUser(userWithPermissions, {
         access: response.access,
         refresh: response.refresh,
       })

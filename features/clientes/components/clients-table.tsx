@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ClientModal } from "./client-modal"
-import { Loader2, Plus, Search } from "lucide-react"
+import { ClientForm } from "./client-form"
+import { CredentialsViewer } from "./credentials-viewer"
+import { Loader2, Plus, Search, Key } from "lucide-react"
 import { type AxiosError } from "axios"
 import { categoriaConfig } from "@/features/shared/types"
 
@@ -19,6 +20,8 @@ export function ClientsTable() {
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedClient, setSelectedClient] = useState<ICliente | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [selectedCredentialsClient, setSelectedCredentialsClient] = useState<ICliente | null>(null)
+    const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false)
 
     useEffect(() => {
         fetchClients()
@@ -54,6 +57,11 @@ export function ClientsTable() {
 
     const handleRefresh = () => {
         fetchClients()
+    }
+
+    const handleViewCredentials = (client: ICliente) => {
+        setSelectedCredentialsClient(client)
+        setIsCredentialsModalOpen(true)
     }
 
     if (loading && clients.length === 0) {
@@ -153,14 +161,25 @@ export function ClientsTable() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button
-                                            onClick={() => handleEdit(client)}
-                                            size="sm"
-                                            variant="ghost"
-                                            className="text-blue-400 hover:bg-blue-900/20"
-                                        >
-                                            Editar
-                                        </Button>
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                onClick={() => handleViewCredentials(client)}
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-yellow-400 hover:bg-yellow-900/20"
+                                                title="Ver credenciales"
+                                            >
+                                                <Key className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                onClick={() => handleEdit(client)}
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-blue-400 hover:bg-blue-900/20"
+                                            >
+                                                Editar
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -169,15 +188,21 @@ export function ClientsTable() {
                 </Table>
             </div>
 
-            {/* Client Modal */}
-            <ClientModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+            {/* Client Form Modal */}
+            <ClientForm
+                open={isModalOpen}
+                onOpenChange={setIsModalOpen}
                 client={selectedClient}
-                onSave={() => {
-                    setIsModalOpen(false)
+                onSuccess={() => {
                     fetchClients()
                 }}
+            />
+
+            {/* Credentials Modal */}
+            <CredentialsViewer
+                open={isCredentialsModalOpen}
+                onOpenChange={setIsCredentialsModalOpen}
+                client={selectedCredentialsClient}
             />
         </div>
     )

@@ -5,9 +5,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 
 export default function ReportesPage() {
-    const { isAdmin } = useAuth()
+    const { user, can } = useAuth()
 
-    if (!isAdmin) {
+    // Verificar si el usuario tiene permiso para ver reportes
+    const hasAccess = user?.is_superuser || can("ver_reportes")
+
+    if (!hasAccess) {
         return (
             <div className="space-y-6">
                 <div>
@@ -19,7 +22,7 @@ export default function ReportesPage() {
                     <CardContent className="pt-6">
                         <div className="flex items-center gap-3">
                             <AlertCircle className="h-5 w-5 text-destructive" />
-                            <p className="text-sm">Solo administradores pueden ver reportes</p>
+                            <p className="text-sm">No tienes permisos para ver reportes</p>
                         </div>
                     </CardContent>
                 </Card>

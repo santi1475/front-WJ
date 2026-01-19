@@ -1,38 +1,48 @@
-"use client"
+"use client";
 
-import { useAuthStore } from "@/lib/store"
-import type { IUser } from "@/features/shared/types"
+import { useAuthStore } from "@/lib/store";
+import type { IUser } from "@/features/shared/types";
 
 export function useAuth() {
-  const user = useAuthStore((state) => state.user)
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  const setUser = useAuthStore((state) => state.setUser)
-  const clearAuth = useAuthStore((state) => state.clearAuth)
-  const logout = useAuthStore((state) => state.logout)
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const setUser = useAuthStore((state) => state.setUser);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const logout = useAuthStore((state) => state.logout);
 
-  const isAdmin = user?.role === "ADMIN" || user?.is_superuser === true;
-  const isContador = user?.role === "CONTADOR"
-  const isAsistente = user?.role === "ASISTENTE"
+  /**
+   * Verifica si el usuario tiene al menos uno de los permisos requeridos
+   * @param requiredPermissions - Array de permisos requeridos
+   * @returns true si el usuario tiene al menos uno de los permisos o es superusuario
+   */
+  const hasPermission = (requiredPermissions: string[]): boolean => {
+    if (!user) return false;
+    if (user.is_superuser) return true;
 
-  const can = (requiredRole: IUser["role"]) => {
-    if (user?.is_superuser) return true;
-    const roleHierarchy: Record<IUser["role"], number> = {
-      ADMIN: 3,
-      CONTADOR: 2,
-      ASISTENTE: 1,
-    }
-    return roleHierarchy[user?.role || "ASISTENTE"] >= roleHierarchy[requiredRole]
-  }
+    const userPermissions = user.permissions || [];
+    return requiredPermissions.some((p) => userPermissions.includes(p));
+  };
+
+  /**
+   * Verifica si el usuario tiene un permiso específico
+   * @param permission - Permiso a verificar
+   * @returns true si el usuario tiene el permiso o es superusuario
+   */
+  const can = (permission: string): boolean => {
+    if (!user) return false;
+    if (user.is_superuser) return true;
+
+    const userPermissions = user.permissions || [];
+    return userPermissions.includes(permission);
+  };
 
   return {
     user,
     isAuthenticated,
-    isAdmin,
-    isContador,
-    isAsistente,
+    hasPermission,
     can,
     setUser,
     clearAuth,
     logout,
-  }
+  };
 }

@@ -1,11 +1,9 @@
-export type RouteType = "public" | "protected" | "admin";
 
 export interface RouteConfig {
   path: string;
   label: string;
   icon: string;
   permissions?: string[];
-  type: RouteType;
   children?: RouteConfig[];
 }
 
@@ -14,14 +12,12 @@ export const ROUTES = {
     path: "/login",
     label: "Iniciar Sesión",
     icon: "LogIn",
-    type: "public",
   } as const satisfies RouteConfig,
 
   DASHBOARD: {
     path: "/dashboard",
     label: "Dashboard",
     icon: "BarChart3",
-    type: "protected",
 
   } as const satisfies RouteConfig,
 
@@ -29,15 +25,13 @@ export const ROUTES = {
     path: "/dashboard/clientes",
     label: "Clientes",
     icon: "Users",
-    type: "protected",
-    permissions: ["ver_clientes", "gestion_clientes"],
+    permissions: ["gestion.view_cliente", "gestion.add_cliente"],
   } as const satisfies RouteConfig,
 
   FACTURAS: {
     path: "/dashboard/facturas",
     label: "Facturas",
     icon: "Receipt",
-    type: "protected",
     permissions: ["ver_facturas"],
   } as const satisfies RouteConfig,
 
@@ -45,7 +39,6 @@ export const ROUTES = {
     path: "/dashboard/reportes",
     label: "Reportes",
     icon: "LineChart",
-    type: "admin",
     permissions: ["ver_reportes"],
   } as const satisfies RouteConfig,
 
@@ -53,23 +46,21 @@ export const ROUTES = {
     path: "/dashboard/configuracion",
     label: "Configuración",
     icon: "Settings",
-    type: "protected", 
     children: [
       {
         path: "/dashboard/roles",
         label: "Roles y Permisos",
         icon: "Shield",
-        type: "protected",
         permissions: ["ver_roles", "gestion_seguridad"],
       },
       {
         path: "/dashboard/users",
         label: "Usuarios",
         icon: "UserCog",
-        type: "protected",
         permissions: ["ver_usuarios"],
       }
-    ]
+    ],
+    permissions: ["ver_configuracion"],
   } as const satisfies RouteConfig,
 } as const;
 

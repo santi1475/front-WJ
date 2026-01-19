@@ -1,80 +1,290 @@
 import { getAxiosInstance } from "@/lib/axios-client";
-import type { ICliente, IClienteFormData } from "@/features/shared/types";
 import type {
-    PaginatedResponse,
-    ListFilters,
-    ICRUDService,
+  ICliente,
+  IClienteFormData,
+  RegimenTributario,
+} from "@/features/shared/types";
+import type {
+  PaginatedResponse,
+  ListFilters,
+  ICRUDService,
 } from "@/features/shared/types/entities";
+import type { AxiosError } from "axios";
 
 const API_ENDPOINT = "/api/gestion/clientes";
 
-// Definimos stats interface aquí o en tipos compartidos
+/**
+ * Estadísticas de clientes
+ */
 export interface IClientStats {
-    total_activos: number;
-    ingresos_totales: string;
-    pendientes_declaracion: number;
+  total_activos: number;
+  ingresos_totales: string;
+  pendientes_declaracion: number;
 }
 
-// Implementamos la interfaz ICRUDService explícitamente para asegurar compatibilidad
+/**
+ * Filtros adicionales para búsqueda de clientes
+ */
+export interface IClientFilters {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  ordering?: string;
+  estado?: boolean;
+  categoria?: "A" | "B" | "C" | "N/T";
+  regimen_tributario?: RegimenTributario;
+  responsable?: number;
+}
+
+/**
+ * Respuesta de error personalizada
+ */
+export interface IClientServiceError {
+  message: string;
+  code?: string;
+  details?: Record<string, string[]>;
+}
+
+/**
+ * Servicio para la gestión de clientes
+ * Implementa operaciones CRUD completas y métodos auxiliares
+ */
 const clientesServiceImplementation: ICRUDService<
-    ICliente,
-    IClienteFormData,
-    IClienteFormData
+  ICliente,
+  IClienteFormData,
+  IClienteFormData
 > & {
-    getAll: () => Promise<ICliente[]>;
-    getById: (ruc: string) => Promise<ICliente>;
-    getStats: () => Promise<IClientStats>;
+  getAll: () => Promise<ICliente[]>;
+  getById: (ruc: string) => Promise<ICliente>;
+  getStats: () => Promise<IClientStats>;
+  search: (query: string) => Promise<ICliente[]>;
+  getByStatus: (activo: boolean) => Promise<ICliente[]>;
+  getByCategory: (categoria: "A" | "B" | "C" | "N/T") => Promise<ICliente[]>;
+  getByRegimen: (regimen: RegimenTributario) => Promise<ICliente[]>;
+  partialUpdate: (
+    ruc: string,
+    data: Partial<IClienteFormData>,
+  ) => Promise<ICliente>;
 } = {
-  // Método requerido por useCRUD para paginación
-list: async (params?: ListFilters): Promise<PaginatedResponse<ICliente>> => {
-    const axios = getAxiosInstance();
-    const response = await axios.get<PaginatedResponse<ICliente>>(
+  /**
+   * Obtiene una lista paginada de clientes
+   * @param params - Parámetros de filtrado y paginación
+   * @returns Respuesta paginada con clientes
+   */
+  list: async (
+    params?: IClientFilters,
+  ): Promise<PaginatedResponse<ICliente>> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<PaginatedResponse<ICliente>>(
         API_ENDPOINT,
-        { params }
-    );
-    return response.data;
-},
+        { params },
+      );
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error("Error al listar clientes:", axiosError.response?.data);
+      throw error;
+    }
+  },
 
-getAll: async (): Promise<ICliente[]> => {
-    const axios = getAxiosInstance();
-    // Endpoint raíz devuelve lista sin paginar
-    const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/`);
-    return response.data;
-},
+  /**
+   * Obtiene todos los clientes sin paginación
+   * @returns Array de todos los clientes
+   */
+  getAll: async (): Promise<ICliente[]> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/`);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        "Error al obtener todos los clientes:",
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
 
-getById: async (ruc: string): Promise<ICliente> => {
-    const axios = getAxiosInstance();
-    const response = await axios.get<ICliente>(`${API_ENDPOINT}/${ruc}/`);
-    return response.data;
-},
+  /**
+   * Obtiene un cliente por su RUC
+   * @param ruc - RUC del cliente
+   * @returns Datos del cliente
+   */
+  getById: async (ruc: string): Promise<ICliente> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<ICliente>(`${API_ENDPOINT}/${ruc}/`);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        `Error al obtener cliente ${ruc}:`,
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
 
-create: async (data: IClienteFormData): Promise<ICliente> => {
-    const axios = getAxiosInstance();
-    const response = await axios.post<ICliente>(API_ENDPOINT, data);
-    return response.data;
-},
+  /**
+   * Crea un nuevo cliente
+   * @param data - Datos del cliente a crear
+   * @returns Cliente creado
+   */
+  create: async (data: IClienteFormData): Promise<ICliente> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.post<ICliente>(`${API_ENDPOINT}/`, data);
+      console.log("Cliente creado exitosamente:", response.data.ruc);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error("Error al crear cliente:", axiosError.response?.data);
+      throw error;
+    }
+  },
 
-update: async (
+  update: async (
     ruc: string | number,
-    data: IClienteFormData
-): Promise<ICliente> => {
-    const axios = getAxiosInstance();
-    const response = await axios.put<ICliente>(`${API_ENDPOINT}/${ruc}/`, data);
-    return response.data;
-},
+    data: IClienteFormData,
+  ): Promise<ICliente> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.put<ICliente>(
+        `${API_ENDPOINT}/${ruc}/`,
+        data,
+      );
+      console.log("Cliente actualizado exitosamente:", ruc);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        `Error al actualizar cliente ${ruc}:`,
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
 
-delete: async (ruc: string | number): Promise<void> => {
-    const axios = getAxiosInstance();
-    await axios.delete(`${API_ENDPOINT}/${ruc}/`);
-},
+  partialUpdate: async (
+    ruc: string,
+    data: Partial<IClienteFormData>,
+  ): Promise<ICliente> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.patch<ICliente>(
+        `${API_ENDPOINT}/${ruc}/`,
+        data,
+      );
+      console.log("Cliente actualizado parcialmente:", ruc);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        `Error al actualizar parcialmente cliente ${ruc}:`,
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
 
-getStats: async (): Promise<IClientStats> => {
-    const axios = getAxiosInstance();
-    const response = await axios.get<IClientStats>(
-        `${API_ENDPOINT}/statistics/`
-    );
-        return response.data;
-    },
+  delete: async (ruc: string | number): Promise<void> => {
+    try {
+      const axios = getAxiosInstance();
+      await axios.delete(`${API_ENDPOINT}/${ruc}/`);
+      console.log("Cliente eliminado exitosamente:", ruc);
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        `Error al eliminar cliente ${ruc}:`,
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene estadísticas generales de clientes
+   * @returns Estadísticas de clientes
+   */
+  getStats: async (): Promise<IClientStats> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<IClientStats>(
+        `${API_ENDPOINT}/statistics/`,
+      );
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        "Error al obtener estadísticas:",
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
+
+  search: async (query: string): Promise<ICliente[]> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/`, {
+        params: { search: query },
+      });
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error("Error al buscar clientes:", axiosError.response?.data);
+      throw error;
+    }
+  },
+
+  getByStatus: async (activo: boolean): Promise<ICliente[]> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/`, {
+        params: { estado: activo },
+      });
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error("Error al filtrar por estado:", axiosError.response?.data);
+      throw error;
+    }
+  },
+
+  getByCategory: async (
+    categoria: "A" | "B" | "C" | "N/T",
+  ): Promise<ICliente[]> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/`, {
+        params: { categoria },
+      });
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        "Error al filtrar por categoría:",
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
+
+  getByRegimen: async (regimen: RegimenTributario): Promise<ICliente[]> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/`, {
+        params: { regimen_tributario: regimen },
+      });
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error("Error al filtrar por régimen:", axiosError.response?.data);
+      throw error;
+    }
+  },
 };
 
 export const clientesService = clientesServiceImplementation;

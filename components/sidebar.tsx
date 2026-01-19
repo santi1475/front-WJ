@@ -58,18 +58,18 @@ export function Sidebar() {
     const hasPermission = (route: RouteConfig): boolean => {
         if (!user) return false
 
-        if (user.is_superuser || user.role === "ADMIN") return true
-        
+        // Superusuarios tienen acceso total
+        if (user.is_superuser) return true
+
+        // Verificar permisos específicos de la ruta
         if (route.permissions && route.permissions.length > 0) {
             const userPermissions = user.permissions || []
+            // El usuario necesita AL MENOS UNO de los permisos listados
             const hasAccess = route.permissions.some((p) => userPermissions.includes(p))
-            if (!hasAccess) return false
+            return hasAccess
         }
 
-        if (route.type === "admin" && user.role !== "ADMIN") {
-            return false
-        }
-
+        // Si la ruta no tiene permisos definidos, es accesible para todos los usuarios autenticados
         return true
     }
 

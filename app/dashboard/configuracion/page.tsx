@@ -5,9 +5,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 
 export default function ConfiguracionPage() {
-    const { isAdmin } = useAuth()
+    const { user, can } = useAuth()
 
-    if (!isAdmin) {
+    const hasAccess = user?.is_superuser || can("ver_configuracion")
+
+    if (!hasAccess) {
         return (
             <div className="space-y-6">
                 <div>
@@ -19,7 +21,7 @@ export default function ConfiguracionPage() {
                     <CardContent className="pt-6">
                         <div className="flex items-center gap-3">
                             <AlertCircle className="h-5 w-5 text-destructive" />
-                            <p className="text-sm">Solo administradores pueden acceder a configuración</p>
+                            <p className="text-sm">No tienes permisos para acceder a configuración</p>
                         </div>
                     </CardContent>
                 </Card>
