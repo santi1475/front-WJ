@@ -13,18 +13,12 @@ import type { AxiosError } from "axios";
 
 const API_ENDPOINT = "/api/gestion/clientes";
 
-/**
- * Estadísticas de clientes
- */
 export interface IClientStats {
   total_activos: number;
   ingresos_totales: string;
   pendientes_declaracion: number;
 }
 
-/**
- * Filtros adicionales para búsqueda de clientes
- */
 export interface IClientFilters {
   page?: number;
   page_size?: number;
@@ -36,25 +30,19 @@ export interface IClientFilters {
   responsable?: number;
 }
 
-/**
- * Respuesta de error personalizada
- */
 export interface IClientServiceError {
   message: string;
   code?: string;
   details?: Record<string, string[]>;
 }
 
-/**
- * Servicio para la gestión de clientes
- * Implementa operaciones CRUD completas y métodos auxiliares
- */
 const clientesServiceImplementation: ICRUDService<
   ICliente,
   IClienteFormData,
   IClienteFormData
 > & {
   getAll: () => Promise<ICliente[]>;
+  getAllForDashboard: () => Promise<ICliente[]>;
   getById: (ruc: string) => Promise<ICliente>;
   getStats: () => Promise<IClientStats>;
   search: (query: string) => Promise<ICliente[]>;
@@ -66,11 +54,7 @@ const clientesServiceImplementation: ICRUDService<
     data: Partial<IClienteFormData>,
   ) => Promise<ICliente>;
 } = {
-  /**
-   * Obtiene una lista paginada de clientes
-   * @param params - Parámetros de filtrado y paginación
-   * @returns Respuesta paginada con clientes
-   */
+
   list: async (
     params?: IClientFilters,
   ): Promise<PaginatedResponse<ICliente>> => {
@@ -88,10 +72,6 @@ const clientesServiceImplementation: ICRUDService<
     }
   },
 
-  /**
-   * Obtiene todos los clientes sin paginación
-   * @returns Array de todos los clientes
-   */
   getAll: async (): Promise<ICliente[]> => {
     try {
       const axios = getAxiosInstance();
@@ -107,11 +87,21 @@ const clientesServiceImplementation: ICRUDService<
     }
   },
 
-  /**
-   * Obtiene un cliente por su RUC
-   * @param ruc - RUC del cliente
-   * @returns Datos del cliente
-   */
+  getAllForDashboard: async (): Promise<ICliente[]> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/dashboard-all/`);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        "Error al obtener todos los clientes para dashboard:",
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
+
   getById: async (ruc: string): Promise<ICliente> => {
     try {
       const axios = getAxiosInstance();
@@ -127,11 +117,6 @@ const clientesServiceImplementation: ICRUDService<
     }
   },
 
-  /**
-   * Crea un nuevo cliente
-   * @param data - Datos del cliente a crear
-   * @returns Cliente creado
-   */
   create: async (data: IClienteFormData): Promise<ICliente> => {
     try {
       const axios = getAxiosInstance();

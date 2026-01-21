@@ -12,9 +12,16 @@ import { ClientForm } from "@/features/clientes/components/client-form"
 import { CredentialsViewer } from "@/features/clientes/components/credentials-viewer"
 import { Loader2, Plus, Search, Edit2, ChevronDown, Key } from "lucide-react"
 import { useResponsive } from "@/hooks/use-responsive"
+import { useAuth } from "@/hooks/use-auth"
 import axios, { AxiosError } from "axios"
 
-export function ClientsTableResponsive() {
+interface ClientsTableResponsiveProps {
+    disableEdit?: boolean
+    showAllClients?: boolean // Para el dashboard principal, mostrar todos los clientes
+}
+
+export function ClientsTableResponsive({ disableEdit = false, showAllClients = false }: ClientsTableResponsiveProps) {
+    const { isAdminOrSuperAdmin } = useAuth()
     const [clients, setClients] = useState<ICliente[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string>("")
@@ -28,12 +35,16 @@ export function ClientsTableResponsive() {
 
     useEffect(() => {
         fetchClients()
-    }, [])
+    }, [showAllClients])
 
     const fetchClients = async () => {
         try {
             setLoading(true)
-            const data = await clientesService.getAll()
+            // Si showAllClients es true (dashboard), obtener todos los clientes
+            // Si no, obtener solo los clientes del usuario (según permisos del backend)
+            const data = showAllClients 
+                ? await clientesService.getAllForDashboard()
+                : await clientesService.getAll()
             setClients(data)
         } catch (err: unknown) {
             setError("Error al cargar clientes")
@@ -118,15 +129,16 @@ export function ClientsTableResponsive() {
                                 <TableHead className="text-slate-300">RUC</TableHead>
                                 <TableHead className="text-slate-300">Razón Social</TableHead>
                                 <TableHead className="text-slate-300">Propietario</TableHead>
+                                <TableHead className="text-slate-300">Responsable</TableHead>
                                 <TableHead className="text-slate-300">Régimen</TableHead>
                                 <TableHead className="text-slate-300">Estado</TableHead>
-                                <TableHead className="text-slate-300 text-right">Acciones</TableHead>
+                                <TableHead className="text-slate-300 text-center">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {filteredClients.length === 0 ? (
                                 <TableRow className="border-slate-800">
-                                    <TableCell colSpan={6} className="text-center text-slate-400 py-8">
+                                    <TableCell colSpan={7} className="text-center text-slate-400 py-8">
                                         No hay clientes registrados
                                     </TableCell>
                                 </TableRow>
@@ -136,6 +148,9 @@ export function ClientsTableResponsive() {
                                         <TableCell className="font-mono text-blue-400">{client.ruc}</TableCell>
                                         <TableCell className="text-white">{client.razon_social}</TableCell>
                                         <TableCell className="text-slate-300">{client.propietario}</TableCell>
+                                        <TableCell className="text-slate-300">
+                                            {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
+                                        </TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className="border-slate-600 text-slate-300">
                                                 {client.regimen_tributario}
@@ -169,6 +184,8 @@ export function ClientsTableResponsive() {
                                                     size="sm"
                                                     variant="ghost"
                                                     className="text-blue-400 hover:bg-blue-900/20"
+                                                    disabled={disableEdit}
+                                                    title={disableEdit ? "No tienes permisos para editar" : "Editar cliente"}
                                                 >
                                                     Editar
                                                 </Button>
@@ -215,6 +232,8 @@ export function ClientsTableResponsive() {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="text-blue-400 hover:bg-blue-900/20 h-8 w-8 p-0"
+                                                disabled={disableEdit}
+                                                title={disableEdit ? "No tienes permisos para editar" : "Editar cliente"}
                                             >
                                                 <Edit2 className="h-4 w-4" />
                                             </Button>
@@ -234,6 +253,12 @@ export function ClientsTableResponsive() {
                                     {/* Expanded details */}
                                     {expandedRow === client.ruc && (
                                         <div className="mt-4 pt-4 border-t border-slate-800 space-y-3">
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-400 text-sm">Responsable:</span>
+                                                <span className="text-slate-300 text-sm">
+                                                    {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
+                                                </span>
+                                            </div>
                                             <div className="flex justify-between">
                                                 <span className="text-slate-400 text-sm">Régimen:</span>
                                                 <Badge variant="outline" className="border-slate-600 text-slate-300">

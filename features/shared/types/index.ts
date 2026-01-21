@@ -56,6 +56,15 @@ export interface ICredenciales {
   pe?: string;
 }
 
+export interface IResponsableInfo {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  full_name: string;
+}
+
 export interface ICliente {
   ruc: string;
   razon_social: string;
@@ -65,6 +74,7 @@ export interface ICliente {
   estado: boolean;
   codigo_control?: number;
   responsable?: number;
+  responsable_info?: IResponsableInfo | null;
   regimen_tributario: RegimenTributario;
   tipo_empresa: TipoEmpresa;
   categoria: "A" | "B" | "C" | "N/T";

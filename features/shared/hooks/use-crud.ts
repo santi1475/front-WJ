@@ -7,6 +7,7 @@ import type {
   ICRUDService,
 } from "@/features/shared/types/entities";
 import { AxiosError } from "axios";
+import { handleApiSuccess } from "@/lib/api-utils";
 
 interface UseCRUDOptions {
   onSuccess?: (message: string) => void;
@@ -80,7 +81,9 @@ export function useCRUD<T, K extends keyof T, C = Partial<T>, U = Partial<T>>(
           items: [newItem, ...prev.items],
           total: prev.total + 1,
         }));
-        options?.onSuccess?.("Creado exitosamente");
+        const msg = "Creado exitosamente";
+        if (options?.onSuccess) options.onSuccess(msg);
+        else handleApiSuccess(msg);
         return newItem;
       } catch (error: unknown) {
         const message = getErrorMessage(error);
@@ -104,7 +107,9 @@ export function useCRUD<T, K extends keyof T, C = Partial<T>, U = Partial<T>>(
             return itemId === id ? updated : item;
           }),
         }));
-        options?.onSuccess?.("Actualizado exitosamente");
+        const msg = "Actualizado exitosamente";
+        if (options?.onSuccess) options.onSuccess(msg);
+        else handleApiSuccess(msg);
         return updated;
       } catch (error: unknown) {
         const message = getErrorMessage(error);
@@ -128,7 +133,9 @@ export function useCRUD<T, K extends keyof T, C = Partial<T>, U = Partial<T>>(
           }),
           total: prev.total - 1,
         }));
-        options?.onSuccess?.("Eliminado exitosamente");
+        const msg = "Eliminado exitosamente";
+        if (options?.onSuccess) options.onSuccess(msg);
+        else handleApiSuccess(msg);
       } catch (error: unknown) {
         const message = getErrorMessage(error);
         setState((prev) => ({ ...prev, error: message }));

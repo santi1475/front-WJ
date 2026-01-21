@@ -12,8 +12,10 @@ import { CredentialsViewer } from "./credentials-viewer"
 import { Loader2, Plus, Search, Key } from "lucide-react"
 import { type AxiosError } from "axios"
 import { categoriaConfig } from "@/features/shared/types"
+import { useAuth } from "@/hooks/use-auth"
 
 export function ClientsTable() {
+    const { isAdminOrSuperAdmin } = useAuth()
     const [clients, setClients] = useState<ICliente[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string>("")
@@ -114,8 +116,8 @@ export function ClientsTable() {
                             <TableHead className="text-slate-300">Régimen Tributario</TableHead>
                             <TableHead className="text-slate-300">Regime Laboral</TableHead>
                             <TableHead className="text-slate-300">Estado</TableHead>
-                            <TableHead className="text-slate-300">Categoria</TableHead>
-                            <TableHead className="text-slate-300 text-right">Acciones</TableHead>
+                            <TableHead className="text-slate-300 text-center">Categoria</TableHead>
+                            <TableHead className="text-slate-300 text-center">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -132,7 +134,9 @@ export function ClientsTable() {
                                     <TableCell className="text-white">{client.razon_social}</TableCell>
                                     <TableCell className="text-slate-300">{client.propietario}</TableCell>
                                     <TableCell className="text-slate-300">{client.codigo_control || "-"}</TableCell>
-                                    <TableCell className="text-slate-300">{client.responsable}</TableCell>
+                                    <TableCell className="text-slate-300">
+                                        {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
+                                    </TableCell>
                                     <TableCell>
                                         <Badge variant="outline" className="border-slate-600 text-slate-300">
                                             {client.regimen_tributario}
@@ -155,7 +159,7 @@ export function ClientsTable() {
                                             {client.estado ? "Activo" : "Inactivo"}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-slate-300">
+                                    <TableCell className="text-slate-300 text-center">
                                         <Badge className={categoriaConfig[client.categoria].className} variant="outline">
                                             {categoriaConfig[client.categoria].label}
                                         </Badge>

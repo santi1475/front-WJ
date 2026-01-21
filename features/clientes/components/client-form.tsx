@@ -14,6 +14,7 @@ import type { IUserManaged } from "@/features/shared/types/user"
 import { useAuth } from "@/hooks/use-auth"
 import { clientesService } from "@/features/clientes/services/clientes"
 import { userService } from "@/features/users/services/user.service"
+import { handleApiError, handleApiSuccess } from "@/lib/api-utils"
 import { X } from "lucide-react"
 
 interface ClientFormProps {
@@ -29,7 +30,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
     const [error, setError] = useState<string>("")
     const [internalOpen, setInternalOpen] = useState(false)
 
-    // Estados para controlar la visibilidad de credenciales
     const [enableSol, setEnableSol] = useState(false)
     const [enableDetraccion, setEnableDetraccion] = useState(false)
     const [enableInei, setEnableInei] = useState(false)
@@ -38,7 +38,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
     const [enablePe, setEnablePe] = useState(false)
     const [enableSis, setEnableSis] = useState(false)
 
-    // Estado para lista de usuarios
     const [users, setUsers] = useState<IUserManaged[]>([])
     const [loadingUsers, setLoadingUsers] = useState(false)
 
@@ -84,6 +83,9 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                 setEnablePe(!!client.credenciales?.pe)
                 setEnableSis(!!client.credenciales?.sis_usuario)
             } else {
+                // Si no es admin/superadmin, establecer al usuario actual como responsable
+                const defaultResponsable = (!user?.is_superuser && user?.id !== 1) ? user?.id || 0 : 0
+                
                 reset({
                     ruc: "",
                     razon_social: "",
@@ -91,7 +93,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                     fecha_ingreso: "",
                     estado: true,
                     codigo_control: 0,
-                    responsable: 0,
+                    responsable: defaultResponsable,
                     regimen_tributario: RegimenTributario.RMT,
                     tipo_empresa: TipoEmpresa.SAC,
                     categoria: "N/T",
@@ -101,7 +103,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                     selectivo_consumo: false,
                     credenciales: {},
                 })
-                // Resetear estados de credenciales
                 setEnableSol(false)
                 setEnableDetraccion(false)
                 setEnableInei(false)
@@ -111,9 +112,8 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                 setEnableSis(false)
             }
         }
-    }, [client, isOpen, reset])
+    }, [client, isOpen, reset, user])
 
-    // Cargar lista de usuarios al montar el componente
     useEffect(() => {
         const fetchUsers = async () => {
             setLoadingUsers(true)
@@ -133,7 +133,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         }
     }, [isOpen])
 
-    // Handle ESC key to close modal
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === "Escape" && isOpen) {
@@ -143,7 +142,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
         if (isOpen) {
             document.addEventListener("keydown", handleEscape)
-            // Prevent body scroll when modal is open
             document.body.style.overflow = "hidden"
         }
 
@@ -157,10 +155,15 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         setError("")
         setIsSubmitting(true)
         try {
-            // Preparar payload: convertir responsable 0 a null para que Django lo acepte
             const payload = { ...data } as any;
-            if (!payload.responsable || payload.responsable === 0) {
+            
+            // Si el usuario no es admin/superadmin, establecer automáticamente como responsable
+            if (!user?.is_superuser && user?.id !== 1) {
+                payload.responsable = user?.id || null;
+            } else if (payload.responsable === 0 || !payload.responsable) {
                 payload.responsable = null;
+            } else {
+                payload.responsable = Number(payload.responsable);
             }
 
             if (client?.ruc) {
@@ -168,12 +171,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
             } else {
                 await clientesService.create(payload)
             }
+            handleApiSuccess("Cliente guardado correctamente")
             setIsOpen?.(false)
             onSuccess?.()
         } catch (err) {
+            handleApiError(err, "Error al guardar el cliente")
             const axiosError = err as AxiosError<{ detail: string }>
             setError(axiosError.response?.data?.detail || "Error al guardar el cliente")
-            console.error("Form error:", err)
         } finally {
             setIsSubmitting(false)
         }
@@ -448,20 +452,20 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Select
-                                                            value={field.value?.toString() || ""}
-                                                            onValueChange={(value) => field.onChange(value ? Number(value) : undefined)}
-                                                            disabled={isSubmitting || loadingUsers}
+                                                            value={field.value?.toString() || "0"}
+                                                            onValueChange={(value) => field.onChange(value === "0" ? 0 : Number(value))}
+                                                            disabled={isSubmitting || loadingUsers || (!user?.is_superuser && user?.id !== 1)}
                                                         >
                                                             <SelectTrigger className="bg-slate-700/60 border-slate-500 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm">
                                                                 <SelectValue placeholder={loadingUsers ? "Cargando usuarios..." : "Seleccionar responsable"} />
                                                             </SelectTrigger>
                                                             <SelectContent className="bg-slate-700 border-slate-600 max-h-[300px]">
                                                                 <SelectItem value="0">Sin responsable</SelectItem>
-                                                                {users.map((user) => (
-                                                                    <SelectItem key={user.id} value={user.id.toString()}>
-                                                                        {user.first_name && user.last_name
-                                                                            ? `${user.first_name} ${user.last_name} (${user.username})`
-                                                                            : user.username
+                                                                {users.map((u) => (
+                                                                    <SelectItem key={u.id} value={u.id.toString()}>
+                                                                        {u.first_name && u.last_name
+                                                                            ? `${u.first_name} ${u.last_name} (${u.username})`
+                                                                            : u.username
                                                                         }
                                                                     </SelectItem>
                                                                 ))}
@@ -704,7 +708,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Usuario</Label>
+                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">DNI</Label>
                                                         <Controller
                                                             name="credenciales.detraccion_usuario"
                                                             control={control}
@@ -712,7 +716,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                 <Input
                                                                     {...field}
                                                                     value={field.value || ""}
-                                                                    placeholder="Usuario"
+                                                                    placeholder="DNI"
                                                                     disabled={isSubmitting}
                                                                     className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
                                                                 />
@@ -933,6 +937,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                         </div>
 
                                         {/* PE */}
+
                                         <div className="border-b border-slate-700 pb-3">
                                             <div className="flex items-center space-x-2 mb-3">
                                                 <Checkbox

@@ -1,3 +1,4 @@
+import { Description } from "@radix-ui/react-dialog";
 
 export interface RouteConfig {
   path: string;
@@ -62,6 +63,7 @@ export const ROUTES = {
     ],
     permissions: ["ver_configuracion"],
   } as const satisfies RouteConfig,
+
 } as const;
 
 export const SIDEBAR_ROUTES: RouteConfig[] = [
@@ -69,7 +71,7 @@ export const SIDEBAR_ROUTES: RouteConfig[] = [
   ROUTES.CLIENTES,
   ROUTES.FACTURAS,
   ROUTES.REPORTES,
-  ROUTES.CONFIGURACION, 
+  ROUTES.CONFIGURACION,
 ];
 
 export const PUBLIC_ROUTES = [ROUTES.LOGIN.path];
@@ -81,5 +83,5 @@ export const PROTECTED_ROUTES = [
   ROUTES.REPORTES.path,
   ROUTES.CONFIGURACION.path,
   "/dashboard/configuracion/roles", 
-  "/dashboard/configuracion/usuarios"
+  "/dashboard/configuracion/usuarios",
 ];

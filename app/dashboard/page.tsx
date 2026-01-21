@@ -8,12 +8,14 @@ import { ClientsTableResponsive } from "@/features/clientes/components/clients-t
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 import { useResponsive } from "@/hooks/use-responsive"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function DashboardPage() {
     const [stats, setStats] = useState<IClientStats | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string>("")
     const { isMobile } = useResponsive()
+    const { isAdminOrSuperAdmin } = useAuth()
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -83,7 +85,10 @@ export default function DashboardPage() {
                     <CardDescription>Administra los datos de tus clientes</CardDescription>
                 </CardHeader>
                 <CardContent className="w-full overflow-hidden">
-                    <ClientsTableResponsive />
+                    <ClientsTableResponsive 
+                        disableEdit={!isAdminOrSuperAdmin()} 
+                        showAllClients={true}
+                    />
                 </CardContent>
             </Card>
         </div>

@@ -9,6 +9,18 @@ import { SIDEBAR_ROUTES, type RouteConfig } from "@/config/routes"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
+import {
     LogOut,
     Circle,
     ChevronDown,
@@ -193,18 +205,35 @@ export function Sidebar() {
                     </div>
                 )}
 
-                <Button
-                    onClick={handleLogout}
-                    variant="destructive"
-                    className={cn(
-                        "w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/50",
-                        !isSidebarOpen && "px-0 justify-center"
-                    )}
-                    title="Cerrar Sesión"
-                >
-                    <LogOut className={cn("h-4 w-4", isSidebarOpen ? "mr-2" : "mr-0")} />
-                    {isSidebarOpen && "Salir"}
-                </Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button
+                            variant="destructive"
+                            className={cn(
+                                "w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/50",
+                                !isSidebarOpen && "px-0 justify-center"
+                            )}
+                            title="Cerrar Sesión"
+                        >
+                            <LogOut className={cn("h-4 w-4", isSidebarOpen ? "mr-2" : "mr-0")} />
+                            {isSidebarOpen && "Salir"}
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-slate-900 border-slate-700">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="text-white">¿Cerrar sesión?</AlertDialogTitle>
+                            <AlertDialogDescription className="text-slate-400">
+                                ¿Estás seguro que deseas cerrar tu sesión actual?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-700">Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white border-red-700">
+                                Cerrar Sesión
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
     )

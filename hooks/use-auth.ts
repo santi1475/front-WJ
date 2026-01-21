@@ -36,11 +36,21 @@ export function useAuth() {
     return userPermissions.includes(permission);
   };
 
+  /**
+   * Verifica si el usuario es admin o superadmin
+   * @returns true si el usuario es superadmin o tiene id 1 (admin)
+   */
+  const isAdminOrSuperAdmin = (): boolean => {
+    if (!user) return false;
+    return user.is_superuser || user.id === 1;
+  };
+
   return {
     user,
     isAuthenticated,
     hasPermission,
     can,
+    isAdminOrSuperAdmin,
     setUser,
     clearAuth,
     logout,
