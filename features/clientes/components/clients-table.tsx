@@ -9,10 +9,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "./client-form"
 import { CredentialsViewer } from "./credentials-viewer"
-import { Loader2, Plus, Search, Key } from "lucide-react"
-import { type AxiosError } from "axios"
+import { Loader2, Plus, Search, Key, X, Check } from "lucide-react"
+import type { AxiosError } from "axios"
 import { categoriaConfig } from "@/features/shared/types"
 import { useAuth } from "@/hooks/use-auth"
+import { ExcelButton } from "./excel-button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "sonner"
 
 export function ClientsTable() {
     const { isAdminOrSuperAdmin } = useAuth()
@@ -24,6 +27,9 @@ export function ClientsTable() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedCredentialsClient, setSelectedCredentialsClient] = useState<ICliente | null>(null)
     const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false)
+    const [isSelectionMode, setIsSelectionMode] = useState(false)
+    const [selectedRucs, setSelectedRucs] = useState<string[]>([])
+    const [isExporting, setIsExporting] = useState(false)
 
     useEffect(() => {
         fetchClients()
@@ -66,6 +72,58 @@ export function ClientsTable() {
         setIsCredentialsModalOpen(true)
     }
 
+    const toggleSelectionMode = () => {
+        setIsSelectionMode(!isSelectionMode)
+        setSelectedRucs([])
+    }
+
+    const toggleSelectAll = () => {
+        if (selectedRucs.length === filteredClients.length) {
+            setSelectedRucs([])
+        } else {
+            setSelectedRucs(filteredClients.map((c) => c.ruc))
+        }
+    }
+
+    const toggleSelectClient = (ruc: string) => {
+        setSelectedRucs((prev) =>
+            prev.includes(ruc) ? prev.filter((r) => r !== ruc) : [...prev, ruc]
+        )
+    }
+
+    const handleExport = async () => {
+        if (selectedRucs.length === 0) {
+            toast.error("Debe seleccionar al menos un cliente")
+            return
+        }
+
+        try {
+            setIsExporting(true)
+            const toastId = toast.loading("Exportando clientes...")
+
+            const blob = await clientesService.exportSelected(selectedRucs)
+
+            // Create download link
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "Clientes_Seleccionados.xlsx"
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success("Exportación completada exitosamente", { id: toastId })
+            setIsSelectionMode(false)
+            setSelectedRucs([])
+        } catch (error) {
+            console.error(error)
+            toast.error("Error al exportar clientes")
+        } finally {
+            setIsExporting(false)
+        }
+    }
+
     if (loading && clients.length === 0) {
         return (
             <div className="flex items-center justify-center py-8">
@@ -85,19 +143,52 @@ export function ClientsTable() {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10 bg-slate-800 border-slate-700 text-white"
+                        disabled={isSelectionMode}
                     />
                 </div>
-                <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nuevo Cliente
-                </Button>
-                <Button
-                    onClick={handleRefresh}
-                    variant="outline"
-                    className="border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent"
-                >
-                    Actualizar
-                </Button>
+
+                {isSelectionMode ? (
+                    <>
+                        <Button
+                            onClick={handleExport}
+                            disabled={isExporting || selectedRucs.length === 0}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                            {isExporting ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                                <Check className="h-4 w-4 mr-2" />
+                            )}
+                            Confirmar ({selectedRucs.length})
+                        </Button>
+                        <Button
+                            onClick={toggleSelectionMode}
+                            variant="destructive"
+                            disabled={isExporting}
+                        >
+                            <X className="h-4 w-4 mr-2" />
+                            Cancelar
+                        </Button>
+                    </>
+                ) : (
+                    <>
+                        <ExcelButton
+                            onClick={toggleSelectionMode}
+                            isSelectionMode={isSelectionMode}
+                        />
+                        <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Nuevo Cliente
+                        </Button>
+                        <Button
+                            onClick={handleRefresh}
+                            variant="outline"
+                            className="border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent"
+                        >
+                            Actualizar
+                        </Button>
+                    </>
+                )}
             </div>
 
             {/* Error Message */}
@@ -108,6 +199,15 @@ export function ClientsTable() {
                 <Table>
                     <TableHeader>
                         <TableRow className="border-slate-800 hover:bg-transparent">
+                            {isSelectionMode && (
+                                <TableHead className="w-[50px] text-slate-300">
+                                    <Checkbox
+                                        checked={filteredClients.length > 0 && selectedRucs.length === filteredClients.length}
+                                        onCheckedChange={toggleSelectAll}
+                                    />
+                                </TableHead>
+                            )}
+                            <TableHead className="w-[50px] text-slate-300">N°</TableHead>
                             <TableHead className="text-slate-300">RUC</TableHead>
                             <TableHead className="text-slate-300">Razón Social</TableHead>
                             <TableHead className="text-slate-300">Propietario</TableHead>
@@ -128,8 +228,17 @@ export function ClientsTable() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredClients.map((client) => (
+                            filteredClients.map((client, index) => (
                                 <TableRow key={client.ruc} className="border-slate-800 hover:bg-slate-800/30">
+                                    {isSelectionMode && (
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedRucs.includes(client.ruc)}
+                                                onCheckedChange={() => toggleSelectClient(client.ruc)}
+                                            />
+                                        </TableCell>
+                                    )}
+                                    <TableCell className="text-slate-400">{index + 1}</TableCell>
                                     <TableCell className="font-mono text-blue-400">{client.ruc}</TableCell>
                                     <TableCell className="text-white">{client.razon_social}</TableCell>
                                     <TableCell className="text-slate-300">{client.propietario}</TableCell>

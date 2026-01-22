@@ -53,8 +53,8 @@ const clientesServiceImplementation: ICRUDService<
     ruc: string,
     data: Partial<IClienteFormData>,
   ) => Promise<ICliente>;
+  exportSelected: (rucs: string[]) => Promise<Blob>;
 } = {
-
   list: async (
     params?: IClientFilters,
   ): Promise<PaginatedResponse<ICliente>> => {
@@ -90,7 +90,9 @@ const clientesServiceImplementation: ICRUDService<
   getAllForDashboard: async (): Promise<ICliente[]> => {
     try {
       const axios = getAxiosInstance();
-      const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/dashboard-all/`);
+      const response = await axios.get<ICliente[]>(
+        `${API_ENDPOINT}/dashboard-all/`,
+      );
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError<IClientServiceError>;
@@ -267,6 +269,22 @@ const clientesServiceImplementation: ICRUDService<
     } catch (error) {
       const axiosError = error as AxiosError<IClientServiceError>;
       console.error("Error al filtrar por régimen:", axiosError.response?.data);
+      throw error;
+    }
+  },
+
+  exportSelected: async (rucs: string[]): Promise<Blob> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.post(
+        `${API_ENDPOINT}/exportar-seleccion/`,
+        { rucs },
+        { responseType: "blob" },
+      );
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error("Error al exportar clientes:", axiosError.response?.data);
       throw error;
     }
   },

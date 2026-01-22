@@ -14,6 +14,10 @@ import { Loader2, Plus, Search, Edit2, ChevronDown, Key } from "lucide-react"
 import { useResponsive } from "@/hooks/use-responsive"
 import { useAuth } from "@/hooks/use-auth"
 import axios, { AxiosError } from "axios"
+import { ExcelButton } from "./excel-button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "sonner"
+import { Check, X } from "lucide-react"
 
 interface ClientsTableResponsiveProps {
     disableEdit?: boolean
@@ -31,6 +35,9 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
     const [selectedCredentialsClient, setSelectedCredentialsClient] = useState<ICliente | null>(null)
     const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false)
+    const [isSelectionMode, setIsSelectionMode] = useState(false)
+    const [selectedRucs, setSelectedRucs] = useState<string[]>([])
+    const [isExporting, setIsExporting] = useState(false)
     const { isMobile } = useResponsive()
 
     useEffect(() => {
@@ -42,7 +49,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             setLoading(true)
             // Si showAllClients es true (dashboard), obtener todos los clientes
             // Si no, obtener solo los clientes del usuario (según permisos del backend)
-            const data = showAllClients 
+            const data = showAllClients
                 ? await clientesService.getAllForDashboard()
                 : await clientesService.getAll()
             setClients(data)
@@ -81,6 +88,58 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
         setIsCredentialsModalOpen(true)
     }
 
+    const toggleSelectionMode = () => {
+        setIsSelectionMode(!isSelectionMode)
+        setSelectedRucs([])
+    }
+
+    const toggleSelectAll = () => {
+        if (selectedRucs.length === filteredClients.length) {
+            setSelectedRucs([])
+        } else {
+            setSelectedRucs(filteredClients.map((c) => c.ruc))
+        }
+    }
+
+    const toggleSelectClient = (ruc: string) => {
+        setSelectedRucs((prev) =>
+            prev.includes(ruc) ? prev.filter((r) => r !== ruc) : [...prev, ruc]
+        )
+    }
+
+    const handleExport = async () => {
+        if (selectedRucs.length === 0) {
+            toast.error("Debe seleccionar al menos un cliente")
+            return
+        }
+
+        try {
+            setIsExporting(true)
+            const toastId = toast.loading("Exportando clientes...")
+
+            const blob = await clientesService.exportSelected(selectedRucs)
+
+            // Create download link
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "Clientes_Seleccionados.xlsx"
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success("Exportación completada exitosamente", { id: toastId })
+            setIsSelectionMode(false)
+            setSelectedRucs([])
+        } catch (error) {
+            console.error(error)
+            toast.error("Error al exportar clientes")
+        } finally {
+            setIsExporting(false)
+        }
+    }
+
     if (loading && clients.length === 0) {
         return (
             <div className="flex items-center justify-center py-8">
@@ -103,17 +162,50 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                     />
                 </div>
                 <div className="flex gap-2">
-                    <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none">
-                        <Plus className="h-4 w-4 mr-2" />
-                        <span className="hidden sm:inline">Nuevo</span>
-                    </Button>
-                    <Button
-                        onClick={fetchClients}
-                        variant="outline"
-                        className="border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent"
-                    >
-                        Actualizar
-                    </Button>
+                    {isSelectionMode ? (
+                        <>
+                            <Button
+                                onClick={handleExport}
+                                disabled={isExporting || selectedRucs.length === 0}
+                                className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
+                            >
+                                {isExporting ? (
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Check className="h-4 w-4 mr-2" />
+                                )}
+                                <span className="hidden sm:inline">Confirmar ({selectedRucs.length})</span>
+                                <span className="sm:hidden">({selectedRucs.length})</span>
+                            </Button>
+                            <Button
+                                onClick={toggleSelectionMode}
+                                variant="destructive"
+                                disabled={isExporting}
+                                className="flex-1 sm:flex-none"
+                            >
+                                <X className="h-4 w-4 mr-2" />
+                                <span className="hidden sm:inline">Cancelar</span>
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <ExcelButton
+                                onClick={toggleSelectionMode}
+                                isSelectionMode={isSelectionMode}
+                            />
+                            <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none">
+                                <Plus className="h-4 w-4 mr-2" />
+                                <span className="hidden sm:inline">Nuevo</span>
+                            </Button>
+                            <Button
+                                onClick={fetchClients}
+                                variant="outline"
+                                className="border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent"
+                            >
+                                Actualizar
+                            </Button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -126,6 +218,15 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                     <Table>
                         <TableHeader>
                             <TableRow className="border-slate-800 hover:bg-transparent">
+                                {isSelectionMode && (
+                                    <TableHead className="w-[50px] text-slate-300">
+                                        <Checkbox
+                                            checked={filteredClients.length > 0 && selectedRucs.length === filteredClients.length}
+                                            onCheckedChange={toggleSelectAll}
+                                        />
+                                    </TableHead>
+                                )}
+                                <TableHead className="w-[50px] text-slate-300">N°</TableHead>
                                 <TableHead className="text-slate-300">RUC</TableHead>
                                 <TableHead className="text-slate-300">Razón Social</TableHead>
                                 <TableHead className="text-slate-300">Propietario</TableHead>
@@ -143,8 +244,17 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                filteredClients.map((client) => (
+                                filteredClients.map((client, index) => (
                                     <TableRow key={client.ruc} className="border-slate-800 hover:bg-slate-800/30">
+                                        {isSelectionMode && (
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={selectedRucs.includes(client.ruc)}
+                                                    onCheckedChange={() => toggleSelectClient(client.ruc)}
+                                                />
+                                            </TableCell>
+                                        )}
+                                        <TableCell className="text-slate-400">{index + 1}</TableCell>
                                         <TableCell className="font-mono text-blue-400">{client.ruc}</TableCell>
                                         <TableCell className="text-white">{client.razon_social}</TableCell>
                                         <TableCell className="text-slate-300">{client.propietario}</TableCell>
@@ -212,6 +322,14 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 <CardContent className="pt-6">
                                     {/* Main row */}
                                     <div className="flex items-start justify-between gap-2">
+                                        {isSelectionMode && (
+                                            <div className="pt-1">
+                                                <Checkbox
+                                                    checked={selectedRucs.includes(client.ruc)}
+                                                    onCheckedChange={() => toggleSelectClient(client.ruc)}
+                                                />
+                                            </div>
+                                        )}
                                         <div className="flex-1 min-w-0">
                                             <p className="font-mono text-blue-400 text-sm font-semibold">{client.ruc}</p>
                                             <p className="text-white font-medium truncate">{client.razon_social}</p>
