@@ -85,7 +85,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
             } else {
                 // Si no es admin/superadmin, establecer al usuario actual como responsable
                 const defaultResponsable = (!user?.is_superuser && user?.id !== 1) ? user?.id || 0 : 0
-                
                 reset({
                     ruc: "",
                     razon_social: "",
@@ -156,7 +155,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         setIsSubmitting(true)
         try {
             const payload = { ...data } as any;
-            
             // Si el usuario no es admin/superadmin, establecer automáticamente como responsable
             if (!user?.is_superuser && user?.id !== 1) {
                 payload.responsable = user?.id || null;

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Copy } from "lucide-react"
 import { toast } from "sonner"
 import type { ICliente } from "@/features/shared/types"
+import { SunatLauncher } from "./sunat-launcher"
 
 interface CredentialsViewerProps {
     client: ICliente | null
@@ -70,8 +71,13 @@ export function CredentialsViewer({ client, open, onOpenChange }: CredentialsVie
                     {/* SUNAT SOL */}
                     {(client.credenciales?.sol_usuario || client.credenciales?.sol_clave) && (
                         <Card className="bg-slate-800 border-slate-700">
-                            <CardHeader className="pb-2">
+                            <CardHeader className="pb-2 flex flex-row items-center justify-between">
                                 <CardTitle className="text-base text-blue-400">Clave SOL</CardTitle>
+                                <SunatLauncher
+                                    ruc={client.ruc}
+                                    usuario={client.credenciales.sol_usuario}
+                                    clave={client.credenciales.sol_clave}
+                                />
                             </CardHeader>
                             <CardContent className="space-y-1">
                                 <CredentialItem label="Usuario" value={client.credenciales.sol_usuario} />
