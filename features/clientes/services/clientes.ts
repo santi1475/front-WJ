@@ -54,6 +54,9 @@ const clientesServiceImplementation: ICRUDService<
     data: Partial<IClienteFormData>,
   ) => Promise<ICliente>;
   exportSelected: (rucs: string[]) => Promise<Blob>;
+  darBaja: (id: number) => Promise<void>;
+  reactivar: (id: number) => Promise<void>;
+  getBajas: () => Promise<ICliente[]>;
 } = {
   list: async (
     params?: IClientFilters,
@@ -285,6 +288,51 @@ const clientesServiceImplementation: ICRUDService<
     } catch (error) {
       const axiosError = error as AxiosError<IClientServiceError>;
       console.error("Error al exportar clientes:", axiosError.response?.data);
+      throw error;
+    }
+  },
+
+  darBaja: async (id: number): Promise<void> => {
+    try {
+      const axios = getAxiosInstance();
+      await axios.post(`${API_ENDPOINT}/${id}/dar-baja/`);
+      console.log("Cliente dado de baja exitosamente:", id);
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        `Error al dar de baja cliente ${id}:`,
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
+
+  reactivar: async (id: number): Promise<void> => {
+    try {
+      const axios = getAxiosInstance();
+      await axios.post(`${API_ENDPOINT}/${id}/reactivar/`);
+      console.log("Cliente reactivado exitosamente:", id);
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        `Error al reactivar cliente ${id}:`,
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
+
+  getBajas: async (): Promise<ICliente[]> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/bajas/`);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        "Error al obtener clientes dados de baja:",
+        axiosError.response?.data,
+      );
       throw error;
     }
   },

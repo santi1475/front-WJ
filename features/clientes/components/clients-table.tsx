@@ -16,6 +16,17 @@ import { useAuth } from "@/hooks/use-auth"
 import { ExcelButton } from "./excel-button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Trash2 } from "lucide-react"
 
 export function ClientsTable() {
     const { isAdminOrSuperAdmin } = useAuth()
@@ -30,6 +41,8 @@ export function ClientsTable() {
     const [isSelectionMode, setIsSelectionMode] = useState(false)
     const [selectedRucs, setSelectedRucs] = useState<string[]>([])
     const [isExporting, setIsExporting] = useState(false)
+    const [clientToDelete, setClientToDelete] = useState<ICliente | null>(null)
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
     useEffect(() => {
         fetchClients()
@@ -121,6 +134,27 @@ export function ClientsTable() {
             toast.error("Error al exportar clientes")
         } finally {
             setIsExporting(false)
+        }
+    }
+
+    const handleDeactivate = (client: ICliente) => {
+        setClientToDelete(client)
+        setIsDeleteDialogOpen(true)
+    }
+
+    const confirmDeactivate = async () => {
+        if (!clientToDelete) return
+
+        try {
+            await clientesService.darBaja(Number(clientToDelete.ruc))
+            toast.success("Cliente dado de baja exitosamente")
+            fetchClients()
+        } catch (error) {
+            console.error(error)
+            toast.error("No se pudo dar de baja al cliente")
+        } finally {
+            setIsDeleteDialogOpen(false)
+            setClientToDelete(null)
         }
     }
 
@@ -292,6 +326,15 @@ export function ClientsTable() {
                                             >
                                                 Editar
                                             </Button>
+                                            <Button
+                                                onClick={() => handleDeactivate(client)}
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-red-400 hover:bg-red-900/20"
+                                                title="Dar de baja"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -317,6 +360,27 @@ export function ClientsTable() {
                 onOpenChange={setIsCredentialsModalOpen}
                 client={selectedCredentialsClient}
             />
-        </div>
+
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent className="bg-slate-900 border-slate-700 text-white">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Está seguro de dar de baja a este cliente?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            El cliente "{clientToDelete?.razon_social}" pasará a estado inactivo y no aparecerá en la lista principal.
+                            Podrá consultarlo y reactivarlo desde el historial de bajas.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-600">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDeactivate}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                            Dar de baja
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div >
     )
 }
