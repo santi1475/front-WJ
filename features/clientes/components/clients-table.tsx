@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "./client-form"
 import { CredentialsViewer } from "./credentials-viewer"
-import { Loader2, Plus, Search, Key, X, Check } from "lucide-react"
+import { ClientHistory } from "./client-history"
+import { Loader2, Plus, Search, Key, X, Check, History } from "lucide-react"
 import type { AxiosError } from "axios"
 import { categoriaConfig } from "@/features/shared/types"
 import { useAuth } from "@/hooks/use-auth"
@@ -38,6 +39,8 @@ export function ClientsTable() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedCredentialsClient, setSelectedCredentialsClient] = useState<ICliente | null>(null)
     const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false)
+    const [selectedHistoryClient, setSelectedHistoryClient] = useState<ICliente | null>(null)
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
     const [isSelectionMode, setIsSelectionMode] = useState(false)
     const [selectedRucs, setSelectedRucs] = useState<string[]>([])
     const [isExporting, setIsExporting] = useState(false)
@@ -83,6 +86,11 @@ export function ClientsTable() {
     const handleViewCredentials = (client: ICliente) => {
         setSelectedCredentialsClient(client)
         setIsCredentialsModalOpen(true)
+    }
+
+    const handleViewHistory = (client: ICliente) => {
+        setSelectedHistoryClient(client)
+        setIsHistoryModalOpen(true)
     }
 
     const toggleSelectionMode = () => {
@@ -310,6 +318,15 @@ export function ClientsTable() {
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
                                             <Button
+                                                onClick={() => handleViewHistory(client)}
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-slate-400 hover:bg-slate-800"
+                                                title="Ver historial"
+                                            >
+                                                <History className="h-4 w-4" />
+                                            </Button>
+                                            <Button
                                                 onClick={() => handleViewCredentials(client)}
                                                 size="sm"
                                                 variant="ghost"
@@ -359,6 +376,12 @@ export function ClientsTable() {
                 open={isCredentialsModalOpen}
                 onOpenChange={setIsCredentialsModalOpen}
                 client={selectedCredentialsClient}
+            />
+
+            <ClientHistory
+                open={isHistoryModalOpen}
+                onOpenChange={setIsHistoryModalOpen}
+                historial={selectedHistoryClient?.historial || []}
             />
 
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

@@ -65,6 +65,12 @@ export interface IResponsableInfo {
   full_name: string;
 }
 
+export interface IHistorialEvento {
+  tipo_evento: "INGRESO" | "BAJA" | "REACTIVACION";
+  fecha: string;
+  responsable_nombre: string;
+}
+
 export interface ICliente {
   ruc: string;
   razon_social: string;
@@ -86,6 +92,7 @@ export interface ICliente {
   selectivo_consumo: boolean;
   credenciales: ICredenciales;
   fecha_baja?: string;
+  historial?: IHistorialEvento[];
 }
 
 export interface IClienteFormData extends Omit<ICliente, "credenciales"> {

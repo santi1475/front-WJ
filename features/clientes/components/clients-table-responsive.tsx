@@ -10,7 +10,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "@/features/clientes/components/client-form"
 import { CredentialsViewer } from "@/features/clientes/components/credentials-viewer"
-import { Loader2, Plus, Search, Edit2, ChevronDown, Key } from "lucide-react"
+import { ClientHistory } from "@/features/clientes/components/client-history"
+import { Loader2, Plus, Search, Edit2, ChevronDown, Key, History } from "lucide-react"
 import { useResponsive } from "@/hooks/use-responsive"
 import { useAuth } from "@/hooks/use-auth"
 import axios, { AxiosError } from "axios"
@@ -35,6 +36,8 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
     const [selectedCredentialsClient, setSelectedCredentialsClient] = useState<ICliente | null>(null)
     const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false)
+    const [selectedHistoryClient, setSelectedHistoryClient] = useState<ICliente | null>(null)
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
     const [isSelectionMode, setIsSelectionMode] = useState(false)
     const [selectedRucs, setSelectedRucs] = useState<string[]>([])
     const [isExporting, setIsExporting] = useState(false)
@@ -86,6 +89,11 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const handleViewCredentials = (client: ICliente) => {
         setSelectedCredentialsClient(client)
         setIsCredentialsModalOpen(true)
+    }
+
+    const handleViewHistory = (client: ICliente) => {
+        setSelectedHistoryClient(client)
+        setIsHistoryModalOpen(true)
     }
 
     const toggleSelectionMode = () => {
@@ -337,6 +345,15 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                         </div>
                                         <div className="flex gap-2 shrink-0">
                                             <Button
+                                                onClick={() => handleViewHistory(client)}
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-slate-400 hover:bg-slate-800 h-8 w-8 p-0"
+                                                title="Ver historial"
+                                            >
+                                                <History className="h-4 w-4" />
+                                            </Button>
+                                            <Button
                                                 onClick={() => handleViewCredentials(client)}
                                                 size="sm"
                                                 variant="ghost"
@@ -420,6 +437,12 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                 open={isCredentialsModalOpen}
                 onOpenChange={setIsCredentialsModalOpen}
                 client={selectedCredentialsClient}
+            />
+
+            <ClientHistory
+                open={isHistoryModalOpen}
+                onOpenChange={setIsHistoryModalOpen}
+                historial={selectedHistoryClient?.historial || []}
             />
         </div>
     )
