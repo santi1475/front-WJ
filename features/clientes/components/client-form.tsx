@@ -74,7 +74,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         if (isOpen) {
             if (client) {
                 reset(client)
-                // Inicializar estados de credenciales basados en el cliente
                 setEnableSol(!!client.credenciales?.sol_usuario)
                 setEnableDetraccion(!!client.credenciales?.detraccion_cuenta)
                 setEnableInei(!!client.credenciales?.inei_usuario)
@@ -119,8 +118,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
             try {
                 const usersData = await userService.getAll()
                 setUsers(usersData)
-            } catch (error: any) {
-                if (error?.response?.status !== 403) {
+            } catch (error: unknown) {
+                if (error && typeof error === 'object' && 'response' in error) {
+                    const axiosError = error as AxiosError
+                    if (axiosError?.response?.status !== 403) {
+                        console.error("Error loading users:", error)
+                    }
+                } else {
                     console.error("Error loading users:", error)
                 }
             } finally {
@@ -154,12 +158,14 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         setError("")
         setIsSubmitting(true)
         try {
-            const payload = { ...data } as any;
+            // Crear copia del payload
+            const payload = { ...data };
+            
             // Si el usuario no es admin/superadmin, establecer automáticamente como responsable
             if (!user?.is_superuser && user?.id !== 1) {
-                payload.responsable = user?.id || null;
+                payload.responsable = user?.id ?? undefined;
             } else if (payload.responsable === 0 || !payload.responsable) {
-                payload.responsable = null;
+                payload.responsable = undefined;
             } else {
                 payload.responsable = Number(payload.responsable);
             }
@@ -203,7 +209,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
             {/* Modal Content */}
             <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto">
                 <div
-                    className="relative w-full max-w-[1600px] my-4 animate-in zoom-in-95 duration-200"
+                    className="relative w-full max-w-1600px my-4 animate-in zoom-in-95 duration-200"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
@@ -457,7 +463,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             <SelectTrigger className="bg-slate-700/60 border-slate-500 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm">
                                                                 <SelectValue placeholder={loadingUsers ? "Cargando usuarios..." : "Seleccionar responsable"} />
                                                             </SelectTrigger>
-                                                            <SelectContent className="bg-slate-700 border-slate-600 max-h-[300px]">
+                                                            <SelectContent className="bg-slate-700 border-slate-600 max-h-300px">
                                                                 <SelectItem value="0">Sin responsable</SelectItem>
                                                                 {users.map((u) => (
                                                                     <SelectItem key={u.id} value={u.id.toString()}>

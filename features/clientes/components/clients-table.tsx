@@ -9,10 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "./client-form"
 import { CredentialsViewer } from "./credentials-viewer"
-import { Loader2, Plus, Search, Key, X, Check } from "lucide-react"
+import { Loader2, Plus, Search, Key, X, Check, Trash2 } from "lucide-react"
 import type { AxiosError } from "axios"
 import { categoriaConfig } from "@/features/shared/types"
-import { useAuth } from "@/hooks/use-auth"
 import { ExcelButton } from "./excel-button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
@@ -26,10 +25,8 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Trash2 } from "lucide-react"
 
 export function ClientsTable() {
-    const { isAdminOrSuperAdmin } = useAuth()
     const [clients, setClients] = useState<ICliente[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string>("")
@@ -146,7 +143,7 @@ export function ClientsTable() {
         if (!clientToDelete) return
 
         try {
-            await clientesService.darBaja(Number(clientToDelete.ruc))
+            await clientesService.darBaja(clientToDelete.ruc)
             toast.success("Cliente dado de baja exitosamente")
             fetchClients()
         } catch (error) {
@@ -234,14 +231,14 @@ export function ClientsTable() {
                     <TableHeader>
                         <TableRow className="border-slate-800 hover:bg-transparent">
                             {isSelectionMode && (
-                                <TableHead className="w-[50px] text-slate-300">
+                                <TableHead className="w-50px text-slate-300">
                                     <Checkbox
                                         checked={filteredClients.length > 0 && selectedRucs.length === filteredClients.length}
                                         onCheckedChange={toggleSelectAll}
                                     />
                                 </TableHead>
                             )}
-                            <TableHead className="w-[50px] text-slate-300">N°</TableHead>
+                            <TableHead className="w-50px text-slate-300">N°</TableHead>
                             <TableHead className="text-slate-300">RUC</TableHead>
                             <TableHead className="text-slate-300">Razón Social</TableHead>
                             <TableHead className="text-slate-300">Propietario</TableHead>
@@ -257,7 +254,7 @@ export function ClientsTable() {
                     <TableBody>
                         {filteredClients.length === 0 ? (
                             <TableRow className="border-slate-800">
-                                <TableCell colSpan={6} className="text-center text-slate-400 py-8">
+                                <TableCell colSpan={isSelectionMode ? 12 : 11} className="text-center text-slate-400 py-8">
                                     No hay clientes registrados
                                 </TableCell>
                             </TableRow>
@@ -265,7 +262,7 @@ export function ClientsTable() {
                             filteredClients.map((client, index) => (
                                 <TableRow key={client.ruc} className="border-slate-800 hover:bg-slate-800/30">
                                     {isSelectionMode && (
-                                        <TableCell>
+                                        <TableCell className="w-50px">
                                             <Checkbox
                                                 checked={selectedRucs.includes(client.ruc)}
                                                 onCheckedChange={() => toggleSelectClient(client.ruc)}
@@ -366,7 +363,7 @@ export function ClientsTable() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Está seguro de dar de baja a este cliente?</AlertDialogTitle>
                         <AlertDialogDescription className="text-slate-400">
-                            El cliente "{clientToDelete?.razon_social}" pasará a estado inactivo y no aparecerá en la lista principal.
+                            El cliente &quot;{clientToDelete?.razon_social}&quot; pasará a estado inactivo y no aparecerá en la lista principal.
                             Podrá consultarlo y reactivarlo desde el historial de bajas.
                         </AlertDialogDescription>
                     </AlertDialogHeader>

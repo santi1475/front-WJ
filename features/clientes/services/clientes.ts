@@ -2,11 +2,11 @@ import { getAxiosInstance } from "@/lib/axios-client";
 import type {
   ICliente,
   IClienteFormData,
+  IHistorialBaja,
   RegimenTributario,
 } from "@/features/shared/types";
 import type {
   PaginatedResponse,
-  ListFilters,
   ICRUDService,
 } from "@/features/shared/types/entities";
 import type { AxiosError } from "axios";
@@ -54,9 +54,10 @@ const clientesServiceImplementation: ICRUDService<
     data: Partial<IClienteFormData>,
   ) => Promise<ICliente>;
   exportSelected: (rucs: string[]) => Promise<Blob>;
-  darBaja: (id: number) => Promise<void>;
-  reactivar: (id: number) => Promise<void>;
+  darBaja: (id: string | number) => Promise<void>;
+  reactivar: (id: string | number) => Promise<void>;
   getBajas: () => Promise<ICliente[]>;
+  getHistorialBajas: () => Promise<IHistorialBaja[]>;
 } = {
   list: async (
     params?: IClientFilters,
@@ -292,7 +293,7 @@ const clientesServiceImplementation: ICRUDService<
     }
   },
 
-  darBaja: async (id: number): Promise<void> => {
+  darBaja: async (id: string | number): Promise<void> => {
     try {
       const axios = getAxiosInstance();
       await axios.post(`${API_ENDPOINT}/${id}/dar-baja/`);
@@ -307,7 +308,7 @@ const clientesServiceImplementation: ICRUDService<
     }
   },
 
-  reactivar: async (id: number): Promise<void> => {
+  reactivar: async (id: string | number): Promise<void> => {
     try {
       const axios = getAxiosInstance();
       await axios.post(`${API_ENDPOINT}/${id}/reactivar/`);
@@ -331,6 +332,21 @@ const clientesServiceImplementation: ICRUDService<
       const axiosError = error as AxiosError<IClientServiceError>;
       console.error(
         "Error al obtener clientes dados de baja:",
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
+
+  getHistorialBajas: async (): Promise<IHistorialBaja[]> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get<IHistorialBaja[]>(`${API_ENDPOINT}/historial-bajas/`);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        "Error al obtener historial de bajas:",
         axiosError.response?.data,
       );
       throw error;
