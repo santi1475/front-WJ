@@ -65,10 +65,26 @@ export interface IResponsableInfo {
   full_name: string;
 }
 
-export interface IHistorialEvento {
-  tipo_evento: "INGRESO" | "BAJA" | "REACTIVACION";
-  fecha: string;
-  responsable_nombre: string;
+export interface IHistorialBaja {
+  id: number;
+  cliente: string;
+  cliente_info?: {
+    ruc: string;
+    razon_social: string;
+    estado: boolean;
+  };
+  fecha_baja: string;
+  fecha_reactivacion?: string | null;
+  usuario_baja?: number;
+  usuario_baja_info?: {
+    id: number;
+    username: string;
+    first_name: string;
+    last_name: string;
+    full_name: string;
+  } | null;
+  razon?: string | null;
+  estado: 'BAJA' | 'REACTIVADO';
 }
 
 export interface ICliente {

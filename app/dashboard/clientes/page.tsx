@@ -18,7 +18,7 @@ export default function ClientesPage() {
                 <Link href="/dashboard/clientes/bajas">
                     <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
                         <Archive className="h-4 w-4 mr-2" />
-                        Papelera
+                        Bajas
                     </Button>
                 </Link>
             </div>

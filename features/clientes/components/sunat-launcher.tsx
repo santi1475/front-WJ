@@ -32,7 +32,7 @@ export const SunatLauncher: React.FC<SunatLauncherProps> = ({ ruc, usuario, clav
             title={isDisabled ? "Faltan credenciales" : "Ir al Portal SOL"}
             type="button"
         >
-            <div className="relative w-5 h-5 flex-shrink-0">
+            <div className="relative w-5 h-5 shrink-0">
                 <Image
                     src="/sunat-logo.svg"
                     alt="SUNAT Logo"

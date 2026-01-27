@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react"
 import { clientesService } from "@/features/clientes/services/clientes"
 import type { ICliente } from "@/features/shared/types"
+import type { IHistorialBaja } from "@/features/shared/types"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, RotateCcw, ArrowLeft } from "lucide-react"
+import { Loader2, RotateCcw, ArrowLeft, History } from "lucide-react"
 import type { AxiosError } from "axios"
 import { toast } from "sonner"
 import {
@@ -20,9 +21,11 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import Link from "next/link"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function BajasPage() {
     const [clients, setClients] = useState<ICliente[]>([])
+    const [historial, setHistorial] = useState<IHistorialBaja[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string>("")
     const [clientToReactivate, setClientToReactivate] = useState<ICliente | null>(null)
@@ -30,6 +33,7 @@ export default function BajasPage() {
 
     useEffect(() => {
         fetchBajas()
+        fetchHistorial()
     }, [])
 
     const fetchBajas = async () => {
@@ -46,6 +50,15 @@ export default function BajasPage() {
         }
     }
 
+    const fetchHistorial = async () => {
+        try {
+            const data = await clientesService.getHistorialBajas()
+            setHistorial(data)
+        } catch (err) {
+            console.error("Error al cargar historial:", err)
+        }
+    }
+
     const handleReactivate = (client: ICliente) => {
         setClientToReactivate(client)
         setIsReactivateDialogOpen(true)
@@ -57,8 +70,9 @@ export default function BajasPage() {
         try {
             await clientesService.reactivar(Number(clientToReactivate.ruc))
             toast.success("Cliente reactivado exitosamente")
-            // Remove from list
-            setClients((prev) => prev.filter((c) => c.ruc !== clientToReactivate.ruc))
+            // Actualizar datos
+            fetchBajas()
+            fetchHistorial()
         } catch (error) {
             console.error(error)
             toast.error("No se pudo reactivar al cliente")
@@ -66,6 +80,24 @@ export default function BajasPage() {
             setIsReactivateDialogOpen(false)
             setClientToReactivate(null)
         }
+    }
+
+    const formatDate = (dateString: string) => {
+        if (!dateString) return "-"
+        return new Date(dateString).toLocaleDateString('es-PE', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        })
+    }
+
+    const getEstadoBadge = (estado: string) => {
+        if (estado === 'BAJA') {
+            return <Badge className="bg-red-900/30 text-red-400 border border-red-700/50">En Baja</Badge>
+        }
+        return <Badge className="bg-green-900/30 text-green-400 border border-green-700/50">Reactivado</Badge>
     }
 
     return (
@@ -77,8 +109,8 @@ export default function BajasPage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white">Historial de Bajas</h1>
-                    <p className="text-slate-400">Clientes dados de baja y disponibles para reactivación.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-white">Gestión de Bajas de Clientes</h1>
+                    <p className="text-slate-400">Clientes dados de baja y historial de cambios de estado.</p>
                 </div>
             </div>
 
@@ -89,48 +121,110 @@ export default function BajasPage() {
                     <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
                 </div>
             ) : (
-                <div className="border border-slate-800 rounded-lg overflow-hidden">
-                    <Table>
-                        <TableHeader className="bg-slate-900/50">
-                            <TableRow className="border-slate-800 hover:bg-transparent">
-                                <TableHead className="text-slate-300">RUC</TableHead>
-                                <TableHead className="text-slate-300">Razón Social</TableHead>
-                                <TableHead className="text-slate-300">Fecha de Baja</TableHead>
-                                <TableHead className="text-slate-300 text-right">Acciones</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {clients.length === 0 ? (
-                                <TableRow className="border-slate-800">
-                                    <TableCell colSpan={4} className="text-center text-slate-400 py-8">
-                                        No hay clientes dados de baja
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                clients.map((client) => (
-                                    <TableRow key={client.ruc} className="border-slate-800 hover:bg-slate-800/30">
-                                        <TableCell className="font-mono text-blue-400">{client.ruc}</TableCell>
-                                        <TableCell className="text-white">{client.razon_social}</TableCell>
-                                        <TableCell className="text-slate-300">
-                                            {client.fecha_baja ? new Date(client.fecha_baja).toLocaleDateString() : "-"}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button
-                                                onClick={() => handleReactivate(client)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="border-green-800 text-green-400 hover:bg-green-900/20 hover:text-green-300"
-                                            >
-                                                <RotateCcw className="h-4 w-4 mr-2" />
-                                                Reactivar
-                                            </Button>
-                                        </TableCell>
+                <Tabs defaultValue="clientes" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 border border-slate-800">
+                        <TabsTrigger value="clientes" className="flex items-center gap-2">
+                            <RotateCcw className="h-4 w-4" />
+                            Clientes en Baja ({clients.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="historial" className="flex items-center gap-2">
+                            <History className="h-4 w-4" />
+                            Historial Completo ({historial.length})
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="clientes" className="mt-4">
+                        <div className="border border-slate-800 rounded-lg overflow-hidden">
+                            <Table>
+                                <TableHeader className="bg-slate-900/50">
+                                    <TableRow className="border-slate-800 hover:bg-transparent">
+                                        <TableHead className="text-slate-300">RUC</TableHead>
+                                        <TableHead className="text-slate-300">Razón Social</TableHead>
+                                        <TableHead className="text-slate-300">Propietario</TableHead>
+                                        <TableHead className="text-slate-300">Fecha de Baja</TableHead>
+                                        <TableHead className="text-slate-300 text-right">Acciones</TableHead>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                                </TableHeader>
+                                <TableBody>
+                                    {clients.length === 0 ? (
+                                        <TableRow className="border-slate-800">
+                                            <TableCell colSpan={5} className="text-center text-slate-400 py-8">
+                                                No hay clientes dados de baja
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        clients.map((client) => (
+                                            <TableRow key={client.ruc} className="border-slate-800 hover:bg-slate-800/30">
+                                                <TableCell className="font-mono text-blue-400">{client.ruc}</TableCell>
+                                                <TableCell className="text-white">{client.razon_social}</TableCell>
+                                                <TableCell className="text-slate-300">{client.propietario}</TableCell>
+                                                <TableCell className="text-slate-300">
+                                                    {client.fecha_baja ? new Date(client.fecha_baja).toLocaleDateString('es-PE') : "-"}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        onClick={() => handleReactivate(client)}
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="border-green-800 text-green-400 hover:bg-green-900/20 hover:text-green-300"
+                                                    >
+                                                        <RotateCcw className="h-4 w-4 mr-2" />
+                                                        Reactivar
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="historial" className="mt-4">
+                        <div className="border border-slate-800 rounded-lg overflow-hidden">
+                            <Table>
+                                <TableHeader className="bg-slate-900/50">
+                                    <TableRow className="border-slate-800 hover:bg-transparent">
+                                        <TableHead className="text-slate-300">RUC</TableHead>
+                                        <TableHead className="text-slate-300">Razón Social</TableHead>
+                                        <TableHead className="text-slate-300">Estado</TableHead>
+                                        <TableHead className="text-slate-300">Fecha de Baja</TableHead>
+                                        <TableHead className="text-slate-300">Fecha de Reactivación</TableHead>
+                                        <TableHead className="text-slate-300">Usuario</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {historial.length === 0 ? (
+                                        <TableRow className="border-slate-800">
+                                            <TableCell colSpan={7} className="text-center text-slate-400 py-8">
+                                                No hay registro de bajas
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        historial.map((registro) => (
+                                            <TableRow key={registro.id} className="border-slate-800 hover:bg-slate-800/30">
+                                                <TableCell className="font-mono text-blue-400">{registro.cliente_info?.ruc || registro.cliente}</TableCell>
+                                                <TableCell className="text-white">{registro.cliente_info?.razon_social}</TableCell>
+                                                <TableCell>
+                                                    {getEstadoBadge(registro.estado)}
+                                                </TableCell>
+                                                <TableCell className="text-slate-300 text-sm">
+                                                    {formatDate(registro.fecha_baja)}
+                                                </TableCell>
+                                                <TableCell className="text-slate-300 text-sm">
+                                                    {registro.fecha_reactivacion ? formatDate(registro.fecha_reactivacion) : "-"}
+                                                </TableCell>
+                                                <TableCell className="text-slate-300 text-sm">
+                                                    {registro.usuario_baja_info?.full_name || "-"}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </TabsContent>
+                </Tabs>
             )}
 
             <AlertDialog open={isReactivateDialogOpen} onOpenChange={setIsReactivateDialogOpen}>
@@ -138,7 +232,7 @@ export default function BajasPage() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Reactivar cliente?</AlertDialogTitle>
                         <AlertDialogDescription className="text-slate-400">
-                            El cliente "{clientToReactivate?.razon_social}" volverá a estar activo y aparecerá en la lista principal.
+                            El cliente &quot;{clientToReactivate?.razon_social}&quot; volverá a estar activo y aparecerá en la lista principal.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
