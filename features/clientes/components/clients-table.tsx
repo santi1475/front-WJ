@@ -35,8 +35,6 @@ export function ClientsTable() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedCredentialsClient, setSelectedCredentialsClient] = useState<ICliente | null>(null)
     const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false)
-    const [selectedHistoryClient, setSelectedHistoryClient] = useState<ICliente | null>(null)
-    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
     const [isSelectionMode, setIsSelectionMode] = useState(false)
     const [selectedRucs, setSelectedRucs] = useState<string[]>([])
     const [isExporting, setIsExporting] = useState(false)
@@ -84,11 +82,6 @@ export function ClientsTable() {
     const handleViewCredentials = (client: ICliente) => {
         setSelectedCredentialsClient(client)
         setIsCredentialsModalOpen(true)
-    }
-
-    const handleViewHistory = (client: ICliente) => {
-        setSelectedHistoryClient(client)
-        setIsHistoryModalOpen(true)
     }
 
     const toggleSelectionMode = () => {
@@ -315,15 +308,6 @@ export function ClientsTable() {
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
                                             <Button
-                                                onClick={() => handleViewHistory(client)}
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-slate-400 hover:bg-slate-800"
-                                                title="Ver historial"
-                                            >
-                                                <History className="h-4 w-4" />
-                                            </Button>
-                                            <Button
                                                 onClick={() => handleViewCredentials(client)}
                                                 size="sm"
                                                 variant="ghost"
@@ -373,12 +357,6 @@ export function ClientsTable() {
                 open={isCredentialsModalOpen}
                 onOpenChange={setIsCredentialsModalOpen}
                 client={selectedCredentialsClient}
-            />
-
-            <ClientHistory
-                open={isHistoryModalOpen}
-                onOpenChange={setIsHistoryModalOpen}
-                historial={selectedHistoryClient?.historial || []}
             />
 
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

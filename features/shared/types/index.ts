@@ -110,7 +110,6 @@ export interface ICliente {
   selectivo_consumo: boolean;
   credenciales: ICredenciales;
   fecha_baja?: string;
-  historial?: IHistorialEvento[];
 }
 
 export interface IClienteFormData extends Omit<ICliente, "credenciales"> {
