@@ -72,6 +72,8 @@ export interface IHistorialBaja {
     ruc: string;
     razon_social: string;
     estado: boolean;
+    tipo_empresa?: string;
+    categoria?: string;
   };
   fecha_baja: string;
   fecha_reactivacion?: string | null;
@@ -84,7 +86,7 @@ export interface IHistorialBaja {
     full_name: string;
   } | null;
   razon?: string | null;
-  estado: 'BAJA' | 'REACTIVADO';
+  estado: "BAJA" | "REACTIVADO";
 }
 
 export interface ICliente {
@@ -151,7 +153,7 @@ export const categoriaConfig: Record<
     className: "bg-red-900/30 text-red-400 border border-red-700/50",
   },
   "N/T": {
-    label: "No Tributario",
+    label: "No Tiene",
     className: "bg-blue-900/30 text-blue-400 border border-blue-700/50",
   },
   default: {

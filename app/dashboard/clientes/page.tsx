@@ -4,7 +4,7 @@ import { ClientsTable } from "@/features/clientes/components/clients-table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Archive } from "lucide-react"
+import { ArrowDownFromLine } from "lucide-react"
 
 export default function ClientesPage() {
     return (
@@ -17,7 +17,7 @@ export default function ClientesPage() {
                 </div>
                 <Link href="/dashboard/clientes/bajas">
                     <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
-                        <Archive className="h-4 w-4 mr-2" />
+                        <ArrowDownFromLine className="h-4 w-4 mr-2" />
                         Bajas
                     </Button>
                 </Link>
@@ -27,7 +27,6 @@ export default function ClientesPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Clientes Registrados</CardTitle>
-                    <CardDescription>Busca, edita y crea nuevos clientes en el sistema</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ClientsTable />

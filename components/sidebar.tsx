@@ -41,6 +41,11 @@ export function Sidebar() {
     const [openMenus, setOpenMenus] = useState<string[]>([])
 
     useEffect(() => {
+        // Auto-close sidebar if not in main dashboard on mobile or if requested
+        if (pathname !== "/dashboard" && pathname !== "/dashboard/") {
+            setIsSidebarOpen(false)
+        }
+
         SIDEBAR_ROUTES.forEach((route) => {
             if (route.children) {
                 const isChildActive = route.children.some((child) => child.path === pathname)
@@ -49,7 +54,7 @@ export function Sidebar() {
                 }
             }
         })
-    }, [pathname]) // Solo se ejecuta cuando cambia la ruta
+    }, [pathname])
 
     const handleLogout = () => {
         logout()
@@ -57,7 +62,7 @@ export function Sidebar() {
     }
 
     const toggleMenu = (label: string) => {
-        if (!isSidebarOpen) {
+        if (isSidebarOpen) {
             setIsSidebarOpen(true)
             setOpenMenus([label])
             return

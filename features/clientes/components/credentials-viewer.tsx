@@ -26,7 +26,7 @@ export function CredentialsViewer({ client, open, onOpenChange }: CredentialsVie
     const handleCopy = (text: string | undefined, label: string) => {
         if (!text) return
         navigator.clipboard.writeText(text)
-        toast.success(`${label} copiado al portapapeles`)
+        toast.success(`${label} copiado al portapapeles`, { position: "bottom-right" })
     }
 
     const CredentialItem = ({ label, value, isPassword = false }: { label: string, value?: string, isPassword?: boolean }) => {

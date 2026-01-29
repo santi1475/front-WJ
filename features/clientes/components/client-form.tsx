@@ -14,6 +14,7 @@ import type { IUserManaged } from "@/features/shared/types/user"
 import { useAuth } from "@/hooks/use-auth"
 import { clientesService } from "@/features/clientes/services/clientes"
 import { userService } from "@/features/users/services/user.service"
+import { regimenLaboralService, type ITipoRegimenLaboral } from "@/features/shared/services/regimen-laboral.service"
 import { handleApiError, handleApiSuccess } from "@/lib/api-utils"
 import { X } from "lucide-react"
 
@@ -40,6 +41,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
     const [users, setUsers] = useState<IUserManaged[]>([])
     const [loadingUsers, setLoadingUsers] = useState(false)
+    const [regimenesLaborales, setRegimenesLaborales] = useState<ITipoRegimenLaboral[]>([])
 
     const isControlled = typeof constrainedOpen !== "undefined"
     const isOpen = isControlled ? constrainedOpen : internalOpen
@@ -82,7 +84,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                 setEnablePe(!!client.credenciales?.pe)
                 setEnableSis(!!client.credenciales?.sis_usuario)
             } else {
-                // Si no es admin/superadmin, establecer al usuario actual como responsable
                 const defaultResponsable = (!user?.is_superuser && user?.id !== 1) ? user?.id || 0 : 0
                 reset({
                     ruc: "",
@@ -133,6 +134,14 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         }
         if (isOpen) {
             fetchUsers()
+            // Fetch regimenes laborales
+            console.log("ClientForm: Attempting to fetch regimen types...");
+            regimenLaboralService.getAll()
+                .then(data => {
+                    console.log("ClientForm: Set regimen types:", data);
+                    setRegimenesLaborales(data);
+                })
+                .catch(err => console.error("ClientForm: Error loading regimen types:", err))
         }
     }, [isOpen])
 
@@ -160,7 +169,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         try {
             // Crear copia del payload
             const payload = { ...data };
-            
+
             // Si el usuario no es admin/superadmin, establecer automáticamente como responsable
             if (!user?.is_superuser && user?.id !== 1) {
                 payload.responsable = user?.id ?? undefined;
@@ -380,7 +389,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     render={({ field }) => (
                                                         <Input
                                                             {...field}
-                                                            type="number"
                                                             placeholder="0.00"
                                                             disabled={isSubmitting}
                                                             className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
@@ -398,7 +406,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     render={({ field }) => (
                                                         <Input
                                                             {...field}
-                                                            type="number"
                                                             placeholder="0.00"
                                                             disabled={isSubmitting}
                                                             className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
@@ -438,7 +445,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     render={({ field }) => (
                                                         <Input
                                                             {...field}
-                                                            type="number"
                                                             placeholder="0"
                                                             disabled={isSubmitting}
                                                             className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
@@ -497,20 +503,25 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     name="regimen_laboral_tipo"
                                                     control={control}
                                                     render={({ field }) => (
-                                                        <Input
-                                                            {...field}
-                                                            value={field.value || ""}
-                                                            placeholder="Ej: General, MYPE, etc."
-                                                            disabled={isSubmitting}
-                                                            className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
-                                                        />
+                                                        <Select value={field.value || undefined} onValueChange={field.onChange}>
+                                                            <SelectTrigger className="bg-slate-700/60 border-slate-500 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm">
+                                                                <SelectValue placeholder="Seleccionar régimen" />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="bg-slate-700 border-slate-600">
+                                                                {regimenesLaborales.map((regimen) => (
+                                                                    <SelectItem key={regimen.id} value={regimen.descripcion}>
+                                                                        {regimen.descripcion}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
                                                     )}
                                                 />
                                             </div>
 
                                             {/* Régimen Laboral Fecha */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Fecha de Régimen Laboral</Label>
+                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Fecha de Acreditación</Label>
                                                 <Controller
                                                     name="regimen_laboral_fecha"
                                                     control={control}
@@ -575,23 +586,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                             </div>
 
                                             {/* Estado */}
-                                            <div className="flex items-end">
-                                                <div className="flex items-center space-x-2">
-                                                    <Controller
-                                                        name="estado"
-                                                        control={control}
-                                                        render={({ field }) => (
-                                                            <Checkbox
-                                                                checked={field.value}
-                                                                onCheckedChange={field.onChange}
-                                                                disabled={isSubmitting}
-                                                                className="border-slate-500 bg-slate-700/60"
-                                                            />
-                                                        )}
-                                                    />
-                                                    <Label className="text-slate-200 font-semibold text-xs cursor-pointer">Activo</Label>
-                                                </div>
-                                            </div>
+
                                         </div>
                                     </CardContent>
                                 </Card>

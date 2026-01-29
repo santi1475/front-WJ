@@ -33,16 +33,16 @@ export function LoginForm() {
     e.preventDefault()
     setError("")
     setIsLoading(true)
-    console.log("📝 Form submitted:", { username: formData.username })
+    console.log("Form submitted:", { username: formData.username })
 
     try {
-      console.log("🔄 Calling authService.login...")
+      console.log("Calling authService.login...")
       const response = await authService.login({
         username: formData.username,
         password: formData.password,
       })
-      console.log("✅ Login successful, user:", response.user)
-      console.log("✅ Permissions received:", response.permissions)
+      console.log("Login successful, user:", response.user)
+      console.log("Permissions received:", response.permissions)
 
       // Agregar permisos al objeto user antes de guardarlo en el store
       const userWithPermissions = {
@@ -58,8 +58,8 @@ export function LoginForm() {
       router.push("/dashboard")
     } catch (err) {
       const axiosError = err as AxiosError<{ detail: string }>
-      console.error("❌ Login failed:", err)
-      setError(axiosError.response?.data?.detail || "Authentication failed. Please try again.")
+      console.error("Login failed:", err)
+      setError(axiosError.response?.data?.detail || "Fallo la autenticación")
     } finally {
       setIsLoading(false)
     }
@@ -75,7 +75,9 @@ export function LoginForm() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-3 bg-red-900/20 border border-red-700/50 rounded text-red-400 text-sm">{error}</div>
+              <div className="p-3 bg-red-900/20 border border-red-700/50 rounded text-red-400 text-sm">
+                <p>No se puede iniciar sesión, verifique sus credenciales</p>
+              </div>
             )}
 
             <div className="space-y-2">

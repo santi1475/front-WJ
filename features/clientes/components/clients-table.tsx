@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "./client-form"
 import { CredentialsViewer } from "./credentials-viewer"
-import { Loader2, Plus, Search, Key, X, Check, Trash2 } from "lucide-react"
+import { Loader2, Plus, Search, Key, X, Check, ArrowBigDownDash } from "lucide-react"
 import type { AxiosError } from "axios"
 import { categoriaConfig } from "@/features/shared/types"
 import { ExcelButton } from "./excel-button"
@@ -60,7 +60,9 @@ export function ClientsTable() {
     }
 
     const filteredClients = clients.filter(
-        (client) => client.razon_social.toLowerCase().includes(searchTerm.toLowerCase()) || client.ruc.includes(searchTerm),
+        (client) =>
+            client.razon_social.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            client.propietario.toLowerCase().includes(searchTerm.toLowerCase()),
     )
 
     const handleEdit = (client: ICliente) => {
@@ -103,17 +105,16 @@ export function ClientsTable() {
 
     const handleExport = async () => {
         if (selectedRucs.length === 0) {
-            toast.error("Debe seleccionar al menos un cliente")
+            toast.error("Debe seleccionar al menos un cliente", { position: "bottom-right" })
             return
         }
 
         try {
             setIsExporting(true)
-            const toastId = toast.loading("Exportando clientes...")
+            const toastId = toast.loading("Exportando clientes...", { position: "bottom-right" })
 
             const blob = await clientesService.exportSelected(selectedRucs)
 
-            // Create download link
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement("a")
             a.href = url
@@ -123,12 +124,12 @@ export function ClientsTable() {
             window.URL.revokeObjectURL(url)
             document.body.removeChild(a)
 
-            toast.success("Exportación completada exitosamente", { id: toastId })
+            toast.success("Exportación completada exitosamente", { id: toastId, position: "bottom-right" })
             setIsSelectionMode(false)
             setSelectedRucs([])
         } catch (error) {
             console.error(error)
-            toast.error("Error al exportar clientes")
+            toast.error("Error al exportar clientes", { position: "bottom-right" })
         } finally {
             setIsExporting(false)
         }
@@ -144,11 +145,11 @@ export function ClientsTable() {
 
         try {
             await clientesService.darBaja(clientToDelete.ruc)
-            toast.success("Cliente dado de baja exitosamente")
+            toast.success("Cliente dado de baja exitosamente", { position: "bottom-right" })
             fetchClients()
         } catch (error) {
             console.error(error)
-            toast.error("No se pudo dar de baja al cliente")
+            toast.error("No se pudo dar de baja al cliente", { position: "bottom-right" })
         } finally {
             setIsDeleteDialogOpen(false)
             setClientToDelete(null)
@@ -170,7 +171,7 @@ export function ClientsTable() {
                 <div className="flex-1 relative">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
                     <Input
-                        placeholder="Buscar por RUC o razón social..."
+                        placeholder="Buscar por razón social o propietario..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10 bg-slate-800 border-slate-700 text-white"
@@ -245,7 +246,7 @@ export function ClientsTable() {
                             <TableHead className="text-slate-300">Codigo de control</TableHead>
                             <TableHead className="text-slate-300">Responsable</TableHead>
                             <TableHead className="text-slate-300">Régimen Tributario</TableHead>
-                            <TableHead className="text-slate-300">Regime Laboral</TableHead>
+                            <TableHead className="text-slate-300">Régimen Laboral</TableHead>
                             <TableHead className="text-slate-300">Estado</TableHead>
                             <TableHead className="text-slate-300 text-center">Categoria</TableHead>
                             <TableHead className="text-slate-300 text-center">Acciones</TableHead>
@@ -300,8 +301,8 @@ export function ClientsTable() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-slate-300 text-center">
-                                        <Badge className={categoriaConfig[client.categoria].className} variant="outline">
-                                            {categoriaConfig[client.categoria].label}
+                                        <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
+                                            {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -330,7 +331,7 @@ export function ClientsTable() {
                                                 className="text-red-400 hover:bg-red-900/20"
                                                 title="Dar de baja"
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <ArrowBigDownDash className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </TableCell>
