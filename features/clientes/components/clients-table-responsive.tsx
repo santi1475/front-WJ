@@ -37,6 +37,8 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
     const [selectedCredentialsClient, setSelectedCredentialsClient] = useState<ICliente | null>(null)
     const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false)
+    const [selectedHistoryClient, setSelectedHistoryClient] = useState<ICliente | null>(null)
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
     const [isSelectionMode, setIsSelectionMode] = useState(false)
     const [selectedRucs, setSelectedRucs] = useState<string[]>([])
     const [isExporting, setIsExporting] = useState(false)
@@ -86,6 +88,11 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const handleViewCredentials = (client: ICliente) => {
         setSelectedCredentialsClient(client)
         setIsCredentialsModalOpen(true)
+    }
+
+    const handleViewHistory = (client: ICliente) => {
+        setSelectedHistoryClient(client)
+        setIsHistoryModalOpen(true)
     }
 
     const toggleSelectionMode = () => {
@@ -342,6 +349,15 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                         </div>
                                         <div className="flex gap-2 shrink-0">
                                             <Button
+                                                onClick={() => handleViewHistory(client)}
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-slate-400 hover:bg-slate-800 h-8 w-8 p-0"
+                                                title="Ver historial"
+                                            >
+                                                <History className="h-4 w-4" />
+                                            </Button>
+                                            <Button
                                                 onClick={() => handleViewCredentials(client)}
                                                 size="sm"
                                                 variant="ghost"
@@ -425,6 +441,12 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                 open={isCredentialsModalOpen}
                 onOpenChange={setIsCredentialsModalOpen}
                 client={selectedCredentialsClient}
+            />
+
+            <ClientHistory
+                open={isHistoryModalOpen}
+                onOpenChange={setIsHistoryModalOpen}
+                historial={selectedHistoryClient?.historial || []}
             />
         </div>
     )
