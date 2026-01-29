@@ -10,13 +10,13 @@ export const launchSunatLogin = (
     console.error(
       "ERROR CRÍTICO: No se ha configurado NEXT_PUBLIC_EXTENSION_ID en el archivo .env",
     );
-    toast.error("Error de configuración del sistema. Contacte a soporte de AlphaTech.");
+    toast.error("Error de configuración del sistema. Contacte a soporte de AlphaTech.", { position: "bottom-right" });
     return;
   }
 
   if (!ruc || !usuario || !clave) {
     console.error("Faltan credenciales para el autologin SUNAT");
-    toast.error("Error: Faltan credenciales (RUC, Usuario o Clave)");
+    toast.error("Error: Faltan credenciales (RUC, Usuario o Clave)", { position: "bottom-right" });
     return;
   }
 
@@ -47,7 +47,7 @@ export const launchSunatLogin = (
           chrome.runtime.lastError.message,
         );
         toast.error(
-          "La extensión no respondió. Verifica que el ID en el .env sea correcto y la extensión esté activa.",
+          "La extensión no respondió. Verifica que el ID en el .env sea correcto y la extensión esté activa.", { position: "bottom-right" }
         );
       } else {
         console.log("Comando enviado exitosamente a la extensión.");

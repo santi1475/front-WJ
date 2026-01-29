@@ -69,13 +69,12 @@ export default function BajasPage() {
 
         try {
             await clientesService.reactivar(Number(clientToReactivate.ruc))
-            toast.success("Cliente reactivado exitosamente")
-            // Actualizar datos
+            toast.success("Cliente reactivado exitosamente", { position: "bottom-right" })
             fetchBajas()
             fetchHistorial()
         } catch (error) {
             console.error(error)
-            toast.error("No se pudo reactivar al cliente")
+            toast.error("No se pudo reactivar al cliente", { position: "bottom-right" })
         } finally {
             setIsReactivateDialogOpen(false)
             setClientToReactivate(null)
@@ -187,6 +186,8 @@ export default function BajasPage() {
                                     <TableRow className="border-slate-800 hover:bg-transparent">
                                         <TableHead className="text-slate-300">RUC</TableHead>
                                         <TableHead className="text-slate-300">Razón Social</TableHead>
+                                        <TableHead className="text-slate-300">Tipo Empresa</TableHead>
+                                        <TableHead className="text-slate-300">Categoría</TableHead>
                                         <TableHead className="text-slate-300">Estado</TableHead>
                                         <TableHead className="text-slate-300">Fecha de Baja</TableHead>
                                         <TableHead className="text-slate-300">Fecha de Reactivación</TableHead>
@@ -205,6 +206,12 @@ export default function BajasPage() {
                                             <TableRow key={registro.id} className="border-slate-800 hover:bg-slate-800/30">
                                                 <TableCell className="font-mono text-blue-400">{registro.cliente_info?.ruc || registro.cliente}</TableCell>
                                                 <TableCell className="text-white">{registro.cliente_info?.razon_social}</TableCell>
+                                                <TableCell className="text-slate-300 text-sm">{registro.cliente_info?.tipo_empresa || "-"}</TableCell>
+                                                <TableCell className="text-slate-300 text-center">
+                                                    {registro.cliente_info?.categoria ? (
+                                                        <Badge variant="outline">{registro.cliente_info.categoria}</Badge>
+                                                    ) : "-"}
+                                                </TableCell>
                                                 <TableCell>
                                                     {getEstadoBadge(registro.estado)}
                                                 </TableCell>

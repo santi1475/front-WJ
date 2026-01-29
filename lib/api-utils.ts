@@ -10,15 +10,7 @@ export const handleApiError = (
   if (error instanceof AxiosError) {
     const status = error.response?.status;
 
-    // Errores Críticos -> Redirección a Status Pages
     if (status === 401) {
-      // Check if it's an expiration vs just unauthorized
-      // For simplicity, we might redirect to login, but user asked for status pages usage.
-      // If the axios interceptor already handles token refresh failures by redirecting to login,
-      // we should be careful.
-      // Let's assume if we reach here, it's a hard 401 that wasn't refreshed.
-      // window.location.href = "/error/expired"; // Or 401
-      // Use session expired page if it seems like a session issue, or 401 for generic
       window.location.href = "/error/expired";
       return;
     }
@@ -39,29 +31,28 @@ export const handleApiError = (
       return;
     }
 
-    // Errores de Validación o Bad Request -> Sonner Toast
     if (status === 400) {
       const detail =
         error.response?.data?.detail ||
         error.response?.data?.message ||
         "Datos inválidos";
-      toast.error("Error de Validación", { description: detail });
+      toast.error("Error de Validación", { description: detail, position: "bottom-right" });
       return;
     }
 
     if (status === 403) {
       toast.error("Acceso Denegado", {
         description: "No tienes permisos para realizar esta acción.",
+        position: "bottom-right"
       });
       return;
     }
   }
 
-  // Default Fallback
   console.error(error);
-  toast.error("Error", { description: errorMessage });
+  toast.error("Error", { description: errorMessage, position: "bottom-right" });
 };
 
 export const handleApiSuccess = (message: string = "Operación exitosa") => {
-  toast.success("Éxito", { description: message });
+  toast.success("Éxito", { description: message, position: "bottom-right" });
 };

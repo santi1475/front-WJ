@@ -10,11 +10,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "@/features/clientes/components/client-form"
 import { CredentialsViewer } from "@/features/clientes/components/credentials-viewer"
-import { ClientHistory } from "@/features/clientes/components/client-history"
-import { Loader2, Plus, Search, Edit2, ChevronDown, Key, History } from "lucide-react"
+import { Loader2, Plus, Search, Edit2, ChevronDown, Key } from "lucide-react"
+import { AxiosError } from "axios"
+import { categoriaConfig } from "@/features/shared/types"
 import { useResponsive } from "@/hooks/use-responsive"
 import { useAuth } from "@/hooks/use-auth"
-import axios, { AxiosError } from "axios"
+import axios from "axios"
 import { ExcelButton } from "./excel-button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
@@ -22,7 +23,7 @@ import { Check, X } from "lucide-react"
 
 interface ClientsTableResponsiveProps {
     disableEdit?: boolean
-    showAllClients?: boolean // Para el dashboard principal, mostrar todos los clientes
+    showAllClients?: boolean
 }
 
 export function ClientsTableResponsive({ disableEdit = false, showAllClients = false }: ClientsTableResponsiveProps) {
@@ -50,8 +51,6 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const fetchClients = async () => {
         try {
             setLoading(true)
-            // Si showAllClients es true (dashboard), obtener todos los clientes
-            // Si no, obtener solo los clientes del usuario (según permisos del backend)
             const data = showAllClients
                 ? await clientesService.getAllForDashboard()
                 : await clientesService.getAll()
@@ -117,7 +116,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
 
     const handleExport = async () => {
         if (selectedRucs.length === 0) {
-            toast.error("Debe seleccionar al menos un cliente")
+            toast.error("Debe seleccionar al menos un cliente", { position: "bottom-right" })
             return
         }
 
@@ -137,12 +136,12 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             window.URL.revokeObjectURL(url)
             document.body.removeChild(a)
 
-            toast.success("Exportación completada exitosamente", { id: toastId })
+            toast.success("Exportación completada exitosamente", { id: toastId, position: "bottom-right" })
             setIsSelectionMode(false)
             setSelectedRucs([])
         } catch (error) {
             console.error(error)
-            toast.error("Error al exportar clientes")
+            toast.error("Error al exportar clientes", { position: "bottom-right" })
         } finally {
             setIsExporting(false)
         }
@@ -268,6 +267,11 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                         <TableCell className="text-slate-300">{client.propietario}</TableCell>
                                         <TableCell className="text-slate-300">
                                             {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
+                                        </TableCell>
+                                        <TableCell className="text-slate-300 text-center">
+                                            <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
+                                                {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className="border-slate-600 text-slate-300">
