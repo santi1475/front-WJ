@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { clientesService } from "../services/clientes"
 import type { ICliente } from "@/features/shared/types"
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export function ClientsTable() {
+    const router = useRouter()
     const [clients, setClients] = useState<ICliente[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string>("")
@@ -65,10 +67,7 @@ export function ClientsTable() {
             client.propietario.toLowerCase().includes(searchTerm.toLowerCase()),
     )
 
-    const handleEdit = (client: ICliente) => {
-        setSelectedClient(client)
-        setIsModalOpen(true)
-    }
+
 
     const handleCreate = () => {
         setSelectedClient(null)
@@ -247,7 +246,6 @@ export function ClientsTable() {
                             <TableHead className="text-slate-300">Responsable</TableHead>
                             <TableHead className="text-slate-300">Régimen Tributario</TableHead>
                             <TableHead className="text-slate-300">Régimen Laboral</TableHead>
-                            <TableHead className="text-slate-300">Estado</TableHead>
                             <TableHead className="text-slate-300 text-center">Categoria</TableHead>
                             <TableHead className="text-slate-300 text-center">Acciones</TableHead>
                         </TableRow>
@@ -261,7 +259,11 @@ export function ClientsTable() {
                             </TableRow>
                         ) : (
                             filteredClients.map((client, index) => (
-                                <TableRow key={client.ruc} className="border-slate-800 hover:bg-slate-800/30">
+                                <TableRow
+                                    key={client.ruc}
+                                    className="border-slate-800 hover:bg-slate-800/30 cursor-pointer"
+                                    onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
+                                >
                                     {isSelectionMode && (
                                         <TableCell className="w-50px">
                                             <Checkbox
@@ -274,30 +276,18 @@ export function ClientsTable() {
                                     <TableCell className="font-mono text-blue-400">{client.ruc}</TableCell>
                                     <TableCell className="text-white">{client.razon_social}</TableCell>
                                     <TableCell className="text-slate-300">{client.propietario}</TableCell>
-                                    <TableCell className="text-slate-300">{client.codigo_control || "-"}</TableCell>
+                                    <TableCell className="text-slate-300 text-center">{client.codigo_control || "-"}</TableCell>
                                     <TableCell className="text-slate-300">
                                         {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-center">
                                         <Badge variant="outline" className="border-slate-600 text-slate-300">
                                             {client.regimen_tributario}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-center">
                                         <Badge variant="outline" className="border-slate-600 text-slate-300">
                                             {client.regimen_laboral_tipo}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge
-                                            className={
-                                                client.estado
-                                                    ? "bg-green-900/30 text-green-400 border border-green-700/50"
-                                                    : "bg-red-900/30 text-red-400 border border-red-700/50"
-                                            }
-                                            variant="outline"
-                                        >
-                                            {client.estado ? "Activo" : "Inactivo"}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-slate-300 text-center">
@@ -315,14 +305,6 @@ export function ClientsTable() {
                                                 title="Ver credenciales"
                                             >
                                                 <Key className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                onClick={() => handleEdit(client)}
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-blue-400 hover:bg-blue-900/20"
-                                            >
-                                                Editar
                                             </Button>
                                             <Button
                                                 onClick={() => handleDeactivate(client)}

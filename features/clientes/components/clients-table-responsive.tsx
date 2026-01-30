@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { clientesService } from "../services/clientes"
 import type { ICliente } from "@/features/shared/types"
@@ -27,6 +28,7 @@ interface ClientsTableResponsiveProps {
 }
 
 export function ClientsTableResponsive({ disableEdit = false, showAllClients = false }: ClientsTableResponsiveProps) {
+    const router = useRouter()
     const { isAdminOrSuperAdmin } = useAuth()
     const [clients, setClients] = useState<ICliente[]>([])
     const [loading, setLoading] = useState(true)
@@ -73,10 +75,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
         (client) => client.razon_social.toLowerCase().includes(searchTerm.toLowerCase()) || client.ruc.includes(searchTerm),
     )
 
-    const handleEdit = (client: ICliente) => {
-        setSelectedClient(client)
-        setIsModalOpen(true)
-    }
+
 
     const handleCreate = () => {
         setSelectedClient(null)
@@ -231,7 +230,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 <TableHead className="text-slate-300">Razón Social</TableHead>
                                 <TableHead className="text-slate-300">Propietario</TableHead>
                                 <TableHead className="text-slate-300">Responsable</TableHead>
-                                <TableHead className="text-slate-300">Régimen</TableHead>
+                                <TableHead className="text-slate-300">Categoria</TableHead>
                                 <TableHead className="text-slate-300">Estado</TableHead>
                                 <TableHead className="text-slate-300 text-center">Acciones</TableHead>
                             </TableRow>
@@ -245,7 +244,11 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 </TableRow>
                             ) : (
                                 filteredClients.map((client, index) => (
-                                    <TableRow key={client.ruc} className="border-slate-800 hover:bg-slate-800/30">
+                                    <TableRow
+                                        key={client.ruc}
+                                        className="border-slate-800 hover:bg-slate-800/30 cursor-pointer"
+                                        onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
+                                    >
                                         {isSelectionMode && (
                                             <TableCell>
                                                 <Checkbox
@@ -264,11 +267,6 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                         <TableCell className="text-slate-300 text-center">
                                             <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
                                                 {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className="border-slate-600 text-slate-300">
-                                                {client.regimen_tributario}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
@@ -294,16 +292,6 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                 >
                                                     <Key className="h-4 w-4" />
                                                 </Button>
-                                                <Button
-                                                    onClick={() => handleEdit(client)}
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="text-blue-400 hover:bg-blue-900/20"
-                                                    disabled={disableEdit}
-                                                    title={disableEdit ? "No tienes permisos para editar" : "Editar cliente"}
-                                                >
-                                                    Editar
-                                                </Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -323,7 +311,11 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                         </Card>
                     ) : (
                         filteredClients.map((client) => (
-                            <Card key={client.ruc} className="border-slate-800 bg-slate-900/50">
+                            <Card
+                                key={client.ruc}
+                                className="border-slate-800 bg-slate-900/50 cursor-pointer"
+                                onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
+                            >
                                 <CardContent className="pt-6">
                                     {/* Main row */}
                                     <div className="flex items-start justify-between gap-2">
@@ -349,16 +341,6 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                 title="Ver credenciales"
                                             >
                                                 <Key className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                onClick={() => handleEdit(client)}
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-blue-400 hover:bg-blue-900/20 h-8 w-8 p-0"
-                                                disabled={disableEdit}
-                                                title={disableEdit ? "No tienes permisos para editar" : "Editar cliente"}
-                                            >
-                                                <Edit2 className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 onClick={() => setExpandedRow(expandedRow === client.ruc ? null : client.ruc)}
