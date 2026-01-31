@@ -6,60 +6,51 @@
 :root {
   /* ERP Professional Light Theme - Grey tonalities (no white saturation) */
   /* Background: grey base */
-  --background: 220 14% 90%;
-  --foreground: 222 47% 11%; /* Slate-900 */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3%;
 
-  /* Card: grey to differentiate from background */
-  --card: 214 32% 96%; /* Slate-150 */
-  --card-foreground: 222 47% 11%; /* Slate-900 */
+  --card: oklch(98.511% 0.00011 271.152);
+  --card-foreground: oklch(14.7% 0.004 49.25);
 
-  /* Popover */
-  --popover: 214 32% 96%; /* Slate-150 */
-  --popover-foreground: 222 47% 11%; /* Slate-900 */
+  --popover: oklch(98.511% 0.00011 271.152);
+  --popover-foreground: oklch(14.7% 0.004 49.25);
 
-  /* Primary (Blue) */
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
+  --primary: 216 98% 52%;
+  --primary-foreground: 0 0% 100%;
 
-  /* Secondary: visible grey for badges */
-  --secondary: 214 32% 89%; /* Slate-200 */
-  --secondary-foreground: 222 47% 22%; /* Slate-800 */
+  --secondary: 217 33% 50%;
+  --secondary-foreground: 0 0% 100%;
 
-  /* Muted: for alternating rows, inputs */
-  --muted: 214 32% 91%; /* Slate-200 */
-  --muted-foreground: 215 16% 47%; /* Slate-600 */
+  --muted: 210 11% 91%;
+  --muted-foreground: 213 12% 42%;
 
-  /* Accent */
-  --accent: 214 32% 89%; /* Slate-200 */
-  --accent-foreground: 222 47% 11%;
+  --accent: 216 98% 52%;
+  --accent-foreground: 0 0% 100%;
 
-  /* Destructive */
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
 
-  /* Border and input: visible grey */
-  --border: 214 32% 85%; /* Slate-300 */
-  --input: 214 32% 85%; /* Slate-300 */
-  --ring: 221 83% 53%;
-
-  /* Table: header and alternating rows */
-  --table-header: 214 32% 89%; /* Slate-200 */
-  --table-row-alt: 190 0% 96%; /* Grey alternate row */
+  --border: #bdbdbd;
+  --input: #bdbdbd;
+  --ring: #929292;
 
   --radius: 0.5rem;
-  --chart-1: 219 100% 50%;
+  --chart-1: 216 98% 52%;
   --chart-2: 23 100% 55%;
   --chart-3: 142 76% 36%;
   --chart-4: 274 100% 57%;
   --chart-5: 38 92% 50%;
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-primary: 221 83% 53%;
-  --sidebar-primary-foreground: 210 40% 98%;
-  --sidebar-accent: 217 32% 17%;
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-border: 217 32% 17%;
-  --sidebar-ring: 221 83% 53%;
+
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  --table-header: 220 13% 92%;
+  --table-row-alt: 220 13% 97%;
 }
 
 .dark {

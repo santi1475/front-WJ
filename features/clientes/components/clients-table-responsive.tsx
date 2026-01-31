@@ -75,8 +75,6 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
         (client) => client.razon_social.toLowerCase().includes(searchTerm.toLowerCase()) || client.ruc.includes(searchTerm),
     )
 
-
-
     const handleCreate = () => {
         setSelectedClient(null)
         setIsModalOpen(true)
@@ -118,7 +116,6 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
 
             const blob = await clientesService.exportSelected(selectedRucs)
 
-            // Create download link
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement("a")
             a.href = url
@@ -192,7 +189,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 onClick={toggleSelectionMode}
                                 isSelectionMode={isSelectionMode}
                             />
-                            <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none">
+                            <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none text-white">
                                 <Plus className="h-4 w-4 mr-2" />
                                 <span className="hidden sm:inline">Nuevo</span>
                             </Button>
@@ -264,7 +261,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                         <TableCell className="text-slate-600 dark:text-slate-400">
                                             {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
                                         </TableCell>
-                                        <TableCell className="text-center">
+                                        <TableCell className="text-left">
                                             <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
                                                 {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
                                             </Badge>
@@ -281,8 +278,8 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                 {client.estado ? "Activo" : "Inactivo"}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
+                                        <TableCell className="text-center">
+                                            <div className="flex justify-center gap-2">
                                                 <Button
                                                     onClick={() => handleViewCredentials(client)}
                                                     size="sm"
