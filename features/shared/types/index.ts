@@ -142,22 +142,22 @@ export const categoriaConfig: Record<
 > = {
   A: {
     label: "A",
-    className: "bg-green-900/30 text-green-400 border border-green-700/50",
+    className: "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50",
   },
   B: {
     label: "B",
-    className: "bg-yellow-900/30 text-yellow-400 border border-yellow-700/50",
+    className: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700/50",
   },
   C: {
     label: "C",
-    className: "bg-red-900/30 text-red-400 border border-red-700/50",
+    className: "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700/50",
   },
   "N/T": {
     label: "No Tiene",
-    className: "bg-blue-900/30 text-blue-400 border border-blue-700/50",
+    className: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700/50",
   },
   default: {
     label: "Sin categoría",
-    className: "bg-gray-900/30 text-gray-400 border border-gray-700/50",
+    className: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-700/50",
   },
 };

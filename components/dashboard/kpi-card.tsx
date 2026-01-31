@@ -8,9 +8,9 @@ interface KPICardProps {
 }
 
 const colorStyles = {
-    blue: "border-blue-800/50 bg-blue-900/10 text-blue-400",
-    green: "border-green-800/50 bg-green-900/10 text-green-400",
-    amber: "border-amber-800/50 bg-amber-900/10 text-amber-400",
+    blue: "bg-card border border-border border-l-4 border-l-blue-500 shadow-md shadow-black/[0.03] dark:bg-blue-900/10 dark:border-blue-800/50 dark:shadow-sm",
+    green: "bg-card border border-border border-l-4 border-l-green-500 shadow-md shadow-black/[0.03] dark:bg-green-900/10 dark:border-green-800/50 dark:shadow-sm",
+    amber: "bg-card border border-border border-l-4 border-l-amber-500 shadow-md shadow-black/[0.03] dark:bg-amber-900/10 dark:border-amber-800/50 dark:shadow-sm",
 }
 
 export function KPICard({ title, value, description, color }: KPICardProps) {
@@ -18,9 +18,9 @@ export function KPICard({ title, value, description, color }: KPICardProps) {
         <Card className={`border ${colorStyles[color]}`}>
             <CardContent className="pt-6">
                 <div className="space-y-2">
-                    <p className="text-sm text-slate-400">{title}</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-white">{value}</p>
-                    <p className="text-xs text-slate-500">{description}</p>
+                    <p className="text-sm text-muted-foreground font-medium">{title}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-foreground">{value}</p>
+                    <p className="text-xs text-muted-foreground">{description}</p>
                 </div>
             </CardContent>
         </Card>

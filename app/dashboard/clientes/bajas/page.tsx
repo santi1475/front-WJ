@@ -94,9 +94,9 @@ export default function BajasPage() {
 
     const getEstadoBadge = (estado: string) => {
         if (estado === 'BAJA') {
-            return <Badge className="bg-red-900/30 text-red-400 border border-red-700/50">En Baja</Badge>
+            return <Badge className="bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700/50">En Baja</Badge>
         }
-        return <Badge className="bg-green-900/30 text-green-400 border border-green-700/50">Reactivado</Badge>
+        return <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50">Reactivado</Badge>
     }
 
     return (
@@ -108,8 +108,8 @@ export default function BajasPage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white">Gestión de Bajas de Clientes</h1>
-                    <p className="text-slate-400">Clientes dados de baja y historial de cambios de estado.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Gestión de Bajas de Clientes</h1>
+                    <p className="text-muted-foreground">Clientes dados de baja y historial de cambios de estado.</p>
                 </div>
             </div>
 
@@ -121,7 +121,7 @@ export default function BajasPage() {
                 </div>
             ) : (
                 <Tabs defaultValue="clientes" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 border border-slate-800">
+                    <TabsList className="grid w-full grid-cols-2 bg-muted/80 border border-border">
                         <TabsTrigger value="clientes" className="flex items-center gap-2">
                             <RotateCcw className="h-4 w-4" />
                             Clientes en Baja ({clients.length})
@@ -133,31 +133,31 @@ export default function BajasPage() {
                     </TabsList>
 
                     <TabsContent value="clientes" className="mt-4">
-                        <div className="border border-slate-800 rounded-lg overflow-hidden">
+                        <div className="border border-border rounded-lg overflow-hidden">
                             <Table>
-                                <TableHeader className="bg-slate-900/50">
-                                    <TableRow className="border-slate-800 hover:bg-transparent">
-                                        <TableHead className="text-slate-300">RUC</TableHead>
-                                        <TableHead className="text-slate-300">Razón Social</TableHead>
-                                        <TableHead className="text-slate-300">Propietario</TableHead>
-                                        <TableHead className="text-slate-300">Fecha de Baja</TableHead>
-                                        <TableHead className="text-slate-300 text-right">Acciones</TableHead>
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="text-muted-foreground">RUC</TableHead>
+                                        <TableHead className="text-muted-foreground">Razón Social</TableHead>
+                                        <TableHead className="text-muted-foreground">Propietario</TableHead>
+                                        <TableHead className="text-muted-foreground">Fecha de Baja</TableHead>
+                                        <TableHead className="text-muted-foreground text-right">Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {clients.length === 0 ? (
-                                        <TableRow className="border-slate-800">
-                                            <TableCell colSpan={5} className="text-center text-slate-400 py-8">
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                                                 No hay clientes dados de baja
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         clients.map((client) => (
-                                            <TableRow key={client.ruc} className="border-slate-800 hover:bg-slate-800/30">
-                                                <TableCell className="font-mono text-blue-400">{client.ruc}</TableCell>
-                                                <TableCell className="text-white">{client.razon_social}</TableCell>
-                                                <TableCell className="text-slate-300">{client.propietario}</TableCell>
-                                                <TableCell className="text-slate-300">
+                                            <TableRow key={client.ruc}>
+                                                <TableCell className="font-mono text-primary font-medium">{client.ruc}</TableCell>
+                                                <TableCell className="font-medium text-foreground">{client.razon_social}</TableCell>
+                                                <TableCell className="text-muted-foreground">{client.propietario}</TableCell>
+                                                <TableCell className="text-muted-foreground">
                                                     {client.fecha_baja ? new Date(client.fecha_baja).toLocaleDateString('es-PE') : "-"}
                                                 </TableCell>
                                                 <TableCell className="text-right">
@@ -165,7 +165,7 @@ export default function BajasPage() {
                                                         onClick={() => handleReactivate(client)}
                                                         size="sm"
                                                         variant="outline"
-                                                        className="border-green-800 text-green-400 hover:bg-green-900/20 hover:text-green-300"
+                                                        className="border-green-600 text-green-700 hover:bg-green-100 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20"
                                                     >
                                                         <RotateCcw className="h-4 w-4 mr-2" />
                                                         Reactivar
@@ -180,34 +180,34 @@ export default function BajasPage() {
                     </TabsContent>
 
                     <TabsContent value="historial" className="mt-4">
-                        <div className="border border-slate-800 rounded-lg overflow-hidden">
+                        <div className="border border-border rounded-lg overflow-hidden">
                             <Table>
-                                <TableHeader className="bg-slate-900/50">
-                                    <TableRow className="border-slate-800 hover:bg-transparent">
-                                        <TableHead className="text-slate-300">RUC</TableHead>
-                                        <TableHead className="text-slate-300">Razón Social</TableHead>
-                                        <TableHead className="text-slate-300">Tipo Empresa</TableHead>
-                                        <TableHead className="text-slate-300">Categoría</TableHead>
-                                        <TableHead className="text-slate-300">Estado</TableHead>
-                                        <TableHead className="text-slate-300">Fecha de Baja</TableHead>
-                                        <TableHead className="text-slate-300">Fecha de Reactivación</TableHead>
-                                        <TableHead className="text-slate-300">Usuario</TableHead>
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="text-muted-foreground">RUC</TableHead>
+                                        <TableHead className="text-muted-foreground">Razón Social</TableHead>
+                                        <TableHead className="text-muted-foreground">Tipo Empresa</TableHead>
+                                        <TableHead className="text-muted-foreground">Categoría</TableHead>
+                                        <TableHead className="text-muted-foreground">Estado</TableHead>
+                                        <TableHead className="text-muted-foreground">Fecha de Baja</TableHead>
+                                        <TableHead className="text-muted-foreground">Fecha de Reactivación</TableHead>
+                                        <TableHead className="text-muted-foreground">Usuario</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {historial.length === 0 ? (
-                                        <TableRow className="border-slate-800">
-                                            <TableCell colSpan={7} className="text-center text-slate-400 py-8">
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                                                 No hay registro de bajas
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         historial.map((registro) => (
-                                            <TableRow key={registro.id} className="border-slate-800 hover:bg-slate-800/30">
-                                                <TableCell className="font-mono text-blue-400">{registro.cliente_info?.ruc || registro.cliente}</TableCell>
-                                                <TableCell className="text-white">{registro.cliente_info?.razon_social}</TableCell>
-                                                <TableCell className="text-slate-300 text-sm">{registro.cliente_info?.tipo_empresa || "-"}</TableCell>
-                                                <TableCell className="text-slate-300 text-center">
+                                            <TableRow key={registro.id}>
+                                                <TableCell className="font-mono text-primary font-medium">{registro.cliente_info?.ruc || registro.cliente}</TableCell>
+                                                <TableCell className="font-medium text-foreground">{registro.cliente_info?.razon_social}</TableCell>
+                                                <TableCell className="text-muted-foreground text-sm">{registro.cliente_info?.tipo_empresa || "-"}</TableCell>
+                                                <TableCell className="text-muted-foreground text-center">
                                                     {registro.cliente_info?.categoria ? (
                                                         <Badge variant="outline">{registro.cliente_info.categoria}</Badge>
                                                     ) : "-"}
@@ -215,13 +215,13 @@ export default function BajasPage() {
                                                 <TableCell>
                                                     {getEstadoBadge(registro.estado)}
                                                 </TableCell>
-                                                <TableCell className="text-slate-300 text-sm">
+                                                <TableCell className="text-muted-foreground text-sm">
                                                     {formatDate(registro.fecha_baja)}
                                                 </TableCell>
-                                                <TableCell className="text-slate-300 text-sm">
+                                                <TableCell className="text-muted-foreground text-sm">
                                                     {registro.fecha_reactivacion ? formatDate(registro.fecha_reactivacion) : "-"}
                                                 </TableCell>
-                                                <TableCell className="text-slate-300 text-sm">
+                                                <TableCell className="text-muted-foreground text-sm">
                                                     {registro.usuario_baja_info?.full_name || "-"}
                                                 </TableCell>
                                             </TableRow>
@@ -235,15 +235,15 @@ export default function BajasPage() {
             )}
 
             <AlertDialog open={isReactivateDialogOpen} onOpenChange={setIsReactivateDialogOpen}>
-                <AlertDialogContent className="bg-slate-900 border-slate-700 text-white">
+                <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Reactivar cliente?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-400">
+                        <AlertDialogDescription>
                             El cliente &quot;{clientToReactivate?.razon_social}&quot; volverá a estar activo y aparecerá en la lista principal.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-600">Cancelar</AlertDialogCancel>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={confirmReactivate}
                             className="bg-green-600 hover:bg-green-700 text-white"

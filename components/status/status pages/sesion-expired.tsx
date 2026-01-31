@@ -18,14 +18,14 @@ export default function SessionExpiredPage() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-red-50 to-rose-50 flex flex-col items-center justify-center p-4">
 
-      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-12 text-center space-y-8">
+      <div className="max-w-2xl w-full bg-slate-100 border border-slate-200 rounded-2xl shadow-2xl p-12 text-center space-y-8">
         <div className="space-y-4">
           <div className="text-7xl font-bold text-red-600">401</div>
           <h1 className="text-5xl font-bold text-gray-900">Sesión Expirada</h1>
           <p className="text-xl text-gray-600">Tu Sesión Ha Terminado</p>
         </div>
 
-        <div className="bg-gray-100 rounded-xl p-6 space-y-4">
+        <div className="bg-slate-200/80 rounded-xl p-6 space-y-4">
           <h3 className="text-xl font-bold text-gray-900 text-left">Detalles de la Sesión</h3>
           <div className="space-y-3 text-left">
             <div className="flex justify-between items-center pb-3 border-b border-gray-300">

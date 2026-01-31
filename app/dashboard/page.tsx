@@ -37,15 +37,15 @@ export default function DashboardPage() {
         <div className="space-y-6 w-full">
             {/* Header */}
             <div>
-                <h1 className={`font-bold text-white ${isMobile ? "text-2xl" : "text-3xl"}`}>Dashboard</h1>
-                <p className="text-slate-400 mt-2">Bienvenido al sistema contable</p>
+                <h1 className={`font-bold text-foreground ${isMobile ? "text-2xl" : "text-3xl"}`}>Dashboard</h1>
+                <p className="text-muted-foreground mt-2">Bienvenido al sistema contable</p>
             </div>
 
             {/* KPI Cards */}
             {loading ? (
                 <div className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
                     {[1, 2, 3].map((i) => (
-                        <div key={i} className="h-24 bg-slate-800/50 rounded-lg animate-pulse" />
+                        <div key={i} className="h-24 bg-muted/50 rounded-lg animate-pulse" />
                     ))}
                 </div>
             ) : error ? (
@@ -79,14 +79,14 @@ export default function DashboardPage() {
             )}
 
             {/* Clients Table */}
-            <Card className="border-slate-800 bg-slate-900/50 w-full">
+            <Card className="w-full">
                 <CardHeader>
                     <CardTitle>Gestión de Clientes</CardTitle>
                     <CardDescription>Administra los datos de tus clientes</CardDescription>
                 </CardHeader>
                 <CardContent className="w-full overflow-hidden">
-                    <ClientsTableResponsive 
-                        disableEdit={!isAdminOrSuperAdmin()} 
+                    <ClientsTableResponsive
+                        disableEdit={!isAdminOrSuperAdmin()}
                         showAllClients={true}
                     />
                 </CardContent>
