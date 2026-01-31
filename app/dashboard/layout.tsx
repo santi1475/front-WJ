@@ -3,10 +3,11 @@
 import type React from "react"
 import { useState, createContext, useContext } from "react"
 import { Sidebar } from "@/components/sidebar"
+import { Navbar } from "@/components/navbar"
 
 const SidebarContext = createContext({
     isSidebarOpen: true,
-    setIsSidebarOpen: (_value: boolean) => {},
+    setIsSidebarOpen: (_value: boolean) => { },
 })
 
 export const useSidebarContext = () => useContext(SidebarContext)
@@ -22,11 +23,11 @@ export default function DashboardLayout({
         <SidebarContext.Provider value={{ isSidebarOpen, setIsSidebarOpen }}>
             <div className="min-h-screen">
                 <Sidebar />
-                <main 
-                    className={`bg-background min-h-screen transition-all duration-300 ease-in-out ${
-                        isSidebarOpen ? 'ml-64' : 'ml-20'
-                    }`}
+                <main
+                    className={`bg-background min-h-screen transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-20'
+                        }`}
                 >
+                    <Navbar />
                     <div className="p-4 sm:p-6">{children}</div>
                 </main>
             </div>

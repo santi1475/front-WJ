@@ -46,7 +46,7 @@ export function StatusSection({ client }: StatusSectionProps) {
         : 'text-slate-600 dark:text-slate-400',
       bgColor: client.selectivo_consumo
         ? 'bg-orange-50 dark:bg-orange-950/20'
-        : 'bg-slate-50 dark:bg-slate-950/20',
+        : 'bg-slate-200/70 dark:bg-slate-950/20',
       borderColor: client.selectivo_consumo
         ? 'border-orange-200 dark:border-orange-900'
         : 'border-slate-200 dark:border-slate-900',

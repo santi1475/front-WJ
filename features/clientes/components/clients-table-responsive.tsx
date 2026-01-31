@@ -152,12 +152,12 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             {/* Search and Actions */}
             <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                     <Input
                         placeholder="Buscar por RUC o razón social..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-slate-800 border-slate-700 text-white w-full"
+                        className="pl-10 w-full bg-muted/50 border-input text-foreground focus:bg-background focus:ring-2 dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-100"
                     />
                 </div>
                 <div className="flex gap-2">
@@ -199,7 +199,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                             <Button
                                 onClick={fetchClients}
                                 variant="outline"
-                                className="border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent"
+                                className="border-input hover:bg-muted"
                             >
                                 Actualizar
                             </Button>
@@ -216,29 +216,29 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>
-                            <TableRow className="border-slate-800 hover:bg-transparent">
+                            <TableRow className="hover:bg-transparent">
                                 {isSelectionMode && (
-                                    <TableHead className="w-[50px] text-slate-300">
+                                    <TableHead className="w-[50px]">
                                         <Checkbox
                                             checked={filteredClients.length > 0 && selectedRucs.length === filteredClients.length}
                                             onCheckedChange={toggleSelectAll}
                                         />
                                     </TableHead>
                                 )}
-                                <TableHead className="w-[50px] text-slate-300">N°</TableHead>
-                                <TableHead className="text-slate-300">RUC</TableHead>
-                                <TableHead className="text-slate-300">Razón Social</TableHead>
-                                <TableHead className="text-slate-300">Propietario</TableHead>
-                                <TableHead className="text-slate-300">Responsable</TableHead>
-                                <TableHead className="text-slate-300">Categoria</TableHead>
-                                <TableHead className="text-slate-300">Estado</TableHead>
-                                <TableHead className="text-slate-300 text-center">Acciones</TableHead>
+                                <TableHead className="w-[50px] font-semibold text-slate-700 dark:text-slate-300">N°</TableHead>
+                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">RUC</TableHead>
+                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Razón Social</TableHead>
+                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Propietario</TableHead>
+                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Responsable</TableHead>
+                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Categoria</TableHead>
+                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Estado</TableHead>
+                                <TableHead className="text-center font-semibold text-slate-700 dark:text-slate-300">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {filteredClients.length === 0 ? (
-                                <TableRow className="border-slate-800">
-                                    <TableCell colSpan={7} className="text-center text-slate-400 py-8">
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                                         No hay clientes registrados
                                     </TableCell>
                                 </TableRow>
@@ -246,7 +246,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 filteredClients.map((client, index) => (
                                     <TableRow
                                         key={client.ruc}
-                                        className="border-slate-800 hover:bg-slate-800/30 cursor-pointer"
+                                        className="cursor-pointer"
                                         onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
                                     >
                                         {isSelectionMode && (
@@ -257,14 +257,14 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                 />
                                             </TableCell>
                                         )}
-                                        <TableCell className="text-slate-400">{index + 1}</TableCell>
-                                        <TableCell className="font-mono text-blue-400">{client.ruc}</TableCell>
-                                        <TableCell className="text-white">{client.razon_social}</TableCell>
-                                        <TableCell className="text-slate-300">{client.propietario}</TableCell>
-                                        <TableCell className="text-slate-300">
+                                        <TableCell className="text-slate-600 dark:text-slate-400">{index + 1}</TableCell>
+                                        <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">{client.ruc}</TableCell>
+                                        <TableCell className="font-medium text-slate-900 dark:text-slate-100">{client.razon_social}</TableCell>
+                                        <TableCell className="text-slate-600 dark:text-slate-400">{client.propietario}</TableCell>
+                                        <TableCell className="text-slate-600 dark:text-slate-400">
                                             {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
                                         </TableCell>
-                                        <TableCell className="text-slate-300 text-center">
+                                        <TableCell className="text-center">
                                             <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
                                                 {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
                                             </Badge>
@@ -273,8 +273,8 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                             <Badge
                                                 className={
                                                     client.estado
-                                                        ? "bg-green-900/30 text-green-400 border border-green-700/50"
-                                                        : "bg-red-900/30 text-red-400 border border-red-700/50"
+                                                        ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                                                        : "bg-red-100 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
                                                 }
                                                 variant="outline"
                                             >
@@ -306,14 +306,14 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             {isMobile && (
                 <div className="space-y-3">
                     {filteredClients.length === 0 ? (
-                        <Card className="border-slate-800 bg-slate-900/50">
-                            <CardContent className="pt-6 text-center text-slate-400">No hay clientes registrados</CardContent>
+                        <Card className="bg-muted/30">
+                            <CardContent className="pt-6 text-center text-muted-foreground">No hay clientes registrados</CardContent>
                         </Card>
                     ) : (
                         filteredClients.map((client) => (
                             <Card
                                 key={client.ruc}
-                                className="border-slate-800 bg-slate-900/50 cursor-pointer"
+                                className="cursor-pointer hover:bg-accent/50 transition-colors"
                                 onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
                             >
                                 <CardContent className="pt-6">
@@ -328,9 +328,9 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                             </div>
                                         )}
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-mono text-blue-400 text-sm font-semibold">{client.ruc}</p>
-                                            <p className="text-white font-medium truncate">{client.razon_social}</p>
-                                            <p className="text-slate-400 text-sm">{client.propietario}</p>
+                                            <p className="font-mono text-blue-500 text-sm font-semibold">{client.ruc}</p>
+                                            <p className="font-medium truncate text-foreground">{client.razon_social}</p>
+                                            <p className="text-muted-foreground text-sm">{client.propietario}</p>
                                         </div>
                                         <div className="flex gap-2 shrink-0">
                                             <Button
@@ -346,7 +346,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                 onClick={() => setExpandedRow(expandedRow === client.ruc ? null : client.ruc)}
                                                 size="sm"
                                                 variant="ghost"
-                                                className="text-slate-400 hover:bg-slate-800 h-8 w-8 p-0"
+                                                className="h-8 w-8 p-0"
                                             >
                                                 <ChevronDown
                                                     className={`h-4 w-4 transition-transform ${expandedRow === client.ruc ? "rotate-180" : ""}`}
@@ -357,21 +357,21 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
 
                                     {/* Expanded details */}
                                     {expandedRow === client.ruc && (
-                                        <div className="mt-4 pt-4 border-t border-slate-800 space-y-3">
+                                        <div className="mt-4 pt-4 border-t space-y-3">
                                             <div className="flex justify-between">
-                                                <span className="text-slate-400 text-sm">Responsable:</span>
-                                                <span className="text-slate-300 text-sm">
+                                                <span className="text-muted-foreground text-sm">Responsable:</span>
+                                                <span className="text-foreground text-sm">
                                                     {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-slate-400 text-sm">Régimen:</span>
-                                                <Badge variant="outline" className="border-slate-600 text-slate-300">
+                                                <span className="text-muted-foreground text-sm">Régimen:</span>
+                                                <Badge variant="outline" className="text-foreground">
                                                     {client.regimen_tributario}
                                                 </Badge>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-slate-400 text-sm">Estado:</span>
+                                                <span className="text-muted-foreground text-sm">Estado:</span>
                                                 <Badge
                                                     className={
                                                         client.estado

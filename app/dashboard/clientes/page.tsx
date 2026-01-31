@@ -16,7 +16,7 @@ export default function ClientesPage() {
                     <p className="text-muted-foreground mt-2">Administra todos tus clientes y su información</p>
                 </div>
                 <Link href="/dashboard/clientes/bajas">
-                    <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
+                    <Button variant="outline" className="border-input hover:bg-muted">
                         <ArrowDownFromLine className="h-4 w-4 mr-2" />
                         Bajas
                     </Button>

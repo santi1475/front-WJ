@@ -4,43 +4,47 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* ERP Professional Dark Theme */
-  /* Primary colors */
-  --background: 3 7% 6%;
-  --foreground: 0 0% 100%;
+  /* ERP Professional Light Theme - Grey tonalities (no white saturation) */
+  /* Background: grey base */
+  --background: 220 14% 90%;
+  --foreground: 222 47% 11%; /* Slate-900 */
 
-  /* Card and container colors */
-  --card: 217 32% 17%;
-  --card-foreground: 0 0% 100%;
+  /* Card: grey to differentiate from background */
+  --card: 214 32% 96%; /* Slate-150 */
+  --card-foreground: 222 47% 11%; /* Slate-900 */
 
   /* Popover */
-  --popover: 217 32% 17%;
-  --popover-foreground: 0 0% 100%;
+  --popover: 214 32% 96%; /* Slate-150 */
+  --popover-foreground: 222 47% 11%; /* Slate-900 */
 
   /* Primary (Blue) */
-  --primary: 219 100% 50%;
-  --primary-foreground: 0 0% 100%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 210 40% 98%;
 
-  /* Secondary (Slate) */
-  --secondary: 215 16% 47%;
-  --secondary-foreground: 0 0% 100%;
+  /* Secondary: visible grey for badges */
+  --secondary: 214 32% 89%; /* Slate-200 */
+  --secondary-foreground: 222 47% 22%; /* Slate-800 */
 
-  /* Muted */
-  --muted: 215 13% 34%;
-  --muted-foreground: 215 12% 74%;
+  /* Muted: for alternating rows, inputs */
+  --muted: 214 32% 91%; /* Slate-200 */
+  --muted-foreground: 215 16% 47%; /* Slate-600 */
 
   /* Accent */
-  --accent: 219 100% 50%;
-  --accent-foreground: 0 0% 100%;
+  --accent: 214 32% 89%; /* Slate-200 */
+  --accent-foreground: 222 47% 11%;
 
   /* Destructive */
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
 
-  /* Border and input */
-  --border: 215 13% 27%;
-  --input: 217 32% 17%;
-  --ring: 219 100% 50%;
+  /* Border and input: visible grey */
+  --border: 214 32% 85%; /* Slate-300 */
+  --input: 214 32% 85%; /* Slate-300 */
+  --ring: 221 83% 53%;
+
+  /* Table: header and alternating rows */
+  --table-header: 214 32% 89%; /* Slate-200 */
+  --table-row-alt: 190 0% 96%; /* Grey alternate row */
 
   --radius: 0.5rem;
   --chart-1: 219 100% 50%;
@@ -48,14 +52,14 @@
   --chart-3: 142 76% 36%;
   --chart-4: 274 100% 57%;
   --chart-5: 38 92% 50%;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 221 83% 53%;
+  --sidebar-primary-foreground: 210 40% 98%;
+  --sidebar-accent: 217 32% 17%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 217 32% 17%;
+  --sidebar-ring: 221 83% 53%;
 }
 
 .dark {
@@ -91,10 +95,13 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+  --table-header: 220 13% 18%;
+  --table-row-alt: 220 13% 14%;
 }
 
 @theme inline {
-  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -131,6 +138,8 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-table-header: hsl(var(--table-header));
+  --color-table-row-alt: hsl(var(--table-row-alt));
 }
 
 @layer base {
@@ -139,30 +148,5 @@
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer base {
-  html {
-    @apply scroll-smooth;
-  }
-
-  body {
-    @apply antialiased;
-  }
-}
-
-/* Custom scrollbar styling */
-@layer base {
-  ::-webkit-scrollbar {
-    @apply w-2 h-2;
-  }
-
-  ::-webkit-scrollbar-track {
-    @apply bg-slate-900;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-slate-700 rounded hover:bg-slate-600;
   }
 }

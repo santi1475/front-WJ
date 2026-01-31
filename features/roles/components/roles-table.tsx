@@ -32,9 +32,9 @@ export function RolesTable({ roles, onEdit, onDelete }: RolesTableProps) {
 
     return (
         <>
-            <div className="border rounded-lg overflow-hidden">
+            <div className="border border-border rounded-lg overflow-hidden">
                 <Table>
-                    <TableHeader className="bg-muted/50">
+                    <TableHeader>
                         <TableRow>
                             <TableHead className="font-semibold">Rol</TableHead>
                             <TableHead className="font-semibold">Permisos</TableHead>

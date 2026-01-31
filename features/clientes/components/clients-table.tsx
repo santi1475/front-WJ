@@ -168,12 +168,12 @@ export function ClientsTable() {
             {/* Search and Actions */}
             <div className="flex gap-2">
                 <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Buscar por razón social o propietario..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-slate-800 border-slate-700 text-white"
+                        className="pl-10 bg-muted/50 border-input focus:bg-background dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                         disabled={isSelectionMode}
                     />
                 </div>
@@ -207,14 +207,14 @@ export function ClientsTable() {
                             onClick={toggleSelectionMode}
                             isSelectionMode={isSelectionMode}
                         />
-                        <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
+                        <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 text-white">
                             <Plus className="h-4 w-4 mr-2" />
                             Nuevo Cliente
                         </Button>
                         <Button
                             onClick={handleRefresh}
                             variant="outline"
-                            className="border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent"
+                            className="border-input hover:bg-muted dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:bg-transparent"
                         >
                             Actualizar
                         </Button>
@@ -227,33 +227,33 @@ export function ClientsTable() {
 
             {/* Table */}
             <div className="overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="border-slate-800 hover:bg-transparent">
+                    <Table>
+                        <TableHeader>
+                        <TableRow className="hover:bg-transparent">
                             {isSelectionMode && (
-                                <TableHead className="w-50px text-slate-300">
+                                <TableHead className="w-50px text-muted-foreground">
                                     <Checkbox
                                         checked={filteredClients.length > 0 && selectedRucs.length === filteredClients.length}
                                         onCheckedChange={toggleSelectAll}
                                     />
                                 </TableHead>
                             )}
-                            <TableHead className="w-50px text-slate-300">N°</TableHead>
-                            <TableHead className="text-slate-300">RUC</TableHead>
-                            <TableHead className="text-slate-300">Razón Social</TableHead>
-                            <TableHead className="text-slate-300">Propietario</TableHead>
-                            <TableHead className="text-slate-300">Codigo de control</TableHead>
-                            <TableHead className="text-slate-300">Responsable</TableHead>
-                            <TableHead className="text-slate-300">Régimen Tributario</TableHead>
-                            <TableHead className="text-slate-300">Régimen Laboral</TableHead>
-                            <TableHead className="text-slate-300 text-center">Categoria</TableHead>
-                            <TableHead className="text-slate-300 text-center">Acciones</TableHead>
+                            <TableHead className="w-50px text-muted-foreground">N°</TableHead>
+                            <TableHead className="text-muted-foreground">RUC</TableHead>
+                            <TableHead className="text-muted-foreground">Razón Social</TableHead>
+                            <TableHead className="text-muted-foreground">Propietario</TableHead>
+                            <TableHead className="text-muted-foreground">Codigo de control</TableHead>
+                            <TableHead className="text-muted-foreground">Responsable</TableHead>
+                            <TableHead className="text-muted-foreground">Régimen Tributario</TableHead>
+                            <TableHead className="text-muted-foreground">Régimen Laboral</TableHead>
+                            <TableHead className="text-muted-foreground text-center">Categoria</TableHead>
+                            <TableHead className="text-muted-foreground text-center">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredClients.length === 0 ? (
-                            <TableRow className="border-slate-800">
-                                <TableCell colSpan={isSelectionMode ? 12 : 11} className="text-center text-slate-400 py-8">
+                            <TableRow>
+                                <TableCell colSpan={isSelectionMode ? 12 : 11} className="text-center text-muted-foreground py-8">
                                     No hay clientes registrados
                                 </TableCell>
                             </TableRow>
@@ -261,7 +261,7 @@ export function ClientsTable() {
                             filteredClients.map((client, index) => (
                                 <TableRow
                                     key={client.ruc}
-                                    className="border-slate-800 hover:bg-slate-800/30 cursor-pointer"
+                                    className="hover:bg-muted/70 cursor-pointer"
                                     onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
                                 >
                                     {isSelectionMode && (
@@ -272,25 +272,25 @@ export function ClientsTable() {
                                             />
                                         </TableCell>
                                     )}
-                                    <TableCell className="text-slate-400">{index + 1}</TableCell>
-                                    <TableCell className="font-mono text-blue-400">{client.ruc}</TableCell>
-                                    <TableCell className="text-white">{client.razon_social}</TableCell>
-                                    <TableCell className="text-slate-300">{client.propietario}</TableCell>
-                                    <TableCell className="text-slate-300 text-center">{client.codigo_control || "-"}</TableCell>
-                                    <TableCell className="text-slate-300">
+                                    <TableCell className="text-muted-foreground">{index + 1}</TableCell>
+                                    <TableCell className="font-mono text-primary font-medium">{client.ruc}</TableCell>
+                                    <TableCell className="font-medium text-foreground">{client.razon_social}</TableCell>
+                                    <TableCell className="text-muted-foreground">{client.propietario}</TableCell>
+                                    <TableCell className="text-muted-foreground text-center">{client.codigo_control || "-"}</TableCell>
+                                    <TableCell className="text-muted-foreground">
                                         {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <Badge variant="outline" className="border-slate-600 text-slate-300">
+                                        <Badge variant="secondary">
                                             {client.regimen_tributario}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <Badge variant="outline" className="border-slate-600 text-slate-300">
+                                        <Badge variant="secondary">
                                             {client.regimen_laboral_tipo}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-slate-300 text-center">
+                                    <TableCell className="text-center">
                                         <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
                                             {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
                                         </Badge>

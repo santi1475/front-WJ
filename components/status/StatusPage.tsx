@@ -39,9 +39,9 @@ export default function StatusPage({
         </div>
 
         {/* Status Info */}
-        <div className="bg-white rounded-xl shadow-lg p-8 w-full text-center space-y-2">
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-          <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+        <div className="bg-slate-100 rounded-xl shadow-lg border border-slate-200 p-8 w-full text-center space-y-2">
+          <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
+          <p className="text-slate-600 text-sm leading-relaxed">{description}</p>
         </div>
 
         {/* Action Button */}

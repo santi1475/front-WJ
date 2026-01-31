@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -37,11 +38,18 @@ export default function RootLayout({
     children: React.ReactNode
 }>) {
     return (
-        <html lang="es" className="dark">
-            <body className={`${_geist.className} antialiased bg-slate-950 text-slate-50`}>
-                {children}
-                <Analytics />
-                <Toaster richColors position="top-right" />
+        <html lang="es" suppressHydrationWarning>
+            <body className={`${_geist.className} antialiased`}>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="dark"
+                    enableSystem
+                    disableTransitionOnChange
+                >
+                    {children}
+                    <Analytics />
+                    <Toaster richColors position="top-right" />
+                </ThemeProvider>
             </body>
         </html>
     )
