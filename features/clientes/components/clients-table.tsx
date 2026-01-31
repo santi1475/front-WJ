@@ -67,8 +67,6 @@ export function ClientsTable() {
             client.propietario.toLowerCase().includes(searchTerm.toLowerCase()),
     )
 
-
-
     const handleCreate = () => {
         setSelectedClient(null)
         setIsModalOpen(true)
@@ -173,7 +171,7 @@ export function ClientsTable() {
                         placeholder="Buscar por razón social o propietario..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-muted/50 border-input focus:bg-background dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                        className="pl-10 bg-muted/50 border-input focus:bg-background dark:bg-slate-950 dark:border-slate-700 dark:text-white"
                         disabled={isSelectionMode}
                     />
                 </div>
@@ -227,8 +225,8 @@ export function ClientsTable() {
 
             {/* Table */}
             <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
+                <Table>
+                    <TableHeader>
                         <TableRow className="hover:bg-transparent">
                             {isSelectionMode && (
                                 <TableHead className="w-50px text-muted-foreground">
@@ -273,7 +271,7 @@ export function ClientsTable() {
                                         </TableCell>
                                     )}
                                     <TableCell className="text-muted-foreground">{index + 1}</TableCell>
-                                    <TableCell className="font-mono text-primary font-medium">{client.ruc}</TableCell>
+                                    <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">{client.ruc}</TableCell>
                                     <TableCell className="font-medium text-foreground">{client.razon_social}</TableCell>
                                     <TableCell className="text-muted-foreground">{client.propietario}</TableCell>
                                     <TableCell className="text-muted-foreground text-center">{client.codigo_control || "-"}</TableCell>

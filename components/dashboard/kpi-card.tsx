@@ -15,7 +15,7 @@ const colorStyles = {
 
 export function KPICard({ title, value, description, color }: KPICardProps) {
     return (
-        <Card className={`border ${colorStyles[color]}`}>
+        <Card className={`border ${colorStyles[color]} bg-neutral-100 dark:bg-zinc-950`}>
             <CardContent className="pt-6">
                 <div className="space-y-2">
                     <p className="text-sm text-muted-foreground font-medium">{title}</p>
