@@ -122,7 +122,7 @@ export interface ModuleConfig {
   path: string;
   icon: string;
   description: string;
-  requiredRoles?: string[];
+  requiredRoles: string[];
   requiredPermissions?: string[];
   hasCreatePermission?: boolean;
   hasEditPermission?: boolean;

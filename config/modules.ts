@@ -97,7 +97,7 @@ export const getModulesByRole = (role: string): ModuleConfig[] => {
   }
 
   return Object.values(MODULE_REGISTRY).filter((module) =>
-    module.requiredRoles?.includes(role),
+    module.requiredRoles.includes(role),
   );
 };
 
