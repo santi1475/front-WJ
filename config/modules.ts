@@ -1,4 +1,4 @@
-import type { ModuleConfig, IUser} from "@/features/shared/types";
+import type { ModuleConfig, IUser } from "@/features/shared/types";
 
 export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   CLIENTES: {
@@ -95,15 +95,15 @@ export const getModulesByRole = (role: string): ModuleConfig[] => {
     console.warn(`Rol inválido detectado: ${role}`);
     return [];
   }
-  
+
   return Object.values(MODULE_REGISTRY).filter((module) =>
-    module.requiredRoles.includes(role)
+    module.requiredRoles?.includes(role),
   );
 };
 
 export const canPerformAction = (
   module: ModuleConfig,
-  action: "create" | "edit" | "delete"
+  action: "create" | "edit" | "delete",
 ) => {
   const permissionMap = {
     create: module.hasCreatePermission,
