@@ -125,16 +125,21 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
               return (
                 <div
                   key={key}
-                  className={`p-4 rounded-lg border transition-all duration-200 space-y-3 ${isConfigured
-                      ? 'bg-gradient-to-br from-green-50/50 to-green-50/20 dark:from-green-950/20 dark:to-green-950/10 border-green-200/50 dark:border-green-900/30 hover:border-green-300/50'
-                      : 'bg-card/50 border-border/40 hover:border-border/60'
-                    }`}
+                  className={`p-4 rounded-lg border transition-all duration-200 space-y-3 ${
+                    isConfigured
+                      ? 'bg-emerald-50/80 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800/50 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-sm hover:shadow-md'
+                      : 'bg-slate-50/50 border-slate-200 dark:bg-slate-900/30 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600'
+                  }`}
                 >
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-bold text-foreground">{item.label}</h4>
                     <Badge
                       variant={isConfigured ? 'default' : 'secondary'}
-                      className="text-xs"
+                      className={`text-xs ${
+                        isConfigured
+                          ? 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600'
+                          : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                      }`}
                     >
                       {isConfigured ? 'Activo' : 'Pendiente'}
                     </Badge>
@@ -154,7 +159,7 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                             placeholder="Número de cuenta"
                           />
                         ) : (
-                          <p className="text-xs font-mono bg-muted/40 rounded px-2 py-1.5 text-foreground break-all">
+                          <p className="text-xs font-mono bg-white/60 dark:bg-slate-800/60 rounded px-2 py-1.5 text-foreground break-all border border-slate-200/50 dark:border-slate-700/50">
                             {item.cuenta}
                           </p>
                         )}
@@ -175,7 +180,7 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                                 'Detracción': 'detraccion_usuario',
                                 'INEI': 'inei_usuario',
                                 'AFP Net': 'afp_net_usuario',
-                                'Essalud': 'viva_essalud_usuario',
+                                'Viva Essalud': 'viva_essalud_usuario',
                                 'SIS': 'sis_usuario',
                               };
                               onUpdateField?.(fieldMap[item.label] || 'sol_usuario', e.target.value);
@@ -184,7 +189,7 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                             placeholder="Usuario"
                           />
                         ) : (
-                          <p className="text-xs font-mono bg-muted/40 rounded px-2 py-1.5 text-foreground">
+                          <p className="text-xs font-mono bg-white/60 dark:bg-slate-800/60 rounded px-2 py-1.5 text-foreground border border-slate-200/50 dark:border-slate-700/50">
                             {item.usuario}
                           </p>
                         )}
@@ -192,18 +197,18 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                     )}
 
                     {item.clave && (
-                      <div className="bg-gradient-to-br from-orange-50/40 to-orange-50/20 dark:from-orange-950/20 dark:to-orange-950/10 rounded-lg p-2.5 border border-orange-200/40 dark:border-orange-900/30">
+                      <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 dark:from-amber-950/40 dark:to-orange-950/20 rounded-lg p-2.5 border border-amber-200/60 dark:border-amber-800/40">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <Lock className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                            <Lock className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
+                            <p className="text-xs text-amber-800 dark:text-amber-300 uppercase tracking-wider font-semibold">
                               Contraseña
                             </p>
                           </div>
                           {!isEditMode && (
                             <button
                               onClick={() => togglePasswordVisibility(key)}
-                              className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-1.5 py-0.5 rounded hover:bg-muted/40 flex items-center gap-1"
+                              className="text-xs font-medium text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200 transition-colors px-1.5 py-0.5 rounded hover:bg-amber-100/50 dark:hover:bg-amber-900/30 flex items-center gap-1"
                               aria-label={showPasswords[key] ? 'Ocultar' : 'Mostrar'}
                               title={showPasswords[key] ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                             >
@@ -240,7 +245,7 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                             placeholder="Contraseña"
                           />
                         ) : (
-                          <div className="bg-background/60 rounded px-2.5 py-1.5 font-mono text-xs text-foreground break-all leading-relaxed border border-orange-200/30 dark:border-orange-900/20">
+                          <div className="bg-white/70 dark:bg-slate-900/60 rounded px-2.5 py-1.5 font-mono text-xs text-foreground break-all leading-relaxed border border-amber-200/40 dark:border-amber-800/30">
                             {showPasswords[key]
                               ? item.clave
                               : '•'.repeat(item.clave.length)}
@@ -262,7 +267,7 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                             placeholder="Valor"
                           />
                         ) : (
-                          <p className="text-xs font-mono bg-muted/40 rounded px-2 py-1.5 text-foreground break-all">
+                          <p className="text-xs font-mono bg-white/60 dark:bg-slate-800/60 rounded px-2 py-1.5 text-foreground break-all border border-slate-200/50 dark:border-slate-700/50">
                             {item.especial}
                           </p>
                         )}
@@ -277,4 +282,4 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
       </CardContent>
     </Card>
   );
-}
+} 

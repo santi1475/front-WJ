@@ -50,7 +50,7 @@ export function LaboralCard({ client, isEditMode, onUpdateField }: LaboralCardPr
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">Tipo de Régimen</p>
             {isEditMode ? (
               <Select value={client.regimen_laboral_tipo || ''} onValueChange={(value) => onUpdateField?.('regimen_laboral_tipo', value)}>
-                <SelectTrigger className="text-xs md:text-sm">
+                <SelectTrigger className="text-xs md:text-sm border-slate-300 dark:border-slate-600">
                   <SelectValue placeholder="Seleccionar régimen" />
                 </SelectTrigger>
                 <SelectContent>
@@ -77,7 +77,7 @@ export function LaboralCard({ client, isEditMode, onUpdateField }: LaboralCardPr
                 type="date"
                 value={client.regimen_laboral_fecha || ''}
                 onChange={(e) => onUpdateField?.('regimen_laboral_fecha', e.target.value)}
-                className="w-full text-sm text-foreground bg-muted/30 border border-border rounded px-2.5 py-1.5"
+                className="w-full text-sm text-foreground bg-muted/30 border border-slate-300 dark:border-slate-600 rounded px-2.5 py-1.5"
               />
             ) : (
               <p className={`text-sm font-medium ${isAccredited ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground'}`}>

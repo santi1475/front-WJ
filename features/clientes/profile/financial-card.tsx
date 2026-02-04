@@ -47,7 +47,7 @@ export function FinancialCard({ client, isEditMode, onUpdateField }: FinancialCa
               <Input
                 value={client.ingresos_mensuales}
                 onChange={(e) => onUpdateField?.('ingresos_mensuales', e.target.value)}
-                className="text-lg font-bold"
+                className="text-lg font-bold border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
               />
             ) : (
               <>
@@ -67,7 +67,7 @@ export function FinancialCard({ client, isEditMode, onUpdateField }: FinancialCa
               <Input
                 value={client.ingresos_anuales}
                 onChange={(e) => onUpdateField?.('ingresos_anuales', e.target.value)}
-                className="text-lg font-bold"
+                className="text-lg font-bold border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
               />
             ) : (
               <p className="text-lg font-bold text-foreground">

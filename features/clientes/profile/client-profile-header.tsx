@@ -60,7 +60,7 @@ export function ClientProfileHeader({ client, onEdit, isEditMode, onUpdateField 
             onClick={onEdit}
             variant="outline"
             size="sm"
-            className="self-start md:self-auto gap-2 border-border/60 hover:border-primary/40 hover:bg-primary/5 bg-transparent"
+            className="self-start md:self-auto gap-2 hover:bg-slate-800 bg-transparent dark:hover:bg-slate-200 dark:hover:text-black"
           >
             <Pencil className="w-4 h-4" />
             <span className="hidden sm:inline">Editar Datos</span>

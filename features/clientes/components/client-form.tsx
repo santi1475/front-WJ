@@ -200,7 +200,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         return !isControlled ? (
             <Button
                 onClick={() => setIsOpen?.(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
             >
                 {client ? "Editar Cliente" : "+ Nuevo Cliente"}
             </Button>
@@ -222,8 +222,8 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
-                    <div className="sticky top-0 z-10 bg-slate-900 border-b border-slate-700 rounded-t-lg px-6 py-4 flex items-center justify-between">
-                        <h2 className="text-white text-2xl font-semibold">
+                    <div className="sticky top-0 z-10 bg-card border-b border-border rounded-t-lg px-6 py-4 flex items-center justify-between">
+                        <h2 className="text-foreground text-2xl font-semibold">
                             {client ? "Editar Cliente" : "Nuevo Cliente"}
                         </h2>
                         <Button
@@ -231,17 +231,17 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                             variant="ghost"
                             size="icon"
                             onClick={() => setIsOpen?.(false)}
-                            className="text-slate-400 hover:text-white hover:bg-slate-800"
+                            className="text-muted-foreground hover:text-foreground hover:bg-muted"
                         >
                             <X className="h-5 w-5" />
                         </Button>
                     </div>
 
                     {/* Form Content */}
-                    <div className="bg-slate-900 rounded-b-lg p-4">
+                    <div className="bg-background rounded-b-lg p-4">
                         <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-3">
                             {error && (
-                                <div className="p-3 bg-red-900/20 border border-red-700/50 rounded text-red-400 text-sm">
+                                <div className="p-3 bg-destructive/10 border border-destructive/30 rounded text-destructive text-sm">
                                     {error}
                                 </div>
                             )}
@@ -249,16 +249,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                             {/* GRID PRINCIPAL DE TARJETAS - 5 columnas x 5 filas */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 grid-rows-1 gap-3 auto-rows-max">
                                 {/* Card 1: INFORMACIÓN GENERAL - row-span-3 row-start-2 */}
-                                <Card className="border-slate-600 bg-slate-800/50 backdrop-blur-sm row-span-3 row-start-2 h-fit">
-                                    <CardHeader className="border-b border-slate-700 pb-3">
-                                        <CardTitle className="text-white text-lg">📋 Información General</CardTitle>
-                                        <CardDescription className="text-slate-400">Datos básicos de la empresa</CardDescription>
+                                <Card className="border-border bg-card/50 backdrop-blur-sm row-span-3 row-start-2 h-fit">
+                                    <CardHeader className="border-b border-border pb-3">
+                                        <CardTitle className="text-foreground text-lg">📋 Información General</CardTitle>
+                                        <CardDescription className="text-muted-foreground">Datos básicos de la empresa</CardDescription>
                                     </CardHeader>
                                     <CardContent className="pt-4">
                                         <div className="grid grid-cols-1 gap-3">
                                             {/* RUC */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">RUC</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">RUC</Label>
                                                 <Controller
                                                     name="ruc"
                                                     control={control}
@@ -268,16 +268,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             {...field}
                                                             placeholder="20123456789"
                                                             disabled={!!client || isSubmitting}
-                                                            className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                         />
                                                     )}
                                                 />
-                                                {errors.ruc && <p className="text-red-400 text-xs mt-1 font-medium">{errors.ruc.message}</p>}
+                                                {errors.ruc && <p className="text-destructive text-xs mt-1 font-medium">{errors.ruc.message}</p>}
                                             </div>
 
                                             {/* Razón Social */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Razón Social</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Razón Social</Label>
                                                 <Controller
                                                     name="razon_social"
                                                     control={control}
@@ -287,18 +287,18 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             {...field}
                                                             placeholder="Nombre de la empresa"
                                                             disabled={isSubmitting}
-                                                            className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                         />
                                                     )}
                                                 />
                                                 {errors.razon_social && (
-                                                    <p className="text-red-400 text-xs mt-1 font-medium">{errors.razon_social.message}</p>
+                                                    <p className="text-destructive text-xs mt-1 font-medium">{errors.razon_social.message}</p>
                                                 )}
                                             </div>
 
                                             {/* Propietario */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Propietario</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Propietario</Label>
                                                 <Controller
                                                     name="propietario"
                                                     control={control}
@@ -308,18 +308,18 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             {...field}
                                                             placeholder="Nombre"
                                                             disabled={isSubmitting}
-                                                            className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                         />
                                                     )}
                                                 />
                                                 {errors.propietario && (
-                                                    <p className="text-red-400 text-xs mt-1 font-medium">{errors.propietario.message}</p>
+                                                    <p className="text-destructive text-xs mt-1 font-medium">{errors.propietario.message}</p>
                                                 )}
                                             </div>
 
                                             {/* Fecha de Ingreso */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Fecha de Ingreso</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Fecha de Ingreso</Label>
                                                 <Controller
                                                     name="fecha_ingreso"
                                                     control={control}
@@ -329,7 +329,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             value={field.value || ""}
                                                             type="date"
                                                             disabled={isSubmitting}
-                                                            className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                         />
                                                     )}
                                                 />
@@ -337,16 +337,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
                                             {/* Régimen Tributario */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Régimen Tributario</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Régimen Tributario</Label>
                                                 <Controller
                                                     name="regimen_tributario"
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Select value={field.value} onValueChange={field.onChange}>
-                                                            <SelectTrigger className="bg-slate-700/60 border-slate-500 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm">
+                                                            <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
                                                                 <SelectValue />
                                                             </SelectTrigger>
-                                                            <SelectContent className="bg-slate-700 border-slate-600">
+                                                            <SelectContent className="bg-card border-border">
                                                                 <SelectItem value={RegimenTributario.RMT}>RMT</SelectItem>
                                                                 <SelectItem value={RegimenTributario.ESPECIAL}>Especial</SelectItem>
                                                                 <SelectItem value={RegimenTributario.RUS}>RUS</SelectItem>
@@ -359,16 +359,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
                                             {/* Tipo de Empresa */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Tipo de Empresa</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Tipo de Empresa</Label>
                                                 <Controller
                                                     name="tipo_empresa"
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Select value={field.value} onValueChange={field.onChange}>
-                                                            <SelectTrigger className="bg-slate-700/60 border-slate-500 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm">
+                                                            <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
                                                                 <SelectValue />
                                                             </SelectTrigger>
-                                                            <SelectContent className="bg-slate-700 border-slate-600">
+                                                            <SelectContent className="bg-card border-border">
                                                                 <SelectItem value={TipoEmpresa.SAC}>SAC</SelectItem>
                                                                 <SelectItem value={TipoEmpresa.EIRL}>EIRL</SelectItem>
                                                                 <SelectItem value={TipoEmpresa.SRL}>SRL</SelectItem>
@@ -382,7 +382,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
                                             {/* Ingresos Mensuales */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Ingresos Mensuales</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Ingresos Mensuales</Label>
                                                 <Controller
                                                     name="ingresos_mensuales"
                                                     control={control}
@@ -391,7 +391,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             {...field}
                                                             placeholder="0.00"
                                                             disabled={isSubmitting}
-                                                            className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                         />
                                                     )}
                                                 />
@@ -399,7 +399,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
                                             {/* Ingresos Anuales */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Ingresos Anuales</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Ingresos Anuales</Label>
                                                 <Controller
                                                     name="ingresos_anuales"
                                                     control={control}
@@ -408,7 +408,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             {...field}
                                                             placeholder="0.00"
                                                             disabled={isSubmitting}
-                                                            className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                         />
                                                     )}
                                                 />
@@ -416,16 +416,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
                                             {/* Categoría */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Categoría</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Categoría</Label>
                                                 <Controller
                                                     name="categoria"
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Select value={field.value} onValueChange={field.onChange}>
-                                                            <SelectTrigger className="bg-slate-700/60 border-slate-500 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm">
+                                                            <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
                                                                 <SelectValue />
                                                             </SelectTrigger>
-                                                            <SelectContent className="bg-slate-700 border-slate-600">
+                                                            <SelectContent className="bg-card border-border">
                                                                 <SelectItem value="A">A - Activo</SelectItem>
                                                                 <SelectItem value="B">B - Pendiente</SelectItem>
                                                                 <SelectItem value="C">C - Inactivo</SelectItem>
@@ -438,7 +438,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
                                             {/* Código de Control */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Código de Control</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Código de Control</Label>
                                                 <Controller
                                                     name="codigo_control"
                                                     control={control}
@@ -447,7 +447,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             {...field}
                                                             placeholder="0"
                                                             disabled={isSubmitting}
-                                                            className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                             onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                                                         />
                                                     )}
@@ -456,7 +456,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
                                             {/* Responsable */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Responsable</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Responsable</Label>
                                                 <Controller
                                                     name="responsable"
                                                     control={control}
@@ -466,7 +466,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             onValueChange={(value) => field.onChange(value === "0" ? 0 : Number(value))}
                                                             disabled={isSubmitting || loadingUsers || (!user?.is_superuser && user?.id !== 1)}
                                                         >
-                                                            <SelectTrigger className="bg-slate-700/60 border-slate-500 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm">
+                                                            <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
                                                                 <SelectValue placeholder={loadingUsers ? "Cargando usuarios..." : "Seleccionar responsable"} />
                                                             </SelectTrigger>
                                                             <SelectContent className="bg-slate-700 border-slate-600 max-h-300px">
@@ -489,25 +489,25 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                 </Card>
 
                                 {/* Card 2: INFORMACIÓN LABORAL - row-start-2 */}
-                                <Card className="border-slate-600 bg-slate-800/50 backdrop-blur-sm row-start-2 h-fit">
-                                    <CardHeader className="border-b border-slate-700 pb-3">
-                                        <CardTitle className="text-white text-lg">👔 Información Laboral</CardTitle>
-                                        <CardDescription className="text-slate-400">Régimen laboral de la empresa</CardDescription>
+                                <Card className="border-border bg-card/50 backdrop-blur-sm row-start-2 h-fit">
+                                    <CardHeader className="border-b border-border pb-3">
+                                        <CardTitle className="text-foreground text-lg">👔 Información Laboral</CardTitle>
+                                        <CardDescription className="text-muted-foreground">Régimen laboral de la empresa</CardDescription>
                                     </CardHeader>
                                     <CardContent className="pt-4">
                                         <div className="grid grid-cols-1 gap-3">
                                             {/* Régimen Laboral Tipo */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Tipo de Régimen Laboral</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Tipo de Régimen Laboral</Label>
                                                 <Controller
                                                     name="regimen_laboral_tipo"
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Select value={field.value || undefined} onValueChange={field.onChange}>
-                                                            <SelectTrigger className="bg-slate-700/60 border-slate-500 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm">
+                                                            <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
                                                                 <SelectValue placeholder="Seleccionar régimen" />
                                                             </SelectTrigger>
-                                                            <SelectContent className="bg-slate-700 border-slate-600">
+                                                            <SelectContent className="bg-card border-border">
                                                                 {regimenesLaborales.map((regimen) => (
                                                                     <SelectItem key={regimen.id} value={regimen.descripcion}>
                                                                         {regimen.descripcion}
@@ -521,7 +521,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
                                             {/* Régimen Laboral Fecha */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Fecha de Acreditación</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Fecha de Acreditación</Label>
                                                 <Controller
                                                     name="regimen_laboral_fecha"
                                                     control={control}
@@ -531,7 +531,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             value={field.value || ""}
                                                             type="date"
                                                             disabled={isSubmitting}
-                                                            className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                         />
                                                     )}
                                                 />
@@ -541,15 +541,15 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                 </Card>
 
                                 {/* Card 3: DATOS ADICIONALES - row-start-2 */}
-                                <Card className="border-slate-600 bg-slate-800/50 backdrop-blur-sm row-start-2 h-fit">
-                                    <CardHeader className="border-b border-slate-700 pb-3">
-                                        <CardTitle className="text-white text-lg">📊 Datos Adicionales</CardTitle>
+                                <Card className="border-border bg-card/50 backdrop-blur-sm row-start-2 h-fit">
+                                    <CardHeader className="border-b border-border pb-3">
+                                        <CardTitle className="text-foreground text-lg">📊 Datos Adicionales</CardTitle>
                                     </CardHeader>
                                     <CardContent className="pt-4">
                                         <div className="grid grid-cols-1 gap-3">
                                             {/* Libros Societarios */}
                                             <div>
-                                                <Label className="text-slate-200 font-semibold text-xs mb-2 block">Libros Societarios</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Libros Societarios</Label>
                                                 <Controller
                                                     name="libros_societarios"
                                                     control={control}
@@ -559,7 +559,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             type="number"
                                                             placeholder="0"
                                                             disabled={isSubmitting}
-                                                            className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                             onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                                                         />
                                                     )}
@@ -577,11 +577,11 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                 checked={field.value}
                                                                 onCheckedChange={field.onChange}
                                                                 disabled={isSubmitting}
-                                                                className="border-slate-500 bg-slate-700/60"
+                                                                className="border-border bg-input"
                                                             />
                                                         )}
                                                     />
-                                                    <Label className="text-slate-200 font-semibold text-xs cursor-pointer">Selectivo Consumo</Label>
+                                                    <Label className="text-slate-800 font-semibold text-xs cursor-pointer dark:text-slate-200">Selectivo Consumo</Label>
                                                 </div>
                                             </div>
 
@@ -592,14 +592,14 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                 </Card>
 
                                 {/* Card 4: CREDENCIALES - col-span-2 row-span-2 col-start-2 row-start-3 */}
-                                <Card className="border-slate-600 bg-slate-800/50 backdrop-blur-sm col-span-2 row-span-2 col-start-2 row-start-3 h-fit">
-                                    <CardHeader className="border-b border-slate-700 pb-3">
-                                        <CardTitle className="text-white text-lg">🔐 Credenciales</CardTitle>
-                                        <CardDescription className="text-slate-400">Credenciales de acceso a sistemas</CardDescription>
+                                <Card className="border-border bg-card/50 backdrop-blur-sm col-span-2 row-span-2 col-start-2 row-start-3 h-fit">
+                                    <CardHeader className="border-b border-border pb-3">
+                                        <CardTitle className="text-foreground text-lg">🔐 Credenciales</CardTitle>
+                                        <CardDescription className="text-muted-foreground">Credenciales de acceso a sistemas</CardDescription>
                                     </CardHeader>
                                     <CardContent className="pt-4 space-y-4">
                                         {/* SOL (SUNAT) */}
-                                        <div className="border-b border-slate-700 pb-3">
+                                        <div className="border-b border-border pb-3">
                                             <div className="flex items-center space-x-2 mb-3">
                                                 <Checkbox
                                                     id="enable-sol"
@@ -617,16 +617,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             })
                                                         }
                                                     }}
-                                                    className="border-slate-500 bg-slate-700/60"
+                                                    className="border-border bg-input"
                                                 />
-                                                <Label htmlFor="enable-sol" className="text-slate-200 font-semibold text-sm cursor-pointer">
+                                                <Label htmlFor="enable-sol" className="text-card-foreground font-semibold text-sm cursor-pointer">
                                                     SOL (SUNAT)
                                                 </Label>
                                             </div>
                                             {enableSol && (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Usuario SOL</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Usuario SOL</Label>
                                                         <Controller
                                                             name="credenciales.sol_usuario"
                                                             control={control}
@@ -636,13 +636,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     value={field.value || ""}
                                                                     placeholder="Usuario"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Clave SOL</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave SOL</Label>
                                                         <Controller
                                                             name="credenciales.sol_clave"
                                                             control={control}
@@ -653,7 +653,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     type="password"
                                                                     placeholder="Contraseña"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
@@ -663,7 +663,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                         </div>
 
                                         {/* Detracción */}
-                                        <div className="border-b border-slate-700 pb-3">
+                                        <div className="border-b border-border pb-3">
                                             <div className="flex items-center space-x-2 mb-3">
                                                 <Checkbox
                                                     id="enable-detraccion"
@@ -682,16 +682,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             })
                                                         }
                                                     }}
-                                                    className="border-slate-500 bg-slate-700/60"
+                                                    className="border-border bg-input"
                                                 />
-                                                <Label htmlFor="enable-detraccion" className="text-slate-200 font-semibold text-sm cursor-pointer">
+                                                <Label htmlFor="enable-detraccion" className="text-card-foreground font-semibold text-sm cursor-pointer">
                                                     Detracción
                                                 </Label>
                                             </div>
                                             {enableDetraccion && (
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-6">
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Cuenta</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Cuenta</Label>
                                                         <Controller
                                                             name="credenciales.detraccion_cuenta"
                                                             control={control}
@@ -701,13 +701,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     value={field.value || ""}
                                                                     placeholder="Cuenta"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">DNI</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">DNI</Label>
                                                         <Controller
                                                             name="credenciales.detraccion_usuario"
                                                             control={control}
@@ -717,13 +717,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     value={field.value || ""}
                                                                     placeholder="DNI"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Clave</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave</Label>
                                                         <Controller
                                                             name="credenciales.detraccion_clave"
                                                             control={control}
@@ -734,7 +734,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     type="password"
                                                                     placeholder="Contraseña"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
@@ -744,7 +744,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                         </div>
 
                                         {/* INEI */}
-                                        <div className="border-b border-slate-700 pb-3">
+                                        <div className="border-b border-border pb-3">
                                             <div className="flex items-center space-x-2 mb-3">
                                                 <Checkbox
                                                     id="enable-inei"
@@ -762,16 +762,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             })
                                                         }
                                                     }}
-                                                    className="border-slate-500 bg-slate-700/60"
+                                                    className="border-border bg-input"
                                                 />
-                                                <Label htmlFor="enable-inei" className="text-slate-200 font-semibold text-sm cursor-pointer">
+                                                <Label htmlFor="enable-inei" className="text-card-foreground font-semibold text-sm cursor-pointer">
                                                     INEI
                                                 </Label>
                                             </div>
                                             {enableInei && (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Usuario INEI</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Usuario INEI</Label>
                                                         <Controller
                                                             name="credenciales.inei_usuario"
                                                             control={control}
@@ -781,13 +781,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     value={field.value || ""}
                                                                     placeholder="Usuario"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Clave INEI</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave INEI</Label>
                                                         <Controller
                                                             name="credenciales.inei_clave"
                                                             control={control}
@@ -798,7 +798,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     type="password"
                                                                     placeholder="Contraseña"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
@@ -808,7 +808,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                         </div>
 
                                         {/* AFP Net */}
-                                        <div className="border-b border-slate-700 pb-3">
+                                        <div className="border-b border-border pb-3">
                                             <div className="flex items-center space-x-2 mb-3">
                                                 <Checkbox
                                                     id="enable-afp"
@@ -826,16 +826,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             })
                                                         }
                                                     }}
-                                                    className="border-slate-500 bg-slate-700/60"
+                                                    className="border-border bg-input"
                                                 />
-                                                <Label htmlFor="enable-afp" className="text-slate-200 font-semibold text-sm cursor-pointer">
+                                                <Label htmlFor="enable-afp" className="text-card-foreground font-semibold text-sm cursor-pointer">
                                                     AFP Net
                                                 </Label>
                                             </div>
                                             {enableAfpNet && (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Usuario AFP Net</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Usuario AFP Net</Label>
                                                         <Controller
                                                             name="credenciales.afp_net_usuario"
                                                             control={control}
@@ -845,13 +845,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     value={field.value || ""}
                                                                     placeholder="Usuario"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Clave AFP Net</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave AFP Net</Label>
                                                         <Controller
                                                             name="credenciales.afp_net_clave"
                                                             control={control}
@@ -862,7 +862,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     type="password"
                                                                     placeholder="Contraseña"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
@@ -872,7 +872,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                         </div>
 
                                         {/* Viva Essalud */}
-                                        <div className="border-b border-slate-700 pb-3">
+                                        <div className="border-b border-border pb-3">
                                             <div className="flex items-center space-x-2 mb-3">
                                                 <Checkbox
                                                     id="enable-essalud"
@@ -890,16 +890,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             })
                                                         }
                                                     }}
-                                                    className="border-slate-500 bg-slate-700/60"
+                                                    className="border-border bg-input"
                                                 />
-                                                <Label htmlFor="enable-essalud" className="text-slate-200 font-semibold text-sm cursor-pointer">
+                                                <Label htmlFor="enable-essalud" className="text-card-foreground font-semibold text-sm cursor-pointer">
                                                     Viva Essalud
                                                 </Label>
                                             </div>
                                             {enableVivaEssalud && (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Usuario Viva Essalud</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Usuario Viva Essalud</Label>
                                                         <Controller
                                                             name="credenciales.viva_essalud_usuario"
                                                             control={control}
@@ -909,13 +909,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     value={field.value || ""}
                                                                     placeholder="Usuario"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Clave Viva Essalud</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave Viva Essalud</Label>
                                                         <Controller
                                                             name="credenciales.viva_essalud_clave"
                                                             control={control}
@@ -926,7 +926,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     type="password"
                                                                     placeholder="Contraseña"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
@@ -937,7 +937,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
                                         {/* PE */}
 
-                                        <div className="border-b border-slate-700 pb-3">
+                                        <div className="border-b border-border pb-3">
                                             <div className="flex items-center space-x-2 mb-3">
                                                 <Checkbox
                                                     id="enable-pe"
@@ -954,15 +954,15 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             })
                                                         }
                                                     }}
-                                                    className="border-slate-500 bg-slate-700/60"
+                                                    className="border-border bg-input"
                                                 />
-                                                <Label htmlFor="enable-pe" className="text-slate-200 font-semibold text-sm cursor-pointer">
+                                                <Label htmlFor="enable-pe" className="text-card-foreground font-semibold text-sm cursor-pointer">
                                                     PE (Planilla Electrónica)
                                                 </Label>
                                             </div>
                                             {enablePe && (
                                                 <div className="ml-6">
-                                                    <Label className="text-slate-200 font-semibold text-xs mb-2 block">Código PE</Label>
+                                                    <Label className="text-card-foreground font-semibold text-xs mb-2 block">Código PE</Label>
                                                     <Controller
                                                         name="credenciales.pe"
                                                         control={control}
@@ -972,7 +972,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                 value={field.value || ""}
                                                                 placeholder="Código"
                                                                 disabled={isSubmitting}
-                                                                className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                             />
                                                         )}
                                                     />
@@ -981,7 +981,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                         </div>
 
                                         {/* SIS (Sistema Integrado de Salud) */}
-                                        <div className="border-b border-slate-700 pb-3">
+                                        <div className="border-b border-border pb-3">
                                             <div className="flex items-center space-x-2 mb-3">
                                                 <Checkbox
                                                     id="enable-sis"
@@ -999,16 +999,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             })
                                                         }
                                                     }}
-                                                    className="border-slate-500 bg-slate-700/60"
+                                                    className="border-border bg-input"
                                                 />
-                                                <Label htmlFor="enable-sis" className="text-slate-200 font-semibold text-sm cursor-pointer">
+                                                <Label htmlFor="enable-sis" className="text-card-foreground font-semibold text-sm cursor-pointer">
                                                     SIS (Sistema Integrado de Salud)
                                                 </Label>
                                             </div>
                                             {enableSis && (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Usuario SIS</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Usuario SIS</Label>
                                                         <Controller
                                                             name="credenciales.sis_usuario"
                                                             control={control}
@@ -1018,13 +1018,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     value={field.value || ""}
                                                                     placeholder="Usuario"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-slate-200 font-semibold text-xs mb-2 block">Clave SIS</Label>
+                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave SIS</Label>
                                                         <Controller
                                                             name="credenciales.sis_clave"
                                                             control={control}
@@ -1035,7 +1035,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     type="password"
                                                                     placeholder="Contraseña"
                                                                     disabled={isSubmitting}
-                                                                    className="bg-slate-700/60 border-slate-500 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all hover:bg-slate-700 h-9 text-sm"
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
                                                                 />
                                                             )}
                                                         />
@@ -1054,7 +1054,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                     variant="outline"
                                     onClick={() => setIsOpen?.(false)}
                                     disabled={isSubmitting}
-                                    className="border-slate-600 text-slate-200 hover:bg-slate-800"
+                                    className="border-slate-600 text-slate-800 hover:bg-slate-800 dark:text-slate-200"
                                 >
                                     Cancelar
                                 </Button>

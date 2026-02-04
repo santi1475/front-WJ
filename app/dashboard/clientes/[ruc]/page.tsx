@@ -146,9 +146,9 @@ export default function ClientProfilePage() {
                         </Button>
                         <Button
                             onClick={handleCancel}
-                            variant="outline"
+                            variant="destructive"
                             size="sm"
-                            className="gap-2 bg-transparent"
+                            className="gap-2"
                             disabled={isSaving}
                         >
                             <X className="w-4 h-4" />

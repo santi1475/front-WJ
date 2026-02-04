@@ -35,7 +35,7 @@ export function BasicInfoCard({ client, isEditMode, onUpdateField }: BasicInfoCa
               <Input
                 value={client.ruc}
                 onChange={(e) => onUpdateField?.('ruc', e.target.value)}
-                className="text-sm font-mono"
+                className="text-sm font-mono border-slate-300 dark:border-slate-600"
               />
             ) : (
               <p className="text-sm md:text-base font-mono font-semibold text-foreground bg-muted/30 rounded px-2.5 py-1.5">
@@ -50,7 +50,7 @@ export function BasicInfoCard({ client, isEditMode, onUpdateField }: BasicInfoCa
               <Input
                 value={client.razon_social}
                 onChange={(e) => onUpdateField?.('razon_social', e.target.value)}
-                className="text-sm"
+                className="text-sm border-slate-300 dark:border-slate-600"
               />
             ) : (
               <p className="text-sm font-medium text-foreground line-clamp-2">
@@ -65,7 +65,7 @@ export function BasicInfoCard({ client, isEditMode, onUpdateField }: BasicInfoCa
               <Input
                 value={client.propietario}
                 onChange={(e) => onUpdateField?.('propietario', e.target.value)}
-                className="text-sm"
+                className="text-sm border-slate-300 dark:border-slate-600"
               />
             ) : (
               <p className="text-sm font-medium text-foreground">
@@ -81,7 +81,7 @@ export function BasicInfoCard({ client, isEditMode, onUpdateField }: BasicInfoCa
                 <Input
                   value={client.dni_propietario}
                   onChange={(e) => onUpdateField?.('dni_propietario', e.target.value)}
-                  className="text-sm font-mono"
+                  className="text-sm font-mono border-slate-300 dark:border-slate-600"
                 />
               ) : (
                 <p className="text-sm font-mono font-semibold text-foreground bg-muted/30 rounded px-2.5 py-1.5">
