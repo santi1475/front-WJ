@@ -63,7 +63,7 @@ export function TaxAndLegalCard({ client, isEditMode, onUpdateField }: TaxAndLeg
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">Régimen Tributario</p>
             {isEditMode ? (
               <Select value={client.regimen_tributario} onValueChange={(value) => onUpdateField?.('regimen_tributario', value)}>
-                <SelectTrigger className="text-xs md:text-sm">
+                <SelectTrigger className="text-xs md:text-sm border-slate-300 dark:border-slate-600">
                   <SelectValue placeholder="Seleccionar régimen" />
                 </SelectTrigger>
                 <SelectContent>
@@ -84,7 +84,7 @@ export function TaxAndLegalCard({ client, isEditMode, onUpdateField }: TaxAndLeg
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">Tipo de Empresa</p>
             {isEditMode ? (
               <Select value={client.tipo_empresa} onValueChange={(value) => onUpdateField?.('tipo_empresa', value)}>
-                <SelectTrigger className="text-xs md:text-sm">
+                <SelectTrigger className="text-xs md:text-sm border-slate-300 dark:border-slate-600">
                   <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -118,7 +118,7 @@ export function TaxAndLegalCard({ client, isEditMode, onUpdateField }: TaxAndLeg
                 <input
                   value={client.codigo_control}
                   onChange={(e) => onUpdateField?.('codigo_control', parseInt(e.target.value) || 0)}
-                  className="w-full text-sm font-mono font-semibold text-foreground bg-muted/30 border border-border rounded px-2.5 py-1.5"
+                  className="w-full text-sm font-mono font-semibold text-foreground bg-muted/30 border border-slate-300 dark:border-slate-600 rounded px-2.5 py-1.5"
                 />
               ) : (
                 <p className="text-sm font-mono font-semibold text-foreground bg-muted/30 rounded px-2.5 py-1.5">

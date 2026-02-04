@@ -52,16 +52,16 @@ export const ROUTES = {
         path: "/dashboard/roles",
         label: "Roles y Permisos",
         icon: "Shield",
-        permissions: ["ver_roles", "gestion_seguridad"],
+        permissions: ["view_group"],
       },
       {
         path: "/dashboard/users",
         label: "Usuarios",
         icon: "UserCog",
-        permissions: ["ver_usuarios"],
+        permissions: ["view_permission"],
       }
     ],
-    permissions: ["ver_configuracion"],
+    permissions: ["view_historialbaja"],
   } as const satisfies RouteConfig,
 
 } as const;
