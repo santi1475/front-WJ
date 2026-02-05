@@ -92,7 +92,7 @@ export function LoginForm() {
                 value={formData.username}
                 onChange={handleChange}
                 disabled={isLoading}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
               />
             </div>
 
@@ -108,7 +108,7 @@ export function LoginForm() {
                 value={formData.password}
                 onChange={handleChange}
                 disabled={isLoading}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
               />
             </div>
 

@@ -58,7 +58,7 @@ export function PermissionsSelector({ permissions, selectedPermissions, onChange
                                 <Checkbox
                                     checked={allSelected ? true : someSelected ? "indeterminate" : false}
                                     onCheckedChange={() => handleGroupToggle(modulePermissions)}
-                                    className="mr-2"
+                                    className="mr-2 bg-input border-border"
                                 />
                                 <AccordionTrigger className="hover:no-underline py-0 flex-1">
                                     <span className="text-sm font-medium">{moduleName}</span>
