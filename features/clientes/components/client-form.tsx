@@ -1048,7 +1048,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                             </div>
 
                             {/* Botones de acción */}
-                            <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
+                            <div className="flex justify-end gap-3 pt-3 border-t border-gray-300">
                                 <Button
                                     type="button"
                                     variant="outline"
