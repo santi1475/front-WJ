@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { TrendingUp } from 'lucide-react';
 
 import { ICliente } from '@/features/shared/types';
@@ -81,16 +82,35 @@ export function FinancialCard({ client, isEditMode, onUpdateField }: FinancialCa
               <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
                 Libros
               </p>
-              <p className="text-base font-bold text-foreground">{client.libros_societarios}</p>
+              {isEditMode ? (
+                <Input
+                  type="number"
+                  value={client.libros_societarios}
+                  onChange={(e) => onUpdateField?.('libros_societarios', parseInt(e.target.value) || 0)}
+                  className="text-base font-bold h-8"
+                />
+              ) : (
+                <p className="text-base font-bold text-foreground">{client.libros_societarios}</p>
+              )}
             </div>
 
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">
                 Selectivo Consumo
               </p>
-              <Badge variant={client.selectivo_consumo ? 'default' : 'outline'} className="text-xs">
-                {client.selectivo_consumo ? 'Aplica' : 'No aplica'}
-              </Badge>
+              {isEditMode ? (
+                <div className="flex items-center gap-2 pt-1">
+                  <Checkbox
+                    checked={client.selectivo_consumo}
+                    onCheckedChange={(checked: boolean | 'indeterminate') => onUpdateField?.('selectivo_consumo', checked === true)}
+                  />
+                  <span className="text-sm">{client.selectivo_consumo ? 'Si' : 'No'}</span>
+                </div>
+              ) : (
+                <Badge variant={client.selectivo_consumo ? 'default' : 'outline'} className="text-xs">
+                  {client.selectivo_consumo ? 'Aplica' : 'No aplica'}
+                </Badge>
+              )}
             </div>
           </div>
         </div>

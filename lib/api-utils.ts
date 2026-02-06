@@ -36,15 +36,15 @@ export const handleApiError = (
         error.response?.data?.detail ||
         error.response?.data?.message ||
         "Datos inválidos";
-      toast.error("Error de Validación", { description: detail, position: "bottom-right" });
+      toast.error("Error de Validación", {
+        description: detail,
+        position: "bottom-right",
+      });
       return;
     }
 
     if (status === 403) {
-      toast.error("Acceso Denegado", {
-        description: "No tienes permisos para realizar esta acción.",
-        position: "bottom-right"
-      });
+      window.location.href = "/error/403";
       return;
     }
   }

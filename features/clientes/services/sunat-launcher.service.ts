@@ -1,4 +1,3 @@
-const EXTENSION_ID = process.env.NEXT_PUBLIC_EXTENSION_ID;
 import { toast } from "sonner";
 
 export const launchSunatLogin = (
@@ -6,17 +5,11 @@ export const launchSunatLogin = (
   usuario: string,
   clave: string,
 ) => {
-  if (!EXTENSION_ID) {
-    console.error(
-      "ERROR CRÍTICO: No se ha configurado NEXT_PUBLIC_EXTENSION_ID en el archivo .env",
-    );
-    toast.error("Error de configuración del sistema. Contacte a soporte de AlphaTech.", { position: "bottom-right" });
-    return;
-  }
-
   if (!ruc || !usuario || !clave) {
     console.error("Faltan credenciales para el autologin SUNAT");
-    toast.error("Error: Faltan credenciales (RUC, Usuario o Clave)", { position: "bottom-right" });
+    toast.error("Error: Faltan credenciales (RUC, Usuario o Clave)", {
+      position: "bottom-right",
+    });
     return;
   }
 
@@ -26,37 +19,22 @@ export const launchSunatLogin = (
 
   const sunatUrl = "https://e-menu.sunat.gob.pe/cl-ti-itmenu/MenuInternet.htm";
 
-  const message = {
-    action: "START_LOGIN",
-    payload: {
-      url: sunatUrl,
-      credenciales: {
-        ruc: ruc,
-        usuario: usuario.toUpperCase(),
-        clave: clave,
-      },
-      tipo: "SUNAT_SOL",
+  const loginData = {
+    url: sunatUrl,
+    credenciales: {
+      ruc: ruc,
+      usuario: usuario.toUpperCase(),
+      clave: clave,
     },
+    tipo: "SUNAT_SOL",
   };
 
-  if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
-    chrome.runtime.sendMessage(EXTENSION_ID, message, (response) => {
-      if (chrome.runtime.lastError) {
-        console.warn(
-          "No se pudo conectar con la extensión:",
-          chrome.runtime.lastError.message,
-        );
-        toast.error(
-          "La extensión no respondió. Verifica que el ID en el .env sea correcto y la extensión esté activa.", { position: "bottom-right" }
-        );
-      } else {
-        console.log("Comando enviado exitosamente a la extensión.");
-      }
-    });
-  } else {
-    console.warn("API de Chrome no detectada.");
-    toast.error(
-      "Para usar el inicio de sesión automático, necesitas instalar la extensión WJ AutoLogin.",
-    );
-  }
+  const event = new CustomEvent("WJ_LOGIN_REQUEST", { detail: loginData });
+  document.dispatchEvent(event);
+
+  console.log("Evento WJ_LOGIN_REQUEST enviado al DOM (document).");
+  toast.success("Iniciando extensión de autologin...", {
+    duration: 2000,
+    position: "bottom-right",
+  });
 };

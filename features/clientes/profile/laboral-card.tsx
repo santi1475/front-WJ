@@ -22,11 +22,18 @@ interface LaboralCardProps {
 export function LaboralCard({ client, isEditMode, onUpdateField }: LaboralCardProps) {
   const formatDate = (date?: string) => {
     if (!date) return 'No registrado';
-    return new Date(date).toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    // Append T00:00:00 to force local time interpretation or split manually`
+    // Best way to avoid timezone off-by-one on display is to use UTC components`
+    const d = new Date(date);
+    // Add timezone offset to compensate or just print UTC
+    // Simple hack: append T12:00:00 to avoid midnight rollover issues
+    // Better:
+    const parts = date.split('-');
+    if (parts.length === 3) {
+      const [y, m, d] = parts;
+      return `${d}/${m}/${y}`; // Manual formatting to avoid Timezone
+    }
+    return new Date(date).toLocaleDateString('es-PE');
   };
 
   const isAccredited = !!client.regimen_laboral_fecha;

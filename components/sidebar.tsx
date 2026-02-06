@@ -86,8 +86,22 @@ export function Sidebar() {
         // Verificar permisos específicos de la ruta
         if (route.permissions && route.permissions.length > 0) {
             const userPermissions = user.permissions || []
+
+            // Normalize permissions function: strips "app." prefix if present
+            const normalize = (p: string) => p.includes('.') ? p.split('.')[1] : p
+
+            // Create a set of normalized user permissions for easier checking
+            const normalizedUserPermissions = new Set(userPermissions.map(normalize))
+            const rawUserPermissions = new Set(userPermissions)
+
             // El usuario necesita AL MENOS UNO de los permisos listados
-            const hasAccess = route.permissions.some((p) => userPermissions.includes(p))
+            // Check both raw match and normalized match
+            const hasAccess = route.permissions.some((p) => {
+                const permString = String(p) // Ensure it's a string comparison
+                const normalizedRoutePerm = normalize(permString)
+                return rawUserPermissions.has(permString) || normalizedUserPermissions.has(normalizedRoutePerm)
+            })
+
             return hasAccess
         }
 
@@ -163,105 +177,116 @@ export function Sidebar() {
     }
 
     return (
-        <div
-            className={cn(
-                "h-screen bg-slate-900 border-r border-slate-800 flex flex-col fixed left-0 top-0 z-40 transition-all duration-300 ease-in-out",
-                isSidebarOpen ? "w-64" : "w-20",
-                "max-lg:hidden" // Ocultar en móviles (usarás un sheet/drawer aparte para mobile)
+        <>
+            {/* Mobile Overlay */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
             )}
-        >
-            {/* Header del Sidebar */}
-            <div className="p-4 h-16 border-b border-slate-800 flex items-center justify-between overflow-hidden">
-                {isSidebarOpen && (
-                    <div className="animate-in fade-in duration-300">
-                        <h2 className="text-xl font-bold text-white whitespace-nowrap">
-                            WJ <span className="text-blue-500">ERP</span>
-                        </h2>
-                    </div>
+            <div
+                className={cn(
+                    "h-screen bg-slate-900 border-r border-slate-800 flex flex-col fixed left-0 top-0 z-40 transition-all duration-300 ease-in-out",
+                    isSidebarOpen ? "w-64" : "w-20",
+                    // Mobile behavior: always w-64 when open, but use transform to hide/show
+                    "max-lg:w-64 max-lg:shadow-2xl",
+                    !isSidebarOpen && "max-lg:-translate-x-full"
                 )}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    className="text-slate-400 hover:text-white hover:bg-slate-800 ml-auto shrink-0"
-                >
-                    {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                </Button>
-            </div>
-
-            {/* Navegación Scrollable */}
-            <nav className="flex-1 p-3 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-800">
-                <div className="space-y-1">
-                    {SIDEBAR_ROUTES.map((route) => renderRoute(route))}
-                </div>
-            </nav>
-
-            {/* Footer / Usuario */}
-            <div className="border-t border-slate-800 p-4">
-                {user && (
-                    <div className={cn(
-                        "flex items-center gap-3 mb-4",
-                        !isSidebarOpen && "justify-center"
-                    )}>
-                        <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shrink-0">
-                            {user.username?.charAt(0).toUpperCase() || "U"}
+            >
+                {/* Header del Sidebar */}
+                <div className="p-4 h-16 border-b border-slate-800 flex items-center justify-between overflow-hidden">
+                    {isSidebarOpen && (
+                        <div className="animate-in fade-in duration-300">
+                            <h2 className="text-xl font-bold text-white whitespace-nowrap">
+                                WJ <span className="text-blue-500">ERP</span>
+                            </h2>
                         </div>
-                        {isSidebarOpen && (
-                            <div className="overflow-hidden">
-                                <p className="text-sm font-medium text-white truncate">{user.username}</p>
-                                <p className="text-xs text-slate-400 capitalize truncate">{user.role?.toLowerCase()}</p>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* ... existing code ... */}
-                {mounted && (
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                                variant="destructive"
-                                className={cn(
-                                    "w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/50",
-                                    !isSidebarOpen && "px-0 justify-center"
-                                )}
-                                title="Cerrar Sesión"
-                            >
-                                <LogOut className={cn("h-4 w-4", isSidebarOpen ? "mr-2" : "mr-0")} />
-                                {isSidebarOpen && "Salir"}
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-slate-900 border-slate-700">
-                            <AlertDialogHeader>
-                                <AlertDialogTitle className="text-white">¿Cerrar sesión?</AlertDialogTitle>
-                                <AlertDialogDescription className="text-slate-400">
-                                    ¿Estás seguro que deseas cerrar tu sesión actual?
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-700">Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white border-red-700">
-                                    Cerrar Sesión
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                )}
-                {!mounted && (
+                    )}
                     <Button
-                        variant="destructive"
-                        className={cn(
-                            "w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/50",
-                            !isSidebarOpen && "px-0 justify-center"
-                        )}
-                        title="Cerrar Sesión"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        className="text-slate-400 hover:text-white hover:bg-slate-800 ml-auto shrink-0"
                     >
-                        <LogOut className={cn("h-4 w-4", isSidebarOpen ? "mr-2" : "mr-0")} />
-                        {isSidebarOpen && "Salir"}
+                        {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                     </Button>
-                )
-                }
+                </div>
+
+                {/* Navegación Scrollable */}
+                <nav className="flex-1 p-3 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-800">
+                    <div className="space-y-1">
+                        {SIDEBAR_ROUTES.map((route) => renderRoute(route))}
+                    </div>
+                </nav>
+
+                {/* Footer / Usuario */}
+                <div className="border-t border-slate-800 p-4">
+                    {user && (
+                        <div className={cn(
+                            "flex items-center gap-3 mb-4",
+                            !isSidebarOpen && "justify-center"
+                        )}>
+                            <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shrink-0">
+                                {user.username?.charAt(0).toUpperCase() || "U"}
+                            </div>
+                            {isSidebarOpen && (
+                                <div className="overflow-hidden">
+                                    <p className="text-sm font-medium text-white truncate">{user.username}</p>
+                                    <p className="text-xs text-slate-400 capitalize truncate">{user.role?.toLowerCase()}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ... existing code ... */}
+                    {mounted && (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant="destructive"
+                                    className={cn(
+                                        "w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/50",
+                                        !isSidebarOpen && "px-0 justify-center"
+                                    )}
+                                    title="Cerrar Sesión"
+                                >
+                                    <LogOut className={cn("h-4 w-4", isSidebarOpen ? "mr-2" : "mr-0")} />
+                                    {isSidebarOpen && "Salir"}
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-slate-900 border-slate-700">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-white">¿Cerrar sesión?</AlertDialogTitle>
+                                    <AlertDialogDescription className="text-slate-400">
+                                        ¿Estás seguro que deseas cerrar tu sesión actual?
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-700">Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white border-red-700">
+                                        Cerrar Sesión
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
+                    {!mounted && (
+                        <Button
+                            variant="destructive"
+                            className={cn(
+                                "w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/50",
+                                !isSidebarOpen && "px-0 justify-center"
+                            )}
+                            title="Cerrar Sesión"
+                        >
+                            <LogOut className={cn("h-4 w-4", isSidebarOpen ? "mr-2" : "mr-0")} />
+                            {isSidebarOpen && "Salir"}
+                        </Button>
+                    )
+                    }
+                </div>
             </div>
-        </div>
+        </>
     )
 }

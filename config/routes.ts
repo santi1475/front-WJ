@@ -1,10 +1,11 @@
 import { Description } from "@radix-ui/react-dialog";
+import { UserPermission } from "@/features/auth/types/permissions";
 
 export interface RouteConfig {
   path: string;
   label: string;
   icon: string;
-  permissions?: string[];
+  permissions?: UserPermission[]; // Use the enum type
   children?: RouteConfig[];
 }
 
@@ -19,28 +20,27 @@ export const ROUTES = {
     path: "/dashboard",
     label: "Dashboard",
     icon: "BarChart3",
-
   } as const satisfies RouteConfig,
 
   CLIENTES: {
     path: "/dashboard/clientes",
     label: "Clientes",
     icon: "Users",
-    permissions: ["gestion.view_cliente", "gestion.add_cliente"],
+    permissions: [UserPermission.VIEW_CLIENTE, UserPermission.ADD_CLIENTE],
   } as const satisfies RouteConfig,
 
   FACTURAS: {
     path: "/dashboard/facturas",
     label: "Facturas",
     icon: "Receipt",
-    permissions: ["ver_facturas"],
+    permissions: [UserPermission.VIEW_LOGENTRY],
   } as const satisfies RouteConfig,
 
   REPORTES: {
     path: "/dashboard/reportes",
     label: "Reportes",
     icon: "LineChart",
-    permissions: ["ver_reportes"],
+    permissions: ["ver_reportes"] as any,
   } as const satisfies RouteConfig,
 
   CONFIGURACION: {
@@ -52,18 +52,17 @@ export const ROUTES = {
         path: "/dashboard/roles",
         label: "Roles y Permisos",
         icon: "Shield",
-        permissions: ["view_group"],
+        permissions: [UserPermission.VIEW_GROUP],
       },
       {
         path: "/dashboard/users",
         label: "Usuarios",
         icon: "UserCog",
-        permissions: ["view_permission"],
-      }
+        permissions: [UserPermission.VIEW_PERMISSION],
+      },
     ],
-    permissions: ["view_historialbaja"],
+    permissions: [UserPermission.VIEW_HISTORIALBAJA],
   } as const satisfies RouteConfig,
-
 } as const;
 
 export const SIDEBAR_ROUTES: RouteConfig[] = [
@@ -82,6 +81,6 @@ export const PROTECTED_ROUTES = [
   ROUTES.FACTURAS.path,
   ROUTES.REPORTES.path,
   ROUTES.CONFIGURACION.path,
-  "/dashboard/configuracion/roles", 
+  "/dashboard/configuracion/roles",
   "/dashboard/configuracion/usuarios",
 ];

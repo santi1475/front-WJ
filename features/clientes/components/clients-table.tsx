@@ -276,7 +276,7 @@ export function ClientsTable() {
                                     <TableCell className="text-muted-foreground">{client.propietario}</TableCell>
                                     <TableCell className="text-muted-foreground text-center">{client.codigo_control || "-"}</TableCell>
                                     <TableCell className="text-muted-foreground">
-                                        {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
+                                        {client.responsable_info?.nombre || "-"}
                                     </TableCell>
                                     <TableCell className="text-center">
                                         <Badge variant="secondary">
