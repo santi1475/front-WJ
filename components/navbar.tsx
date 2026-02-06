@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { useAuthStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
-import { Bell, Inbox, LogOut, User as UserIcon } from "lucide-react"
+import { Bell, Inbox, LogOut, User as UserIcon, Menu } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -20,7 +20,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 export function Navbar() {
-    const { isSidebarOpen } = useSidebarContext()
+    const { isSidebarOpen, setIsSidebarOpen } = useSidebarContext()
     const { user, logout } = useAuthStore()
     const router = useRouter()
     const [mounted, setMounted] = useState(false)
@@ -44,7 +44,14 @@ export function Navbar() {
             )}
         >
             <div className="flex items-center gap-2">
-                {/* Left side content */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="lg:hidden text-muted-foreground"
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                >
+                    <Menu className="h-5 w-5" />
+                </Button>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4">

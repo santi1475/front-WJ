@@ -10,10 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { type ICliente, type IClienteFormData, RegimenTributario, TipoEmpresa } from "@/features/shared/types"
-import type { IUserManaged } from "@/features/shared/types/user"
 import { useAuth } from "@/hooks/use-auth"
 import { clientesService } from "@/features/clientes/services/clientes"
-import { userService } from "@/features/users/services/user.service"
+import { responsableService } from "@/features/responsables/services/responsable.service"
+import { IResponsable } from "@/features/responsables/types/responsable"
 import { regimenLaboralService, type ITipoRegimenLaboral } from "@/features/shared/services/regimen-laboral.service"
 import { handleApiError, handleApiSuccess } from "@/lib/api-utils"
 import { X } from "lucide-react"
@@ -39,8 +39,8 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
     const [enablePe, setEnablePe] = useState(false)
     const [enableSis, setEnableSis] = useState(false)
 
-    const [users, setUsers] = useState<IUserManaged[]>([])
-    const [loadingUsers, setLoadingUsers] = useState(false)
+    const [responsables, setResponsables] = useState<IResponsable[]>([])
+    const [loadingResponsables, setLoadingResponsables] = useState(false)
     const [regimenesLaborales, setRegimenesLaborales] = useState<ITipoRegimenLaboral[]>([])
 
     const isControlled = typeof constrainedOpen !== "undefined"
@@ -114,26 +114,19 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
     }, [client, isOpen, reset, user])
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            setLoadingUsers(true)
+        const fetchResponsables = async () => {
+            setLoadingResponsables(true)
             try {
-                const usersData = await userService.getAll()
-                setUsers(usersData)
+                const data = await responsableService.getAll()
+                setResponsables(data)
             } catch (error: unknown) {
-                if (error && typeof error === 'object' && 'response' in error) {
-                    const axiosError = error as AxiosError
-                    if (axiosError?.response?.status !== 403) {
-                        console.error("Error loading users:", error)
-                    }
-                } else {
-                    console.error("Error loading users:", error)
-                }
+                console.error("Error loading responsables:", error)
             } finally {
-                setLoadingUsers(false)
+                setLoadingResponsables(false)
             }
         }
         if (isOpen) {
-            fetchUsers()
+            fetchResponsables()
             // Fetch regimenes laborales
             console.log("ClientForm: Attempting to fetch regimen types...");
             regimenLaboralService.getAll()
@@ -464,19 +457,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                         <Select
                                                             value={field.value?.toString() || "0"}
                                                             onValueChange={(value) => field.onChange(value === "0" ? 0 : Number(value))}
-                                                            disabled={isSubmitting || loadingUsers || (!user?.is_superuser && user?.id !== 1)}
+                                                            disabled={isSubmitting || loadingResponsables || (!user?.is_superuser && user?.id !== 1)}
                                                         >
                                                             <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
-                                                                <SelectValue placeholder={loadingUsers ? "Cargando usuarios..." : "Seleccionar responsable"} />
+                                                                <SelectValue placeholder={loadingResponsables ? "Cargando..." : "Seleccionar responsable"} />
                                                             </SelectTrigger>
                                                             <SelectContent className="bg-slate-700 border-slate-600 max-h-300px">
                                                                 <SelectItem value="0">Sin responsable</SelectItem>
-                                                                {users.map((u) => (
-                                                                    <SelectItem key={u.id} value={u.id.toString()}>
-                                                                        {u.first_name && u.last_name
-                                                                            ? `${u.first_name} ${u.last_name} (${u.username})`
-                                                                            : u.username
-                                                                        }
+                                                                {responsables.map((resp) => (
+                                                                    <SelectItem key={resp.id} value={resp.id.toString()}>
+                                                                        {resp.nombre}
                                                                     </SelectItem>
                                                                 ))}
                                                             </SelectContent>

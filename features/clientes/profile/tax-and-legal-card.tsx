@@ -104,9 +104,23 @@ export function TaxAndLegalCard({ client, isEditMode, onUpdateField }: TaxAndLeg
 
           <div className="bg-gradient-to-br from-accent/5 to-accent/10 rounded-lg p-3 border border-accent/20">
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
-              {catInfo.label}
+              Categoría
             </p>
-            <p className="text-sm text-foreground font-medium">{catInfo.description}</p>
+            {isEditMode ? (
+              <Select value={client.categoria || ''} onValueChange={(value) => onUpdateField?.('categoria', value)}>
+                <SelectTrigger className="text-sm font-medium border-slate-300 dark:border-slate-600">
+                  <SelectValue placeholder="Seleccionar categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="A">Categoría A</SelectItem>
+                  <SelectItem value="B">Categoría B</SelectItem>
+                  <SelectItem value="C">Categoría C</SelectItem>
+                  <SelectItem value="N/T">N/T</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="text-sm text-foreground font-medium">{catInfo.description || client.categoria}</p>
+            )}
           </div>
 
           {client.codigo_control !== undefined && client.codigo_control !== null && (

@@ -24,7 +24,7 @@ export default function DashboardLayout({
             <div className="min-h-screen">
                 <Sidebar />
                 <main
-                    className={`bg-background min-h-screen transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-20'
+                    className={`bg-background min-h-screen transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-0 lg:ml-64' : 'ml-0 lg:ml-20'
                         }`}
                 >
                     <Navbar />

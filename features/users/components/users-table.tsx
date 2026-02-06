@@ -16,6 +16,7 @@ import {
 import { UserModal } from "./user-modal"
 import { userService } from "@/features/users/services/user.service"
 import type { IUserManaged } from "@/features/shared/types/user"
+import { handleApiError } from "@/lib/api-utils"
 
 export function UsersTable() {
     const [users, setUsers] = useState<IUserManaged[]>([])
@@ -83,6 +84,7 @@ export function UsersTable() {
             setUsers(data)
         } catch (err) {
             console.error("Failed to load users:", err)
+            handleApiError(err, "Error al cargar usuarios")
         } finally {
             setIsLoading(false)
         }
@@ -181,8 +183,8 @@ export function UsersTable() {
                                 <TableCell>
                                     <span
                                         className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${user.is_active
-                                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                                : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
+                                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                            : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
                                             }`}
                                     >
                                         {user.is_active ? "Activo" : "Inactivo"}

@@ -259,7 +259,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                         <TableCell className="font-medium text-slate-900 dark:text-slate-100">{client.razon_social}</TableCell>
                                         <TableCell className="text-slate-600 dark:text-slate-400">{client.propietario}</TableCell>
                                         <TableCell className="text-slate-600 dark:text-slate-400">
-                                            {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
+                                            {client.responsable_info?.nombre || "-"}
                                         </TableCell>
                                         <TableCell className="text-left">
                                             <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
@@ -358,7 +358,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground text-sm">Responsable:</span>
                                                 <span className="text-foreground text-sm">
-                                                    {client.responsable_info?.full_name || client.responsable_info?.username || "-"}
+                                                    {client.responsable_info?.nombre || "-"}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between">
