@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { clientesService } from "@/features/clientes/services/clientes"
 import type { ICliente } from "@/features/shared/types"
 import type { IHistorialBaja } from "@/features/shared/types"
@@ -94,10 +94,32 @@ export default function BajasPage() {
 
     const getEstadoBadge = (estado: string) => {
         if (estado === 'BAJA') {
-            return <Badge className="bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700/50">En Baja</Badge>
+            return <Badge className="bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700/50">Baja</Badge>
         }
         return <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50">Reactivado</Badge>
     }
+
+    const flattenedEventos = useMemo(() => {
+        const eventos: any[] = [];
+        historial.forEach(registro => {
+            eventos.push({
+                ...registro,
+                currentEstado: 'BAJA',
+                fechaEvento: registro.fecha_baja,
+                uniqueId: `${registro.id}-baja`
+            });
+            if (registro.estado === 'REACTIVADO' && registro.fecha_reactivacion) {
+                eventos.push({
+                    ...registro,
+                    currentEstado: 'REACTIVADO',
+                    fechaEvento: registro.fecha_reactivacion,
+                    uniqueId: `${registro.id}-reactivacion`
+                });
+            }
+        });
+
+        return eventos.sort((a, b) => new Date(b.fechaEvento).getTime() - new Date(a.fechaEvento).getTime());
+    }, [historial]);
 
     return (
         <div className="space-y-6">
@@ -121,7 +143,7 @@ export default function BajasPage() {
                 </div>
             ) : (
                 <Tabs defaultValue="clientes" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-muted/80 border border-border">
+                    <TabsList className="grid w-full grid-cols-2 bg-muted/80 border border-border dark:bg-muted/20 dark:border-border/50">
                         <TabsTrigger value="clientes" className="flex items-center gap-2">
                             <RotateCcw className="h-4 w-4" />
                             Clientes en Baja ({clients.length})
@@ -188,41 +210,37 @@ export default function BajasPage() {
                                         <TableHead className="text-muted-foreground">Razón Social</TableHead>
                                         <TableHead className="text-muted-foreground">Tipo Empresa</TableHead>
                                         <TableHead className="text-muted-foreground">Categoría</TableHead>
-                                        <TableHead className="text-muted-foreground">Estado</TableHead>
-                                        <TableHead className="text-muted-foreground">Fecha de Baja</TableHead>
-                                        <TableHead className="text-muted-foreground">Fecha de Reactivación</TableHead>
+                                        <TableHead className="text-muted-foreground">Evento</TableHead>
+                                        <TableHead className="text-muted-foreground">Fecha del Evento</TableHead>
                                         <TableHead className="text-muted-foreground">Usuario</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {historial.length === 0 ? (
+                                    {flattenedEventos.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                                                No hay registro de bajas
+                                                No hay registro de eventos
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        historial.map((registro) => (
-                                            <TableRow key={registro.id}>
-                                                <TableCell className="font-mono text-primary font-medium">{registro.cliente_info?.ruc || registro.cliente}</TableCell>
-                                                <TableCell className="font-medium text-foreground">{registro.cliente_info?.razon_social}</TableCell>
-                                                <TableCell className="text-muted-foreground text-sm">{registro.cliente_info?.tipo_empresa || "-"}</TableCell>
+                                        flattenedEventos.map((evento) => (
+                                            <TableRow key={evento.uniqueId}>
+                                                <TableCell className="font-mono text-primary font-medium">{evento.cliente_info?.ruc || evento.cliente}</TableCell>
+                                                <TableCell className="font-medium text-foreground">{evento.cliente_info?.razon_social}</TableCell>
+                                                <TableCell className="text-muted-foreground text-sm">{evento.cliente_info?.tipo_empresa || "-"}</TableCell>
                                                 <TableCell className="text-muted-foreground text-center">
-                                                    {registro.cliente_info?.categoria ? (
-                                                        <Badge variant="outline">{registro.cliente_info.categoria}</Badge>
+                                                    {evento.cliente_info?.categoria ? (
+                                                        <Badge variant="outline">{evento.cliente_info.categoria}</Badge>
                                                     ) : "-"}
                                                 </TableCell>
                                                 <TableCell>
-                                                    {getEstadoBadge(registro.estado)}
+                                                    {getEstadoBadge(evento.currentEstado)}
                                                 </TableCell>
                                                 <TableCell className="text-muted-foreground text-sm">
-                                                    {formatDate(registro.fecha_baja)}
+                                                    {formatDate(evento.fechaEvento)}
                                                 </TableCell>
                                                 <TableCell className="text-muted-foreground text-sm">
-                                                    {registro.fecha_reactivacion ? formatDate(registro.fecha_reactivacion) : "-"}
-                                                </TableCell>
-                                                <TableCell className="text-muted-foreground text-sm">
-                                                    {registro.usuario_baja_info?.full_name || "-"}
+                                                    {evento.usuario_baja_info?.full_name || "-"}
                                                 </TableCell>
                                             </TableRow>
                                         ))

@@ -16,7 +16,9 @@ import { responsableService } from "@/features/responsables/services/responsable
 import { IResponsable } from "@/features/responsables/types/responsable"
 import { regimenLaboralService, type ITipoRegimenLaboral } from "@/features/shared/services/regimen-laboral.service"
 import { handleApiError, handleApiSuccess } from "@/lib/api-utils"
-import { X } from "lucide-react"
+import { X, Eye, EyeOff } from "lucide-react"
+import { toast } from "sonner"
+import type { FieldErrors } from "react-hook-form"
 
 interface ClientFormProps {
     client?: ICliente | null
@@ -42,6 +44,9 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
     const [responsables, setResponsables] = useState<IResponsable[]>([])
     const [loadingResponsables, setLoadingResponsables] = useState(false)
     const [regimenesLaborales, setRegimenesLaborales] = useState<ITipoRegimenLaboral[]>([])
+
+    const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({})
+    const togglePasswordVisibility = (field: string) => setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }))
 
     const isControlled = typeof constrainedOpen !== "undefined"
     const isOpen = isControlled ? constrainedOpen : internalOpen
@@ -189,6 +194,18 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         }
     }
 
+    const onErrorHandler = (errors: FieldErrors<IClienteFormData>) => {
+        const errorMessages = Object.values(errors)
+            .map(err => err?.message)
+            .filter(Boolean)
+            .join(", ")
+
+        toast.error("Faltan datos indispensables", {
+            description: errorMessages || "Por favor, completa correctamente los campos resaltados en rojo.",
+            duration: 5000,
+        })
+    }
+
     if (!isOpen) {
         return !isControlled ? (
             <Button
@@ -232,7 +249,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
 
                     {/* Form Content */}
                     <div className="bg-background rounded-b-lg p-4">
-                        <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-3">
+                        <form onSubmit={handleSubmit(onSubmitHandler, onErrorHandler)} className="space-y-3">
                             {error && (
                                 <div className="p-3 bg-destructive/10 border border-destructive/30 rounded text-destructive text-sm">
                                     {error}
@@ -379,15 +396,24 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                 <Controller
                                                     name="ingresos_mensuales"
                                                     control={control}
+                                                    rules={{
+                                                        pattern: {
+                                                            value: /^\d+([.,]\d{1,2})?$/,
+                                                            message: "Formato inválido. Use ej: 212.90 o 212,90"
+                                                        }
+                                                    }}
                                                     render={({ field }) => (
                                                         <Input
                                                             {...field}
                                                             placeholder="0.00"
                                                             disabled={isSubmitting}
-                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
+                                                            className={`bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm ${errors.ingresos_mensuales ? 'border-destructive focus:border-destructive' : ''}`}
                                                         />
                                                     )}
                                                 />
+                                                {errors.ingresos_mensuales && (
+                                                    <p className="text-destructive text-xs mt-1 font-medium">{errors.ingresos_mensuales.message}</p>
+                                                )}
                                             </div>
 
                                             {/* Ingresos Anuales */}
@@ -396,15 +422,24 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                 <Controller
                                                     name="ingresos_anuales"
                                                     control={control}
+                                                    rules={{
+                                                        pattern: {
+                                                            value: /^\d+([.,]\d{1,2})?$/,
+                                                            message: "Formato inválido. Use ej: 212.90 o 212,90"
+                                                        }
+                                                    }}
                                                     render={({ field }) => (
                                                         <Input
                                                             {...field}
                                                             placeholder="0.00"
                                                             disabled={isSubmitting}
-                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
+                                                            className={`bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm ${errors.ingresos_anuales ? 'border-destructive focus:border-destructive' : ''}`}
                                                         />
                                                     )}
                                                 />
+                                                {errors.ingresos_anuales && (
+                                                    <p className="text-destructive text-xs mt-1 font-medium">{errors.ingresos_anuales.message}</p>
+                                                )}
                                             </div>
 
                                             {/* Categoría */}
@@ -463,9 +498,9 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                 <SelectValue placeholder={loadingResponsables ? "Cargando..." : "Seleccionar responsable"} />
                                                             </SelectTrigger>
                                                             <SelectContent className="bg-slate-700 border-slate-600 max-h-300px">
-                                                                <SelectItem value="0">Sin responsable</SelectItem>
+                                                                <SelectItem value="0" className="text-white">Sin responsable</SelectItem>
                                                                 {responsables.map((resp) => (
-                                                                    <SelectItem key={resp.id} value={resp.id.toString()}>
+                                                                    <SelectItem key={resp.id} value={resp.id.toString()} className="text-white">
                                                                         {resp.nombre}
                                                                     </SelectItem>
                                                                 ))}
@@ -633,20 +668,30 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     </div>
                                                     <div>
                                                         <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave SOL</Label>
-                                                        <Controller
-                                                            name="credenciales.sol_clave"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    type="password"
-                                                                    placeholder="Contraseña"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                                />
-                                                            )}
-                                                        />
+                                                        <div className="relative">
+                                                            <Controller
+                                                                name="credenciales.sol_clave"
+                                                                control={control}
+                                                                render={({ field }) => (
+                                                                    <Input
+                                                                        {...field}
+                                                                        value={field.value || ""}
+                                                                        type={showPasswords["sol"] ? "text" : "password"}
+                                                                        placeholder="Contraseña"
+                                                                        disabled={isSubmitting}
+                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
+                                                                    />
+                                                                )}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => togglePasswordVisibility("sol")}
+                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                                tabIndex={-1}
+                                                            >
+                                                                {showPasswords["sol"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -714,20 +759,30 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     </div>
                                                     <div>
                                                         <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave</Label>
-                                                        <Controller
-                                                            name="credenciales.detraccion_clave"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    type="password"
-                                                                    placeholder="Contraseña"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                                />
-                                                            )}
-                                                        />
+                                                        <div className="relative">
+                                                            <Controller
+                                                                name="credenciales.detraccion_clave"
+                                                                control={control}
+                                                                render={({ field }) => (
+                                                                    <Input
+                                                                        {...field}
+                                                                        value={field.value || ""}
+                                                                        type={showPasswords["detraccion"] ? "text" : "password"}
+                                                                        placeholder="Contraseña"
+                                                                        disabled={isSubmitting}
+                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
+                                                                    />
+                                                                )}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => togglePasswordVisibility("detraccion")}
+                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                                tabIndex={-1}
+                                                            >
+                                                                {showPasswords["detraccion"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -778,20 +833,30 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     </div>
                                                     <div>
                                                         <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave INEI</Label>
-                                                        <Controller
-                                                            name="credenciales.inei_clave"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    type="password"
-                                                                    placeholder="Contraseña"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                                />
-                                                            )}
-                                                        />
+                                                        <div className="relative">
+                                                            <Controller
+                                                                name="credenciales.inei_clave"
+                                                                control={control}
+                                                                render={({ field }) => (
+                                                                    <Input
+                                                                        {...field}
+                                                                        value={field.value || ""}
+                                                                        type={showPasswords["inei"] ? "text" : "password"}
+                                                                        placeholder="Contraseña"
+                                                                        disabled={isSubmitting}
+                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
+                                                                    />
+                                                                )}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => togglePasswordVisibility("inei")}
+                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                                tabIndex={-1}
+                                                            >
+                                                                {showPasswords["inei"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -842,20 +907,30 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     </div>
                                                     <div>
                                                         <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave AFP Net</Label>
-                                                        <Controller
-                                                            name="credenciales.afp_net_clave"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    type="password"
-                                                                    placeholder="Contraseña"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                                />
-                                                            )}
-                                                        />
+                                                        <div className="relative">
+                                                            <Controller
+                                                                name="credenciales.afp_net_clave"
+                                                                control={control}
+                                                                render={({ field }) => (
+                                                                    <Input
+                                                                        {...field}
+                                                                        value={field.value || ""}
+                                                                        type={showPasswords["afp_net"] ? "text" : "password"}
+                                                                        placeholder="Contraseña"
+                                                                        disabled={isSubmitting}
+                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
+                                                                    />
+                                                                )}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => togglePasswordVisibility("afp_net")}
+                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                                tabIndex={-1}
+                                                            >
+                                                                {showPasswords["afp_net"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -906,20 +981,30 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     </div>
                                                     <div>
                                                         <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave Viva Essalud</Label>
-                                                        <Controller
-                                                            name="credenciales.viva_essalud_clave"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    type="password"
-                                                                    placeholder="Contraseña"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                                />
-                                                            )}
-                                                        />
+                                                        <div className="relative">
+                                                            <Controller
+                                                                name="credenciales.viva_essalud_clave"
+                                                                control={control}
+                                                                render={({ field }) => (
+                                                                    <Input
+                                                                        {...field}
+                                                                        value={field.value || ""}
+                                                                        type={showPasswords["viva_essalud"] ? "text" : "password"}
+                                                                        placeholder="Contraseña"
+                                                                        disabled={isSubmitting}
+                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
+                                                                    />
+                                                                )}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => togglePasswordVisibility("viva_essalud")}
+                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                                tabIndex={-1}
+                                                            >
+                                                                {showPasswords["viva_essalud"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -947,7 +1032,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     className="border-border bg-input"
                                                 />
                                                 <Label htmlFor="enable-pe" className="text-card-foreground font-semibold text-sm cursor-pointer">
-                                                    PE (Planilla Electrónica)
+                                                    PE (Partida Electrónica)
                                                 </Label>
                                             </div>
                                             {enablePe && (
@@ -1015,20 +1100,30 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     </div>
                                                     <div>
                                                         <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave SIS</Label>
-                                                        <Controller
-                                                            name="credenciales.sis_clave"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    type="password"
-                                                                    placeholder="Contraseña"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                                />
-                                                            )}
-                                                        />
+                                                        <div className="relative">
+                                                            <Controller
+                                                                name="credenciales.sis_clave"
+                                                                control={control}
+                                                                render={({ field }) => (
+                                                                    <Input
+                                                                        {...field}
+                                                                        value={field.value || ""}
+                                                                        type={showPasswords["sis"] ? "text" : "password"}
+                                                                        placeholder="Contraseña"
+                                                                        disabled={isSubmitting}
+                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
+                                                                    />
+                                                                )}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => togglePasswordVisibility("sis")}
+                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                                tabIndex={-1}
+                                                            >
+                                                                {showPasswords["sis"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}

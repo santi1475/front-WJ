@@ -1,47 +1,24 @@
-import axios from "axios";
+import { getAxiosInstance } from "@/lib/axios-client";
 import type { IResponsable, IResponsableFormData } from "../types/responsable";
-import { useAuthStore } from "@/lib/store";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
-// Helper to get headers with auth token
-const getHeaders = () => {
-  const { tokens } = useAuthStore.getState();
-  return {
-    Authorization: `Bearer ${tokens?.access}`,
-    "Content-Type": "application/json",
-  };
-};
+const API_ENDPOINT = "/api/gestion/responsables";
 
 export const responsableService = {
   getAll: async (): Promise<IResponsable[]> => {
-    const response = await axios.get(
-      `${API_BASE_URL}/api/gestion/responsables/`,
-      {
-        headers: getHeaders(),
-      },
-    );
+    const axios = getAxiosInstance();
+    const response = await axios.get(`${API_ENDPOINT}/`);
     return response.data;
   },
 
   getById: async (id: number): Promise<IResponsable> => {
-    const response = await axios.get(
-      `${API_BASE_URL}/api/gestion/responsables/${id}/`,
-      {
-        headers: getHeaders(),
-      },
-    );
+    const axios = getAxiosInstance();
+    const response = await axios.get(`${API_ENDPOINT}/${id}/`);
     return response.data;
   },
 
   create: async (data: IResponsableFormData): Promise<IResponsable> => {
-    const response = await axios.post(
-      `${API_BASE_URL}/api/gestion/responsables/`,
-      data,
-      {
-        headers: getHeaders(),
-      },
-    );
+    const axios = getAxiosInstance();
+    const response = await axios.post(`${API_ENDPOINT}/`, data);
     return response.data;
   },
 
@@ -49,19 +26,13 @@ export const responsableService = {
     id: number,
     data: Partial<IResponsableFormData>,
   ): Promise<IResponsable> => {
-    const response = await axios.patch(
-      `${API_BASE_URL}/api/gestion/responsables/${id}/`,
-      data,
-      {
-        headers: getHeaders(),
-      },
-    );
+    const axios = getAxiosInstance();
+    const response = await axios.patch(`${API_ENDPOINT}/${id}/`, data);
     return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/api/gestion/responsables/${id}/`, {
-      headers: getHeaders(),
-    });
+    const axios = getAxiosInstance();
+    await axios.delete(`${API_ENDPOINT}/${id}/`);
   },
 };

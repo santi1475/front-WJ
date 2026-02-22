@@ -29,6 +29,7 @@ import {
     X
 } from "lucide-react"
 import * as Icons from "lucide-react"
+import { bg } from "zod/v4/locales"
 
 type LucideIcon = typeof Icons.Activity
 
@@ -222,31 +223,13 @@ export function Sidebar() {
 
                 {/* Footer / Usuario */}
                 <div className="border-t border-slate-800 p-4">
-                    {user && (
-                        <div className={cn(
-                            "flex items-center gap-3 mb-4",
-                            !isSidebarOpen && "justify-center"
-                        )}>
-                            <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shrink-0">
-                                {user.username?.charAt(0).toUpperCase() || "U"}
-                            </div>
-                            {isSidebarOpen && (
-                                <div className="overflow-hidden">
-                                    <p className="text-sm font-medium text-white truncate">{user.username}</p>
-                                    <p className="text-xs text-slate-400 capitalize truncate">{user.role?.toLowerCase()}</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* ... existing code ... */}
                     {mounted && (
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button
                                     variant="destructive"
                                     className={cn(
-                                        "w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/50",
+                                        "w-full bg-red-900/20 hover:bg-red-900/40 text-white border border-red-900/50",
                                         !isSidebarOpen && "px-0 justify-center"
                                     )}
                                     title="Cerrar Sesión"
@@ -275,7 +258,7 @@ export function Sidebar() {
                         <Button
                             variant="destructive"
                             className={cn(
-                                "w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/50",
+                                "w-full bg-red-900/20 text-white hover:bg-red-900/40 border border-red-900/50",
                                 !isSidebarOpen && "px-0 justify-center"
                             )}
                             title="Cerrar Sesión"

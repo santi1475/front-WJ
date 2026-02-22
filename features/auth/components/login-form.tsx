@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuthStore } from "@/lib/store"
 import { authService } from "@/features/auth/services/auth"
+import { Loader2, KeyRound, User, ChevronRight } from "lucide-react"
 
 export function LoginForm() {
   const router = useRouter()
@@ -66,58 +67,99 @@ export function LoginForm() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-slate-950 to-slate-900">
-      <Card className="w-full max-w-md border-slate-800 bg-slate-900">
-        <CardHeader className="space-y-2">
-          <CardTitle className="text-2xl text-white">WJ System</CardTitle>
-          <CardDescription className="text-slate-400">Inicia sesión para acceder al sistema</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 bg-red-900/20 border border-red-700/50 rounded text-red-400 text-sm">
-                <p>No se puede iniciar sesión, verifique sus credenciales</p>
+    <div className="relative flex items-center justify-center min-h-screen bg-slate-950 overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60rem] h-[60rem] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-md p-6">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 mb-6 shadow-2xl shadow-indigo-500/20">
+            <KeyRound className="w-8 h-8 text-indigo-400" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-white mb-2">
+            WJ System
+          </h1>
+          <p className="text-slate-400">
+            Bienvenido de vuelta, ingresa tus credenciales
+          </p>
+        </div>
+
+        <Card className="bg-slate-900/50 backdrop-blur-xl border-slate-800/60 shadow-2xl">
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-3 animate-in fade-in zoom-in-95 duration-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                  <p>Credenciales inválidas, verifica tu acceso.</p>
+                </div>
+              )}
+
+              <div className="space-y-2.5">
+                <Label htmlFor="username" className="text-slate-300 font-medium">
+                  Usuario
+                </Label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                    <User className="h-5 w-5" />
+                  </div>
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    placeholder="Escribe tu usuario..."
+                    value={formData.username}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                    className="pl-11 bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all hover:bg-slate-900/50 h-12 text-base rounded-xl"
+                  />
+                </div>
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-slate-300">
-                Usuario
-              </Label>
-              <Input
-                id="username"
-                name="username"
-                type="text"
-                placeholder="tu_usuario"
-                value={formData.username}
-                onChange={handleChange}
-                disabled={isLoading}
-                className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-              />
-            </div>
+              <div className="space-y-2.5">
+                <Label htmlFor="password" className="text-slate-300 font-medium">
+                  Contraseña
+                </Label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                    <KeyRound className="h-5 w-5" />
+                  </div>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                    className="pl-11 bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all hover:bg-slate-900/50 h-12 text-base rounded-xl"
+                  />
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">
-                Contraseña
-              </Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                disabled={isLoading}
-                className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-              />
-            </div>
-
-            <Button type="submit" disabled={isLoading} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-              {isLoading ? "Ingresando..." : "Ingresar"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-12 text-base rounded-xl shadow-lg shadow-indigo-900/20 group transition-all"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Validando...
+                    </>
+                  ) : (
+                    <>
+                      Iniciar Sesión
+                      <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

@@ -5,7 +5,7 @@ import axios, {
 } from "axios";
 import { useAuthStore } from "./store";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 let axiosInstance: AxiosInstance | null = null;
 
@@ -23,13 +23,21 @@ export const getAxiosInstance = (): AxiosInstance => {
         const { tokens } = useAuthStore.getState();
         if (tokens?.access) {
           config.headers.Authorization = `Bearer ${tokens.access}`;
-          console.log("Token agregado al request:", config.method?.toUpperCase(), config.url);
+          console.log(
+            "Token agregado al request:",
+            config.method?.toUpperCase(),
+            config.url,
+          );
         } else {
-          console.warn("No hay token disponible para:", config.method?.toUpperCase(), config.url);
+          console.warn(
+            "No hay token disponible para:",
+            config.method?.toUpperCase(),
+            config.url,
+          );
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     axiosInstance.interceptors.response.use(
@@ -51,7 +59,7 @@ export const getAxiosInstance = (): AxiosInstance => {
                 `${API_BASE_URL}/api/auth/token/refresh/`,
                 {
                   refresh: tokens.refresh,
-                }
+                },
               );
 
               const newTokens = {
@@ -70,21 +78,23 @@ export const getAxiosInstance = (): AxiosInstance => {
               console.error("Error al refrescar token:", refreshError);
               clearAuth();
               if (typeof window !== "undefined") {
-                window.location.href = "/login";
+                window.location.href = "/session-expired";
               }
               return Promise.reject(refreshError);
             }
           } else {
-            console.warn("No hay refresh token disponible, redirigiendo al login");
+            console.warn(
+              "No hay refresh token disponible, redirigiendo al login",
+            );
             clearAuth();
             if (typeof window !== "undefined") {
-              window.location.href = "/login";
+              window.location.href = "/session-expired";
             }
           }
         }
 
         return Promise.reject(error);
-      }
+      },
     );
   }
 

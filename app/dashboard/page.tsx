@@ -71,8 +71,8 @@ export default function DashboardPage() {
                     />
                     <KPICard
                         title="Pendientes"
-                        value={stats?.pendientes_declaracion || 0}
-                        description="Declaraciones pendientes"
+                        value={stats?.pendientes_declaracion || "N/T"}
+                        description="<Modulo en desarrollo>"
                         color="amber"
                     />
                 </div>

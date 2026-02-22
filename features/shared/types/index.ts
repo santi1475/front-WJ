@@ -108,6 +108,7 @@ export interface ICliente {
   selectivo_consumo: boolean;
   credenciales: ICredenciales;
   fecha_baja?: string;
+  fecha_reactivacion?: string;
 }
 
 export interface IClienteFormData extends Omit<ICliente, "credenciales"> {
