@@ -310,7 +310,7 @@ export function CredentialsViewer({ client, open, onOpenChange }: CredentialsVie
                     {client.credenciales?.pe && (
                         <SystemCard title="OTROS / ACCESOS ESPECIALES">
                             <CredentialItem
-                                label="Planilla Elect."
+                                label="Partida Elect."
                                 value={client.credenciales.pe}
                                 fieldKey="pe"
                             />

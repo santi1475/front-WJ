@@ -239,11 +239,11 @@ export function ClientsTable() {
                             <TableHead className="w-50px text-muted-foreground">N°</TableHead>
                             <TableHead className="text-muted-foreground">RUC</TableHead>
                             <TableHead className="text-muted-foreground">Razón Social</TableHead>
-                            <TableHead className="text-muted-foreground">Propietario</TableHead>
-                            <TableHead className="text-muted-foreground">Codigo de control</TableHead>
-                            <TableHead className="text-muted-foreground">Responsable</TableHead>
-                            <TableHead className="text-muted-foreground">Régimen Tributario</TableHead>
-                            <TableHead className="text-muted-foreground">Régimen Laboral</TableHead>
+                            <TableHead className="text-muted-foreground text-center">Propietario</TableHead>
+                            <TableHead className="text-muted-foreground text-center">Codigo de control</TableHead>
+                            <TableHead className="text-muted-foreground text-center">Responsable</TableHead>
+                            <TableHead className="text-muted-foreground text-center">Régimen Tributario</TableHead>
+                            <TableHead className="text-muted-foreground text-center">Régimen Laboral</TableHead>
                             <TableHead className="text-muted-foreground text-center">Categoria</TableHead>
                             <TableHead className="text-muted-foreground text-center">Acciones</TableHead>
                         </TableRow>
@@ -273,9 +273,9 @@ export function ClientsTable() {
                                     <TableCell className="text-muted-foreground">{index + 1}</TableCell>
                                     <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">{client.ruc}</TableCell>
                                     <TableCell className="font-medium text-foreground">{client.razon_social}</TableCell>
-                                    <TableCell className="text-muted-foreground">{client.propietario}</TableCell>
+                                    <TableCell className="text-muted-foreground text-center">{client.propietario}</TableCell>
                                     <TableCell className="text-muted-foreground text-center">{client.codigo_control || "-"}</TableCell>
-                                    <TableCell className="text-muted-foreground">
+                                    <TableCell className="text-muted-foreground text-center">
                                         {client.responsable_info?.nombre || "-"}
                                     </TableCell>
                                     <TableCell className="text-center">
@@ -293,8 +293,8 @@ export function ClientsTable() {
                                             {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
+                                    <TableCell className="text-center">
+                                        <div className="flex justify-center gap-2">
                                             <Button
                                                 onClick={() => handleViewCredentials(client)}
                                                 size="sm"

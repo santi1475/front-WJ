@@ -225,11 +225,11 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 <TableHead className="w-[50px] font-semibold text-slate-700 dark:text-slate-300">N°</TableHead>
                                 <TableHead className="font-semibold text-slate-700 dark:text-slate-300">RUC</TableHead>
                                 <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Razón Social</TableHead>
-                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Propietario</TableHead>
-                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Responsable</TableHead>
-                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Categoria</TableHead>
-                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Estado</TableHead>
-                                <TableHead className="text-center font-semibold text-slate-700 dark:text-slate-300">Acciones</TableHead>
+                                <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Propietario</TableHead>
+                                <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Responsable</TableHead>
+                                <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Categoria</TableHead>
+                                <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Estado</TableHead>
+                                <TableHead className="text-center font-semibold text-slate-700 text-center dark:text-slate-300">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -257,16 +257,16 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                         <TableCell className="text-slate-600 dark:text-slate-400">{index + 1}</TableCell>
                                         <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">{client.ruc}</TableCell>
                                         <TableCell className="font-medium text-slate-900 dark:text-slate-100">{client.razon_social}</TableCell>
-                                        <TableCell className="text-slate-600 dark:text-slate-400">{client.propietario}</TableCell>
-                                        <TableCell className="text-slate-600 dark:text-slate-400">
+                                        <TableCell className="text-slate-600 text-center dark:text-slate-400">{client.propietario}</TableCell>
+                                        <TableCell className="text-slate-600 text-center dark:text-slate-400">
                                             {client.responsable_info?.nombre || "-"}
                                         </TableCell>
-                                        <TableCell className="text-left">
+                                        <TableCell className="text-center">
                                             <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
                                                 {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             <Badge
                                                 className={
                                                     client.estado

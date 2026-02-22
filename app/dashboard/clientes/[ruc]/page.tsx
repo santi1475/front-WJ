@@ -112,14 +112,14 @@ export default function ClientProfilePage() {
     }
 
     return (
-        <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-16">
+        <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-background dark:to-background/80">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <Button
                     onClick={() => router.back()}
                     variant="ghost"
-                    className="mb-6 pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground"
+                    className="mb-8 pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors group"
                 >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                     Volver al listado
                 </Button>
 
@@ -134,25 +134,25 @@ export default function ClientProfilePage() {
                 />
 
                 {isEditMode && (
-                    <div className="flex items-center justify-end gap-3 mt-6 mb-8 sticky top-4 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg border shadow-sm">
-                        <Button
-                            onClick={handleSave}
-                            size="sm"
-                            className="gap-2"
-                            disabled={isSaving}
-                        >
-                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                            Guardar Cambios
-                        </Button>
+                    <div className="flex items-center justify-end gap-3 mt-6 mb-8 sticky top-4 z-50 bg-background/90 backdrop-blur-md p-3 rounded-xl border border-border/50 shadow-lg shadow-black/5 dark:shadow-black/20 transition-all">
                         <Button
                             onClick={handleCancel}
-                            variant="destructive"
+                            variant="outline"
                             size="sm"
-                            className="gap-2"
+                            className="gap-2 border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-300 font-medium"
                             disabled={isSaving}
                         >
                             <X className="w-4 h-4" />
                             Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleSave}
+                            size="sm"
+                            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 rounded-lg font-medium"
+                            disabled={isSaving}
+                        >
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                            Guardar Cambios
                         </Button>
                     </div>
                 )}

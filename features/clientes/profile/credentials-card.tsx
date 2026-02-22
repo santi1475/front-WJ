@@ -60,7 +60,7 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
       clave: credenciales.sis_clave,
     },
     {
-      label: 'Planilla Electrónica',
+      label: 'Partida Electrónica',
       especial: credenciales.pe,
     },
   ];
@@ -125,21 +125,19 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
               return (
                 <div
                   key={key}
-                  className={`p-4 rounded-lg border transition-all duration-200 space-y-3 ${
-                    isConfigured
-                      ? 'bg-emerald-50/80 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800/50 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-sm hover:shadow-md'
-                      : 'bg-slate-50/50 border-slate-200 dark:bg-slate-900/30 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600'
-                  }`}
+                  className={`p-4 rounded-lg border transition-all duration-200 space-y-3 ${isConfigured
+                    ? 'bg-emerald-50/80 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800/50 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-sm hover:shadow-md'
+                    : 'bg-slate-50/50 border-slate-200 dark:bg-slate-900/30 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600'
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-bold text-foreground">{item.label}</h4>
                     <Badge
                       variant={isConfigured ? 'default' : 'secondary'}
-                      className={`text-xs ${
-                        isConfigured
-                          ? 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600'
-                          : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                      }`}
+                      className={`text-xs ${isConfigured
+                        ? 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600'
+                        : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                        }`}
                     >
                       {isConfigured ? 'Activo' : 'Pendiente'}
                     </Badge>
@@ -197,7 +195,7 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                     )}
 
                     {item.clave && (
-                      <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 dark:from-amber-950/40 dark:to-orange-950/20 rounded-lg p-2.5 border border-amber-200/60 dark:border-amber-800/40">
+                      <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 dark:from-amber-950/40 dark:to-orange-950/20 rounded-lg p-2.5 border border-amber-200/60 dark:border-amber-800/40 border-slate-200/50 dark:border-slate-700/50 transition-all hover:bg-gradient-to-br hover:from-amber-100 hover:to-orange-100/50 dark:hover:from-amber-900/60 dark:hover:to-orange-900/40">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Lock className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
@@ -205,50 +203,53 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                               Contraseña
                             </p>
                           </div>
-                          {!isEditMode && (
-                            <button
-                              onClick={() => togglePasswordVisibility(key)}
-                              className="text-xs font-medium text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200 transition-colors px-1.5 py-0.5 rounded hover:bg-amber-100/50 dark:hover:bg-amber-900/30 flex items-center gap-1"
-                              aria-label={showPasswords[key] ? 'Ocultar' : 'Mostrar'}
-                              title={showPasswords[key] ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                            >
-                              {showPasswords[key] ? (
-                                <>
-                                  <EyeOff className="w-3 h-3" />
-                                  <span className="hidden sm:inline">Ocultar</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Eye className="w-3 h-3" />
-                                  <span className="hidden sm:inline">Mostrar</span>
-                                </>
-                              )}
-                            </button>
-                          )}
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault(); // Prevent form submission if within form
+                              togglePasswordVisibility(key);
+                            }}
+                            className="text-xs font-medium text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200 transition-colors px-1.5 py-0.5 rounded hover:bg-amber-100/50 dark:hover:bg-amber-900/30 flex items-center gap-1"
+                            aria-label={showPasswords[key] ? 'Ocultar' : 'Mostrar'}
+                            title={showPasswords[key] ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          >
+                            {showPasswords[key] ? (
+                              <>
+                                <EyeOff className="w-3 h-3" />
+                                <span className="hidden sm:inline">Ocultar</span>
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="w-3 h-3" />
+                                <span className="hidden sm:inline">Mostrar</span>
+                              </>
+                            )}
+                          </button>
                         </div>
                         {isEditMode ? (
-                          <Input
-                            type="password"
-                            value={item.clave}
-                            onChange={(e) => {
-                              const fieldMap: Record<string, string> = {
-                                'SOL': 'sol_clave',
-                                'Detracción': 'detraccion_clave',
-                                'INEI': 'inei_clave',
-                                'AFP Net': 'afp_net_clave',
-                                'Viva Essalud': 'viva_essalud_clave',
-                                'SIS': 'sis_clave',
-                              };
-                              onUpdateField?.(fieldMap[item.label] || 'sol_clave', e.target.value);
-                            }}
-                            className="text-xs font-mono"
-                            placeholder="Contraseña"
-                          />
+                          <div className="relative">
+                            <Input
+                              type={showPasswords[key] ? 'text' : 'password'}
+                              value={item.clave}
+                              onChange={(e) => {
+                                const fieldMap: Record<string, string> = {
+                                  'SOL': 'sol_clave',
+                                  'Detracción': 'detraccion_clave',
+                                  'INEI': 'inei_clave',
+                                  'AFP Net': 'afp_net_clave',
+                                  'Viva Essalud': 'viva_essalud_clave',
+                                  'SIS': 'sis_clave',
+                                };
+                                onUpdateField?.(fieldMap[item.label] || 'sol_clave', e.target.value);
+                              }}
+                              className="text-xs font-mono"
+                              placeholder="Contraseña"
+                            />
+                          </div>
                         ) : (
                           <div className="bg-white/70 dark:bg-slate-900/60 rounded px-2.5 py-1.5 font-mono text-xs text-foreground break-all leading-relaxed border border-amber-200/40 dark:border-amber-800/30">
                             {showPasswords[key]
                               ? item.clave
-                              : '•'.repeat(item.clave.length)}
+                              : '•'.repeat(item.clave?.length || 0)}
                           </div>
                         )}
                       </div>
