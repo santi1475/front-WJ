@@ -454,9 +454,9 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                 <SelectValue />
                                                             </SelectTrigger>
                                                             <SelectContent className="bg-card border-border">
-                                                                <SelectItem value="A">A - Activo</SelectItem>
-                                                                <SelectItem value="B">B - Pendiente</SelectItem>
-                                                                <SelectItem value="C">C - Inactivo</SelectItem>
+                                                                <SelectItem value="A">A</SelectItem>
+                                                                <SelectItem value="B">B</SelectItem>
+                                                                <SelectItem value="C">C</SelectItem>
                                                                 <SelectItem value="N/T">N/T - No definido</SelectItem>
                                                             </SelectContent>
                                                         </Select>
