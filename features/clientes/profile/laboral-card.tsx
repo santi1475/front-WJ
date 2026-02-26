@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Users } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { ICliente } from '@/features/shared/types';
 
@@ -89,6 +90,31 @@ export function LaboralCard({ client, isEditMode, onUpdateField }: LaboralCardPr
             ) : (
               <p className={`text-sm font-medium ${isAccredited ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground'}`}>
                 {formatDate(client.regimen_laboral_fecha)}
+              </p>
+            )}
+          </div>
+
+          <div className={`rounded-lg p-3 border ${client.planilla ? 'bg-indigo-50/50 border-indigo-200 dark:bg-indigo-950/20 dark:border-indigo-900' : 'bg-muted/30 border-border/50'}`}>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
+              Planilla
+            </p>
+            {isEditMode ? (
+              <div className="flex items-center space-x-2 mt-1">
+                <Checkbox
+                  id="planilla-checkbox"
+                  checked={!!client.planilla}
+                  onCheckedChange={(checked) => onUpdateField?.('planilla', !!checked)}
+                />
+                <label
+                  htmlFor="planilla-checkbox"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Registrado en Planilla
+                </label>
+              </div>
+            ) : (
+              <p className={`text-sm font-medium ${client.planilla ? 'text-indigo-700 dark:text-indigo-400' : 'text-muted-foreground'}`}>
+                {client.planilla ? 'Sí, Registrado' : 'No Registrado'}
               </p>
             )}
           </div>

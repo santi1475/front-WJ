@@ -77,41 +77,24 @@ export function FinancialCard({ client, isEditMode, onUpdateField }: FinancialCa
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-secondary/30 rounded-lg p-2.5 border border-secondary/50">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
-                Libros
-              </p>
-              {isEditMode ? (
-                <Input
-                  type="number"
-                  value={client.libros_societarios}
-                  onChange={(e) => onUpdateField?.('libros_societarios', parseInt(e.target.value) || 0)}
-                  className="text-base font-bold h-8"
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">
+              Selectivo Consumo
+            </p>
+            {isEditMode ? (
+              <div className="flex items-center gap-2 pt-1 border p-2 rounded-md bg-muted/30">
+                <Checkbox
+                  checked={client.selectivo_consumo}
+                  onCheckedChange={(checked: boolean | 'indeterminate') => onUpdateField?.('selectivo_consumo', checked === true)}
+                  className="border-border bg-input"
                 />
-              ) : (
-                <p className="text-base font-bold text-foreground">{client.libros_societarios}</p>
-              )}
-            </div>
-
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">
-                Selectivo Consumo
-              </p>
-              {isEditMode ? (
-                <div className="flex items-center gap-2 pt-1">
-                  <Checkbox
-                    checked={client.selectivo_consumo}
-                    onCheckedChange={(checked: boolean | 'indeterminate') => onUpdateField?.('selectivo_consumo', checked === true)}
-                  />
-                  <span className="text-sm">{client.selectivo_consumo ? 'Si' : 'No'}</span>
-                </div>
-              ) : (
-                <Badge variant={client.selectivo_consumo ? 'default' : 'outline'} className="text-xs">
-                  {client.selectivo_consumo ? 'Aplica' : 'No aplica'}
-                </Badge>
-              )}
-            </div>
+                <span className="text-sm font-medium">Aplica Selectivo Consumo</span>
+              </div>
+            ) : (
+              <Badge variant={client.selectivo_consumo ? 'default' : 'outline'} className="text-xs">
+                {client.selectivo_consumo ? 'Aplica' : 'No aplica'}
+              </Badge>
+            )}
           </div>
         </div>
       </CardContent>

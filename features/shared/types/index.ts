@@ -54,6 +54,8 @@ export interface ICredenciales {
   sis_usuario?: string;
   sis_clave?: string;
   pe?: string;
+  clave_osce?: string;
+  clave_sencico?: string;
 }
 
 export interface IResponsableInfo {
@@ -61,6 +63,11 @@ export interface IResponsableInfo {
   nombre: string;
   celular?: string;
   activo: boolean;
+}
+
+export interface ILibroSocietario {
+  id: number;
+  nombre: string;
 }
 
 export interface IHistorialBaja {
@@ -102,16 +109,21 @@ export interface ICliente {
   categoria: "A" | "B" | "C" | "N/T";
   regimen_laboral_tipo?: string;
   regimen_laboral_fecha?: string;
+  planilla?: boolean;
   ingresos_mensuales: string;
   ingresos_anuales: string;
-  libros_societarios: number;
+  libros_societarios: number[];
+  libros_societarios_detalles?: ILibroSocietario[];
   selectivo_consumo: boolean;
   credenciales: ICredenciales;
   fecha_baja?: string;
   fecha_reactivacion?: string;
 }
 
-export interface IClienteFormData extends Omit<ICliente, "credenciales"> {
+export interface IClienteFormData extends Omit<
+  ICliente,
+  "credenciales" | "libros_societarios_detalles"
+> {
   credenciales?: ICredenciales;
 }
 

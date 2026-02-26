@@ -2,19 +2,20 @@
 
 import { useState, useEffect } from "react"
 import type { AxiosError } from "axios"
-import { useForm, Controller } from "react-hook-form"
+import { useForm, Controller, useWatch } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { type ICliente, type IClienteFormData, RegimenTributario, TipoEmpresa } from "@/features/shared/types"
+import { type ICliente, type IClienteFormData, RegimenTributario, TipoEmpresa, type ILibroSocietario } from "@/features/shared/types"
 import { useAuth } from "@/hooks/use-auth"
 import { clientesService } from "@/features/clientes/services/clientes"
 import { responsableService } from "@/features/responsables/services/responsable.service"
 import { IResponsable } from "@/features/responsables/types/responsable"
 import { regimenLaboralService, type ITipoRegimenLaboral } from "@/features/shared/services/regimen-laboral.service"
+import { libroSocietarioService } from "@/features/shared/services/libro-societario.service"
 import { handleApiError, handleApiSuccess } from "@/lib/api-utils"
 import { X, Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
@@ -40,10 +41,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
     const [enableVivaEssalud, setEnableVivaEssalud] = useState(false)
     const [enablePe, setEnablePe] = useState(false)
     const [enableSis, setEnableSis] = useState(false)
+    const [enableOsce, setEnableOsce] = useState(false)
+    const [enableSencico, setEnableSencico] = useState(false)
 
     const [responsables, setResponsables] = useState<IResponsable[]>([])
     const [loadingResponsables, setLoadingResponsables] = useState(false)
     const [regimenesLaborales, setRegimenesLaborales] = useState<ITipoRegimenLaboral[]>([])
+    const [librosDisponibles, setLibrosDisponibles] = useState<ILibroSocietario[]>([])
 
     const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({})
     const togglePasswordVisibility = (field: string) => setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }))
@@ -56,6 +60,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         control,
         handleSubmit,
         reset,
+        setValue,
         formState: { errors },
     } = useForm<IClienteFormData>({
         defaultValues: {
@@ -71,8 +76,9 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
             categoria: "N/T",
             ingresos_mensuales: "0",
             ingresos_anuales: "0",
-            libros_societarios: 0,
+            libros_societarios: [],
             selectivo_consumo: false,
+            planilla: false,
             credenciales: {},
         },
     })
@@ -88,6 +94,8 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                 setEnableVivaEssalud(!!client.credenciales?.viva_essalud_usuario)
                 setEnablePe(!!client.credenciales?.pe)
                 setEnableSis(!!client.credenciales?.sis_usuario)
+                setEnableOsce(!!client.credenciales?.clave_osce)
+                setEnableSencico(!!client.credenciales?.clave_sencico)
             } else {
                 const defaultResponsable = (!user?.is_superuser && user?.id !== 1) ? user?.id || 0 : 0
                 reset({
@@ -103,8 +111,9 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                     categoria: "N/T",
                     ingresos_mensuales: "0",
                     ingresos_anuales: "0",
-                    libros_societarios: 0,
+                    libros_societarios: [],
                     selectivo_consumo: false,
+                    planilla: false,
                     credenciales: {},
                 })
                 setEnableSol(false)
@@ -114,6 +123,8 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                 setEnableVivaEssalud(false)
                 setEnablePe(false)
                 setEnableSis(false)
+                setEnableOsce(false)
+                setEnableSencico(false)
             }
         }
     }, [client, isOpen, reset, user])
@@ -140,8 +151,63 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                     setRegimenesLaborales(data);
                 })
                 .catch(err => console.error("ClientForm: Error loading regimen types:", err))
+
+            libroSocietarioService.getAll()
+                .then(data => setLibrosDisponibles(data))
+                .catch(err => console.error("Error loading libros societarios", err))
         }
     }, [isOpen])
+
+    const tipoEmpresaActual = useWatch({
+        control,
+        name: "tipo_empresa",
+        defaultValue: TipoEmpresa.SAC
+    });
+
+    useEffect(() => {
+        console.log("DEBUG-LIBROS: effect init | isOpen:", isOpen, "| client:", !!client, "| librosDisp len:", librosDisponibles.length, "| tipoEmpresa:", tipoEmpresaActual);
+        // Logica para auto-seleccionar libros societarios en un cliente NUEVO cuando cambie el tipo de empresa
+        if (!client && isOpen && librosDisponibles.length > 0 && tipoEmpresaActual) {
+            let recomendados: number[] = [];
+            const mapLibros = librosDisponibles.reduce((acc, curr) => {
+                // Normalizar nombre a minúsculas, sin acentos para busqueda exacta si es necesario
+                const nombreMod = curr.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                acc[nombreMod] = curr.id;
+                return acc;
+            }, {} as Record<string, number>);
+
+            console.log("DEBUG-LIBROS: mapLibros generados:", mapLibros);
+
+            const findId = (partialName: string) => {
+                const found = Object.keys(mapLibros).find(k => k.includes(partialName.toLowerCase()));
+                console.log("DEBUG-LIBROS: buscando", partialName, "-> encontró llave", found, "-> id", found ? mapLibros[found] : null);
+                return found ? mapLibros[found] : null;
+            };
+
+            const actas = findId("actas");
+            const matricula = findId("matricula");
+            const directorio = findId("directorio");
+
+            console.log("DEBUG-LIBROS: IDs extraídos -> actas:", actas, "matricula:", matricula, "directorio:", directorio);
+
+            if (tipoEmpresaActual === TipoEmpresa.EIRL) {
+                console.log("DEBUG-LIBROS: evaluando EIRL -> actas");
+                if (actas) recomendados.push(actas);
+            } else if (tipoEmpresaActual === TipoEmpresa.SAC) {
+                console.log("DEBUG-LIBROS: evaluando SAC -> actas, matricula");
+                if (actas) recomendados.push(actas);
+                if (matricula) recomendados.push(matricula);
+            } else if (tipoEmpresaActual === TipoEmpresa.SA || tipoEmpresaActual === ("SAA" as any)) {
+                console.log("DEBUG-LIBROS: evaluando SA/SAA -> actas, matricula, directorio");
+                if (actas) recomendados.push(actas);
+                if (matricula) recomendados.push(matricula);
+                if (directorio) recomendados.push(directorio);
+            }
+
+            console.log("DEBUG-LIBROS: Asignando recomendaciones finales:", recomendados);
+            setValue("libros_societarios", recomendados, { shouldDirty: true });
+        }
+    }, [tipoEmpresaActual, librosDisponibles, client, isOpen, setValue])
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -574,39 +640,80 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                         <div className="grid grid-cols-1 gap-3">
                                             {/* Libros Societarios */}
                                             <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Libros Societarios</Label>
+                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Libros Societarios recomendados</Label>
                                                 <Controller
                                                     name="libros_societarios"
                                                     control={control}
                                                     render={({ field }) => (
-                                                        <Input
-                                                            {...field}
-                                                            type="number"
-                                                            placeholder="0"
-                                                            disabled={isSubmitting}
-                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                                                        />
+                                                        <div className="space-y-2 mt-2 border rounded-md p-3 bg-input/30">
+                                                            {librosDisponibles.length === 0 ? (
+                                                                <span className="text-xs text-muted-foreground">Cargando libros...</span>
+                                                            ) : (
+                                                                librosDisponibles.map(libro => (
+                                                                    <div key={libro.id} className="flex items-center space-x-2">
+                                                                        <Checkbox
+                                                                            id={`libro-${libro.id}`}
+                                                                            checked={(field.value || []).includes(libro.id)}
+                                                                            onCheckedChange={(checked) => {
+                                                                                const current = field.value || [];
+                                                                                const newVal = checked
+                                                                                    ? [...current, libro.id]
+                                                                                    : current.filter(id => id !== libro.id);
+                                                                                field.onChange(newVal);
+                                                                            }}
+                                                                            disabled={isSubmitting}
+                                                                            className="border-border bg-input"
+                                                                        />
+                                                                        <Label htmlFor={`libro-${libro.id}`} className="text-sm font-medium leading-none cursor-pointer">
+                                                                            {libro.nombre}
+                                                                        </Label>
+                                                                    </div>
+                                                                ))
+                                                            )}
+                                                        </div>
                                                     )}
                                                 />
                                             </div>
 
-                                            {/* Selectivo Consumo */}
-                                            <div className="flex items-end">
-                                                <div className="flex items-center space-x-2">
-                                                    <Controller
-                                                        name="selectivo_consumo"
-                                                        control={control}
-                                                        render={({ field }) => (
-                                                            <Checkbox
-                                                                checked={field.value}
-                                                                onCheckedChange={field.onChange}
-                                                                disabled={isSubmitting}
-                                                                className="border-border bg-input"
-                                                            />
-                                                        )}
-                                                    />
-                                                    <Label className="text-slate-800 font-semibold text-xs cursor-pointer dark:text-slate-200">Selectivo Consumo</Label>
+                                            <div className="grid grid-cols-2 gap-2 mt-2">
+                                                {/* Selectivo Consumo */}
+                                                <div className="flex items-center mt-2 border p-2 rounded-md bg-input/20">
+                                                    <div className="flex items-center space-x-2">
+                                                        <Controller
+                                                            name="selectivo_consumo"
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <Checkbox
+                                                                    id="selectivo_consumo_chk"
+                                                                    checked={field.value}
+                                                                    onCheckedChange={field.onChange}
+                                                                    disabled={isSubmitting}
+                                                                    className="border-border bg-input"
+                                                                />
+                                                            )}
+                                                        />
+                                                        <Label htmlFor="selectivo_consumo_chk" className="text-slate-800 font-semibold text-xs cursor-pointer dark:text-slate-200">Selectivo Consumo</Label>
+                                                    </div>
+                                                </div>
+
+                                                {/* Planilla */}
+                                                <div className="flex items-center mt-2 border p-2 rounded-md bg-input/20 bg-indigo-50/10 border-indigo-200/50">
+                                                    <div className="flex items-center space-x-2">
+                                                        <Controller
+                                                            name="planilla"
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <Checkbox
+                                                                    id="planilla_chk"
+                                                                    checked={field.value}
+                                                                    onCheckedChange={field.onChange}
+                                                                    disabled={isSubmitting}
+                                                                    className="border-border bg-input"
+                                                                />
+                                                            )}
+                                                        />
+                                                        <Label htmlFor="planilla_chk" className="text-indigo-800 dark:text-indigo-300 font-semibold text-xs cursor-pointer">Registra Planilla</Label>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -1124,6 +1231,115 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                 {showPasswords["sis"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                                                             </button>
                                                         </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/* OSCE */}
+                                        <div className="border-b border-border pb-3">
+                                            <div className="flex items-center space-x-2 mb-3">
+                                                <Checkbox
+                                                    id="enable-osce"
+                                                    checked={enableOsce}
+                                                    onCheckedChange={(checked) => {
+                                                        setEnableOsce(!!checked)
+                                                        if (!checked) {
+                                                            reset({
+                                                                ...control._formValues,
+                                                                credenciales: {
+                                                                    ...control._formValues.credenciales,
+                                                                    clave_osce: undefined,
+                                                                }
+                                                            })
+                                                        }
+                                                    }}
+                                                    className="border-border bg-input"
+                                                />
+                                                <Label htmlFor="enable-osce" className="text-card-foreground font-semibold text-sm cursor-pointer">
+                                                    OSCE
+                                                </Label>
+                                            </div>
+                                            {enableOsce && (
+                                                <div className="ml-6 max-w-sm">
+                                                    <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave OSCE</Label>
+                                                    <div className="relative">
+                                                        <Controller
+                                                            name="credenciales.clave_osce"
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <Input
+                                                                    {...field}
+                                                                    value={field.value || ""}
+                                                                    type={showPasswords["osce"] ? "text" : "password"}
+                                                                    placeholder="Contraseña"
+                                                                    disabled={isSubmitting}
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
+                                                                />
+                                                            )}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => togglePasswordVisibility("osce")}
+                                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                            tabIndex={-1}
+                                                        >
+                                                            {showPasswords["osce"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* SENCICO */}
+                                        <div className="pb-3">
+                                            <div className="flex items-center space-x-2 mb-3">
+                                                <Checkbox
+                                                    id="enable-sencico"
+                                                    checked={enableSencico}
+                                                    onCheckedChange={(checked) => {
+                                                        setEnableSencico(!!checked)
+                                                        if (!checked) {
+                                                            reset({
+                                                                ...control._formValues,
+                                                                credenciales: {
+                                                                    ...control._formValues.credenciales,
+                                                                    clave_sencico: undefined,
+                                                                }
+                                                            })
+                                                        }
+                                                    }}
+                                                    className="border-border bg-input"
+                                                />
+                                                <Label htmlFor="enable-sencico" className="text-card-foreground font-semibold text-sm cursor-pointer">
+                                                    SENCICO
+                                                </Label>
+                                            </div>
+                                            {enableSencico && (
+                                                <div className="ml-6 max-w-sm">
+                                                    <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave SENCICO</Label>
+                                                    <div className="relative">
+                                                        <Controller
+                                                            name="credenciales.clave_sencico"
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <Input
+                                                                    {...field}
+                                                                    value={field.value || ""}
+                                                                    type={showPasswords["sencico"] ? "text" : "password"}
+                                                                    placeholder="Contraseña"
+                                                                    disabled={isSubmitting}
+                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
+                                                                />
+                                                            )}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => togglePasswordVisibility("sencico")}
+                                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                            tabIndex={-1}
+                                                        >
+                                                            {showPasswords["sencico"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                        </button>
                                                     </div>
                                                 </div>
                                             )}
