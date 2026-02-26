@@ -1,4 +1,5 @@
 import { LoginForm } from "@/features/auth/components/login-form"
+import { AuthGuard } from "@/components/auth-guard"
 
 export const metadata = {
     title: "Login - Contable System",
@@ -6,5 +7,9 @@ export const metadata = {
 }
 
 export default function LoginPage() {
-    return <LoginForm />
+    return (
+        <AuthGuard>
+            <LoginForm />
+        </AuthGuard>
+    )
 }

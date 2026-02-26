@@ -139,7 +139,7 @@ export default function ClientProfilePage() {
                     className="mb-8 pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors group"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                    Volver al listado
+                    Volver al listado   
                 </Button>
 
                 <ClientProfileHeader

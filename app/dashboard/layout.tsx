@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, createContext, useContext } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { Navbar } from "@/components/navbar"
+import { RouteGuard } from "@/components/route-guard"
 
 const SidebarContext = createContext({
     isSidebarOpen: true,
@@ -28,7 +29,9 @@ export default function DashboardLayout({
                         }`}
                 >
                     <Navbar />
-                    <div className="p-4 sm:p-6">{children}</div>
+                    <RouteGuard>
+                        <div className="p-4 sm:p-6">{children}</div>
+                    </RouteGuard>
                 </main>
             </div>
         </SidebarContext.Provider>
