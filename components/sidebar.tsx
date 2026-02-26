@@ -64,7 +64,7 @@ export function Sidebar() {
 
     const handleLogout = () => {
         logout()
-        router.push("/login")
+        router.replace("/login")
     }
 
     const toggleMenu = (label: string) => {

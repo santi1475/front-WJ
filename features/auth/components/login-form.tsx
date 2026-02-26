@@ -56,6 +56,7 @@ export function LoginForm() {
         refresh: response.refresh,
       })
 
+      console.log("[LoginForm] Redirecting to dashboard via push to keep history...")
       router.push("/dashboard")
     } catch (err) {
       const axiosError = err as AxiosError<{ detail: string }>
