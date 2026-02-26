@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Eye, EyeOff, Lock, Pencil } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Eye, EyeOff, Lock, Pencil, Plus } from 'lucide-react';
 
 import { ICredenciales } from '@/features/shared/types';
 
@@ -26,6 +27,14 @@ interface CredentialItem {
 
 export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateField }: CredentialsCardProps) {
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+  const [activeNewCredentials, setActiveNewCredentials] = useState<string[]>([]);
+
+  // Clear newly added credentials blocks when exiting edit mode
+  useEffect(() => {
+    if (!isEditMode) {
+      setActiveNewCredentials([]);
+    }
+  }, [isEditMode]);
 
   const credentialsList: CredentialItem[] = [
     {
@@ -63,6 +72,14 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
       label: 'Partida Electrónica',
       especial: credenciales.pe,
     },
+    {
+      label: 'OSCE',
+      clave: credenciales.clave_osce,
+    },
+    {
+      label: 'SENCICO',
+      clave: credenciales.clave_sencico,
+    },
   ];
 
   const togglePasswordVisibility = (key: string) => {
@@ -73,8 +90,13 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
   };
 
   const hasAnyCredential = credentialsList.some(
-    (item) => item.usuario || item.cuenta || item.especial
-  );
+    (item) => item.usuario || item.cuenta || item.especial || item.clave
+  ) || (isEditMode && activeNewCredentials.length > 0);
+
+  const availableToAdd = credentialsList.filter(item => {
+    const hasData = item.usuario || item.cuenta || item.especial || item.clave || (item.label === 'SOL' && item.usuario);
+    return !hasData && !activeNewCredentials.includes(item.label);
+  });
 
   return (
     <Card className="border border-border/50 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
@@ -116,11 +138,23 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                 item.usuario ||
                 item.cuenta ||
                 item.especial ||
+                item.clave ||
                 (item.label === 'SOL' && item.usuario);
 
-              if (!hasData) return null;
+              const shouldShow = hasData || (isEditMode && activeNewCredentials.includes(item.label));
 
-              const isConfigured = !!(item.usuario || item.cuenta);
+              if (!shouldShow) return null;
+
+              const isConfigured = !!(item.usuario || item.cuenta || item.clave || item.especial);
+
+              const isPE = item.label === 'Partida Electrónica';
+              const isDetraccion = item.label === 'Detracción';
+              const isSoloClave = ['OSCE', 'SENCICO'].includes(item.label);
+
+              const showCuenta = item.cuenta || (isEditMode && isDetraccion);
+              const showUsuario = item.usuario || (isEditMode && !isPE && !isSoloClave);
+              const showClave = item.clave || (isEditMode && !isPE);
+              const showEspecial = item.especial || (isEditMode && isPE);
 
               return (
                 <div
@@ -144,14 +178,14 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                   </div>
 
                   <div className="space-y-2.5 border-t border-border/30 pt-3">
-                    {item.cuenta && (
+                    {showCuenta && (
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
                           Cuenta
                         </p>
                         {isEditMode ? (
                           <Input
-                            value={item.cuenta}
+                            value={item.cuenta || ''}
                             onChange={(e) => onUpdateField?.(`detraccion_cuenta`, e.target.value)}
                             className="text-xs font-mono"
                             placeholder="Número de cuenta"
@@ -164,14 +198,14 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                       </div>
                     )}
 
-                    {item.usuario && (
+                    {showUsuario && (
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
                           Usuario
                         </p>
                         {isEditMode ? (
                           <Input
-                            value={item.usuario}
+                            value={item.usuario || ''}
                             onChange={(e) => {
                               const fieldMap: Record<string, string> = {
                                 'SOL': 'sol_usuario',
@@ -194,7 +228,7 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                       </div>
                     )}
 
-                    {item.clave && (
+                    {showClave && (
                       <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 dark:from-amber-950/40 dark:to-orange-950/20 rounded-lg p-2.5 border border-amber-200/60 dark:border-amber-800/40 border-slate-200/50 dark:border-slate-700/50 transition-all hover:bg-gradient-to-br hover:from-amber-100 hover:to-orange-100/50 dark:hover:from-amber-900/60 dark:hover:to-orange-900/40">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
@@ -229,7 +263,7 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                           <div className="relative">
                             <Input
                               type={showPasswords[key] ? 'text' : 'password'}
-                              value={item.clave}
+                              value={item.clave || ''}
                               onChange={(e) => {
                                 const fieldMap: Record<string, string> = {
                                   'SOL': 'sol_clave',
@@ -238,6 +272,8 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                                   'AFP Net': 'afp_net_clave',
                                   'Viva Essalud': 'viva_essalud_clave',
                                   'SIS': 'sis_clave',
+                                  'OSCE': 'clave_osce',
+                                  'SENCICO': 'clave_sencico',
                                 };
                                 onUpdateField?.(fieldMap[item.label] || 'sol_clave', e.target.value);
                               }}
@@ -255,14 +291,14 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                       </div>
                     )}
 
-                    {item.especial && (
+                    {showEspecial && (
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
                           Valor
                         </p>
                         {isEditMode ? (
                           <Input
-                            value={item.especial}
+                            value={item.especial || ''}
                             onChange={(e) => onUpdateField?.('pe', e.target.value)}
                             className="text-xs font-mono"
                             placeholder="Valor"
@@ -278,6 +314,30 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Dynamic add credentials in Edit Mode */}
+        {isEditMode && availableToAdd.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-border/50">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-secondary/20 p-4 rounded-lg border border-border/60">
+              <div className="flex-1">
+                <p className="text-sm font-semibold mb-1">Añadir otra credencial</p>
+                <p className="text-xs text-muted-foreground">Seleccione una credencial de la lista para añadir sus datos</p>
+              </div>
+              <Select onValueChange={(val) => setActiveNewCredentials(prev => [...prev, val])}>
+                <SelectTrigger className="w-full sm:w-[250px] bg-background">
+                  <SelectValue placeholder="Seleccionar credencial" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableToAdd.map(item => (
+                    <SelectItem key={item.label} value={item.label}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         )}
       </CardContent>
