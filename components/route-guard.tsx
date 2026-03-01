@@ -11,8 +11,15 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter()
     const { user, hasPermission, isAuthenticated } = useAuth()
     const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
+    const [isMounted, setIsMounted] = useState(false)
 
     useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
+    useEffect(() => {
+        if (!isMounted) return;
+
         console.log(`[RouteGuard] Mounted on path: ${pathname}. Auth state: ${isAuthenticated}, User: ${user?.username}`)
 
         // If explicitly un-authenticated, bounce them to login
@@ -79,10 +86,10 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
         } else {
             setIsAuthorized(true)
         }
-    }, [pathname, user, isAuthenticated, router])
+    }, [pathname, user, isAuthenticated, router, isMounted])
 
     // Show loading state while determining access or while waiting for redirection
-    if (isAuthorized === null || isAuthorized === false) {
+    if (!isMounted || isAuthorized === null || isAuthorized === false) {
         return (
             <div className="flex h-[50vh] w-full items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
