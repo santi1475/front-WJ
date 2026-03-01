@@ -10,17 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export function AuthGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter()
     const { isAuthenticated, user, logout } = useAuth()
-    const [isChecking, setIsChecking] = useState(true)
+    const [isMounted, setIsMounted] = useState(false)
 
     useEffect(() => {
-        console.log(`[AuthGuard] Mounted. Auth state: ${isAuthenticated}, User: ${user?.username}`)
-        // We only delay the check slightly to wait for Zustand hydration
-        const timer = setTimeout(() => {
-            console.log(`[AuthGuard] Hydration delay finished. Final Auth State: ${isAuthenticated}`)
-            setIsChecking(false)
-        }, 100)
-        return () => clearTimeout(timer)
-    }, [isAuthenticated, user?.username])
+        setIsMounted(true)
+    }, [])
 
     const handleLogout = () => {
         logout()
@@ -31,7 +25,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace("/dashboard")
     }
 
-    if (isChecking) {
+    if (!isMounted) {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-slate-950">
                 <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />

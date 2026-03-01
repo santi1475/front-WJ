@@ -1,27 +1,33 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { AuthGuard } from "@/components/auth-guard"
-
-function HomeRedirect() {
-    const router = useRouter()
-
-    useEffect(() => {
-        // If they get past the AuthGuard, they are definitely unauthenticated
-        router.replace("/login")
-    }, [router])
-
-    return null
-}
+import { useAuth } from "@/hooks/use-auth"
+import { Loader2 } from "lucide-react"
 
 export default function HomePage() {
-    // If the user lands here and IS authenticated, AuthGuard will intercept
-    // and show the "Sesión Activa" prompt. If they are not, it renders `{children}`
-    // which immediately redirects them to the login page.
+    const router = useRouter()
+    const { isAuthenticated } = useAuth()
+    const [isMounted, setIsMounted] = useState(false)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
+    useEffect(() => {
+        if (!isMounted) return
+
+        if (isAuthenticated) {
+            router.replace("/dashboard")
+        } else {
+            router.replace("/login")
+        }
+    }, [isMounted, isAuthenticated, router])
+
+    // Keep it minimal while deciding
     return (
-        <AuthGuard>
-            <HomeRedirect />
-        </AuthGuard>
+        <div className="flex h-screen w-full items-center justify-center bg-slate-950">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        </div>
     )
 }
