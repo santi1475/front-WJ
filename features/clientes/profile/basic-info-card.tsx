@@ -83,23 +83,6 @@ export function BasicInfoCard({ client, isEditMode, onUpdateField }: BasicInfoCa
             )}
           </div>
 
-          {client.dni_propietario && (
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1.5">DNI</p>
-              {isEditMode ? (
-                <Input
-                  value={client.dni_propietario}
-                  onChange={(e) => onUpdateField?.('dni_propietario', e.target.value)}
-                  className="text-sm font-mono border-slate-300 dark:border-slate-600"
-                />
-              ) : (
-                <p className="text-sm font-mono font-semibold text-foreground bg-muted/30 rounded px-2.5 py-1.5">
-                  {client.dni_propietario}
-                </p>
-              )}
-            </div>
-          )}
-
           {/* Libros Societarios */}
           <div className="pt-2 border-t border-border/50">
             <div className="flex items-center gap-1.5 mb-2.5">

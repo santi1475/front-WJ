@@ -12,7 +12,9 @@ import {
 import { Users } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
-import { ICliente } from '@/features/shared/types';
+import { ICliente, ITipoRegimenLaboral } from '@/features/shared/types';
+import { tipoRegimenLaboralService } from '../services/tipos-regimen-laboral';
+import { useEffect, useState } from 'react';
 
 interface LaboralCardProps {
   client: ICliente;
@@ -21,14 +23,25 @@ interface LaboralCardProps {
 }
 
 export function LaboralCard({ client, isEditMode, onUpdateField }: LaboralCardProps) {
+  const [tiposRegimen, setTiposRegimen] = useState<ITipoRegimenLaboral[]>([]);
+
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchTiposRegimen = async () => {
+        try {
+          const data = await tipoRegimenLaboralService.getAll();
+          setTiposRegimen(data);
+        } catch (error) {
+          console.error("Error fetching regimen laboral:", error);
+        }
+      };
+      fetchTiposRegimen();
+    }
+  }, [isEditMode]);
+
   const formatDate = (date?: string) => {
     if (!date) return 'No registrado';
-    // Append T00:00:00 to force local time interpretation or split manually`
-    // Best way to avoid timezone off-by-one on display is to use UTC components`
     const d = new Date(date);
-    // Add timezone offset to compensate or just print UTC
-    // Simple hack: append T12:00:00 to avoid midnight rollover issues
-    // Better:
     const parts = date.split('-');
     if (parts.length === 3) {
       const [y, m, d] = parts;
@@ -62,9 +75,12 @@ export function LaboralCard({ client, isEditMode, onUpdateField }: LaboralCardPr
                   <SelectValue placeholder="Seleccionar régimen" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Régimen General">Régimen General</SelectItem>
-                  <SelectItem value="Régimen Especial">Régimen Especial</SelectItem>
-                  <SelectItem value="Micro Empresa">Micro Empresa</SelectItem>
+                  <SelectItem value="none" className="text-muted-foreground italic">Ninguno / Quitar régimen</SelectItem>
+                  {tiposRegimen.map((tipo) => (
+                    <SelectItem key={tipo.id} value={tipo.descripcion}>
+                      {tipo.descripcion}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             ) : client.regimen_laboral_tipo ? (

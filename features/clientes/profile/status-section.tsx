@@ -23,7 +23,7 @@ export function StatusSection({ client }: StatusSectionProps) {
     },
     {
       label: 'Categoría',
-      value: client.categoria === 'A' ? 'Mayor Tamaño' : client.categoria === 'B' ? 'Tamaño Medio' : 'Pequeño',
+      value: client.categoria === 'A' ? 'A' : client.categoria === 'B' ? 'B' : 'C',
       icon: Clock,
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-50 dark:bg-blue-950/20',

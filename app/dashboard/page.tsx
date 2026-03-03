@@ -64,12 +64,6 @@ export default function DashboardPage() {
                         color="blue"
                     />
                     <KPICard
-                        title="Ingresos Totales"
-                        value={`S/ ${stats?.ingresos_totales || "0"}`}
-                        description="Volumen anual"
-                        color="green"
-                    />
-                    <KPICard
                         title="Pendientes"
                         value={stats?.pendientes_declaracion || "N/T"}
                         description="<Modulo en desarrollo>"

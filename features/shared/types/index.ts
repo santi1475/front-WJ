@@ -51,11 +51,15 @@ export interface ICredenciales {
   afp_net_clave?: string;
   viva_essalud_usuario?: string;
   viva_essalud_clave?: string;
-  sis_usuario?: string;
   sis_clave?: string;
   pe?: string;
   clave_osce?: string;
   clave_sencico?: string;
+}
+
+export interface ITipoRegimenLaboral {
+  id: number;
+  descripcion: string;
 }
 
 export interface IResponsableInfo {
@@ -96,9 +100,9 @@ export interface IHistorialBaja {
 
 export interface ICliente {
   ruc: string;
+  ultimo_digito_ruc?: string;
   razon_social: string;
   propietario: string;
-  dni_propietario?: string;
   fecha_ingreso?: string;
   estado: boolean;
   codigo_control?: number;
