@@ -14,8 +14,9 @@ import { useAuth } from "@/hooks/use-auth"
 import { clientesService } from "@/features/clientes/services/clientes"
 import { responsableService } from "@/features/responsables/services/responsable.service"
 import { IResponsable } from "@/features/responsables/types/responsable"
-import { regimenLaboralService, type ITipoRegimenLaboral } from "@/features/shared/services/regimen-laboral.service"
 import { libroSocietarioService } from "@/features/shared/services/libro-societario.service"
+import { tipoRegimenLaboralService } from "@/features/clientes/services/tipos-regimen-laboral"
+import { ITipoRegimenLaboral } from "@/features/shared/types"
 import { handleApiError, handleApiSuccess } from "@/lib/api-utils"
 import { X, Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
@@ -93,7 +94,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                 setEnableAfpNet(!!client.credenciales?.afp_net_usuario)
                 setEnableVivaEssalud(!!client.credenciales?.viva_essalud_usuario)
                 setEnablePe(!!client.credenciales?.pe)
-                setEnableSis(!!client.credenciales?.sis_usuario)
+                setEnableSis(!!client.credenciales?.sis_clave)
                 setEnableOsce(!!client.credenciales?.clave_osce)
                 setEnableSencico(!!client.credenciales?.clave_sencico)
             } else {
@@ -145,7 +146,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
             fetchResponsables()
             // Fetch regimenes laborales
             console.log("ClientForm: Attempting to fetch regimen types...");
-            regimenLaboralService.getAll()
+            tipoRegimenLaboralService.getAll()
                 .then(data => {
                     console.log("ClientForm: Set regimen types:", data);
                     setRegimenesLaborales(data);
@@ -1189,22 +1190,6 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                             </div>
                                             {enableSis && (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Usuario SIS</Label>
-                                                        <Controller
-                                                            name="credenciales.sis_usuario"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    placeholder="Usuario"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                                />
-                                                            )}
-                                                        />
-                                                    </div>
                                                     <div>
                                                         <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave SIS</Label>
                                                         <div className="relative">

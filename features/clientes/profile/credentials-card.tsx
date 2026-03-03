@@ -65,7 +65,6 @@ export function CredentialsCard({ credenciales, onEdit, isEditMode, onUpdateFiel
     },
     {
       label: 'SIS',
-      usuario: credenciales.sis_usuario,
       clave: credenciales.sis_clave,
     },
     {

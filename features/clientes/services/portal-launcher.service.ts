@@ -9,11 +9,13 @@ export interface PortalCredentials {
 export interface PortalConfig {
   url: string;
   portalName: string; // Ex: "SUNAT", "SUNAFIL"
+  skipSubmit?: boolean;
+  openInTab?: boolean; // Abre en una pestaña nueva en lugar de ventana popup
   selectors?: {
-    ruc: string;
-    usuario: string;
-    clave: string;
-    submit: string;
+    ruc?: string;
+    usuario?: string;
+    clave?: string;
+    submit?: string;
   };
 }
 
@@ -30,14 +32,6 @@ export const launchPortalLogin = (
 ) => {
   const { ruc, usuario, clave } = credentials;
 
-  if (!ruc || !usuario || !clave) {
-    console.error(`Faltan credenciales para el autologin ${config.portalName}`);
-    toast.error(`Error: Faltan credenciales para ${config.portalName}`, {
-      position: "bottom-right",
-    });
-    return;
-  }
-
   if (typeof window === "undefined") {
     return;
   }
@@ -45,23 +39,34 @@ export const launchPortalLogin = (
   const selectors = { ...DEFAULT_SELECTORS, ...config.selectors };
 
   // Definir pasos de automatización
-  const pasos = [
-    { selector: selectors.ruc, accion: "escribir", valor: ruc },
-    {
+  const pasos = [];
+
+  if (ruc && selectors.ruc) {
+    pasos.push({ selector: selectors.ruc, accion: "escribir", valor: ruc });
+  }
+
+  if (usuario && selectors.usuario) {
+    pasos.push({
       selector: selectors.usuario,
       accion: "escribir",
-      valor: usuario.toUpperCase(),
-    },
-    { selector: selectors.clave, accion: "escribir", valor: clave },
-    { selector: selectors.submit, accion: "click", valor: "" },
-  ];
+      valor: config.portalName === "SUNAT" ? usuario.toUpperCase() : usuario,
+    });
+  }
+
+  if (clave && selectors.clave) {
+    pasos.push({ selector: selectors.clave, accion: "escribir", valor: clave });
+  }
+
+  if (!config.skipSubmit && selectors.submit) {
+    pasos.push({ selector: selectors.submit, accion: "click", valor: "" });
+  }
 
   const loginData = {
     url: config.url,
     pasos: pasos,
+    openInTab: config.openInTab,
   };
 
-  // Escuchar respuesta de la extensión
   const statusHandler = (e: Event) => {
     const customEvent = e as CustomEvent;
     const { type, message } = customEvent.detail;

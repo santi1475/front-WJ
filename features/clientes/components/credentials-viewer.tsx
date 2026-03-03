@@ -17,6 +17,8 @@ import { useState } from "react"
 import type { ICliente } from "@/features/shared/types"
 import { SunatLauncher } from "./sunat-launcher"
 import { SunafilLauncher } from "./sunafil-launcher"
+import { AfpLauncher } from "./afp-launcher"
+import { SisLauncher } from "./sis-launcher"
 
 interface CredentialsViewerProps {
     client: ICliente | null
@@ -218,7 +220,18 @@ export function CredentialsViewer({ client, open, onOpenChange }: CredentialsVie
 
                     {/* AFPNET */}
                     {(client.credenciales?.afp_net_usuario || client.credenciales?.afp_net_clave) && (
-                        <SystemCard title="AFP NET">
+                        <SystemCard
+                            title="AFP NET"
+                            customActions={
+                                <div className="flex gap-2">
+                                    <AfpLauncher
+                                        ruc={client.ruc}
+                                        usuario={client.credenciales?.afp_net_usuario}
+                                        clave={client.credenciales?.afp_net_clave}
+                                    />
+                                </div>
+                            }
+                        >
                             <CredentialItem
                                 label="Usuario"
                                 value={client.credenciales.afp_net_usuario}
@@ -256,13 +269,17 @@ export function CredentialsViewer({ client, open, onOpenChange }: CredentialsVie
                     )}
 
                     {/* SIS */}
-                    {(client.credenciales?.sis_usuario || client.credenciales?.sis_clave) && (
-                        <SystemCard title="SIS (Seguro Integral de Salud)">
-                            <CredentialItem
-                                label="Usuario"
-                                value={client.credenciales.sis_usuario}
-                                fieldKey="sis_usuario"
-                            />
+                    {client.credenciales?.sis_clave && (
+                        <SystemCard
+                            title="SIS (Seguro Integral de Salud)"
+                            customActions={
+                                <div className="flex gap-2">
+                                    <SisLauncher
+                                        ruc={client.ruc}
+                                    />
+                                </div>
+                            }
+                        >
                             <CredentialItem
                                 label="Clave"
                                 value={client.credenciales.sis_clave}

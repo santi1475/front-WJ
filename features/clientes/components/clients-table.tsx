@@ -238,6 +238,7 @@ export function ClientsTable() {
                             )}
                             <TableHead className="w-50px text-muted-foreground">N°</TableHead>
                             <TableHead className="text-muted-foreground">RUC</TableHead>
+                            <TableHead className="text-muted-foreground text-center" title="Último Dígito">Últ.</TableHead>
                             <TableHead className="text-muted-foreground">Razón Social</TableHead>
                             <TableHead className="text-muted-foreground text-center">Propietario</TableHead>
                             <TableHead className="text-muted-foreground text-center">Codigo de control</TableHead>
@@ -251,7 +252,7 @@ export function ClientsTable() {
                     <TableBody>
                         {filteredClients.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={isSelectionMode ? 12 : 11} className="text-center text-muted-foreground py-8">
+                                <TableCell colSpan={isSelectionMode ? 13 : 12} className="text-center text-muted-foreground py-8">
                                     No hay clientes registrados
                                 </TableCell>
                             </TableRow>
@@ -272,6 +273,15 @@ export function ClientsTable() {
                                     )}
                                     <TableCell className="text-muted-foreground">{index + 1}</TableCell>
                                     <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">{client.ruc}</TableCell>
+                                    <TableCell className="text-center">
+                                        {client.ultimo_digito_ruc ? (
+                                            <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                                                {client.ultimo_digito_ruc}
+                                            </Badge>
+                                        ) : (
+                                            <span className="text-muted-foreground">-</span>
+                                        )}
+                                    </TableCell>
                                     <TableCell className="font-medium text-foreground">{client.razon_social}</TableCell>
                                     <TableCell className="text-muted-foreground text-center">{client.propietario}</TableCell>
                                     <TableCell className="text-muted-foreground text-center">{client.codigo_control || "-"}</TableCell>
@@ -284,8 +294,8 @@ export function ClientsTable() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <Badge variant="secondary">
-                                            {client.regimen_laboral_tipo}
+                                        <Badge variant="secondary" className={!client.regimen_laboral_tipo || client.regimen_laboral_tipo === "none" ? "opacity-50" : ""}>
+                                            {client.regimen_laboral_tipo && client.regimen_laboral_tipo !== "none" ? client.regimen_laboral_tipo : "No asignado"}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-center">

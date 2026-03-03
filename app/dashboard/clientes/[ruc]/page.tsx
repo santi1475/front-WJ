@@ -55,11 +55,10 @@ export default function ClientProfilePage() {
         setEditData((prev) => {
             if (!prev) return null;
 
-            // Handle nested credenciales fields
             const credentialFields = [
                 'sol_usuario', 'sol_clave', 'detraccion_cuenta', 'detraccion_usuario', 'detraccion_clave',
                 'inei_usuario', 'inei_clave', 'afp_net_usuario', 'afp_net_clave', 'viva_essalud_usuario',
-                'viva_essalud_clave', 'sis_usuario', 'sis_clave', 'pe', 'clave_osce', 'clave_sencico'
+                'viva_essalud_clave', 'sis_clave', 'pe', 'clave_osce', 'clave_sencico'
             ];
 
             if (credentialFields.includes(field)) {
@@ -139,7 +138,7 @@ export default function ClientProfilePage() {
                     className="mb-8 pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors group"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                    Volver al listado   
+                    Volver al listado
                 </Button>
 
                 <ClientProfileHeader

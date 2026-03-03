@@ -224,6 +224,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 )}
                                 <TableHead className="w-[50px] font-semibold text-slate-700 dark:text-slate-300">N°</TableHead>
                                 <TableHead className="font-semibold text-slate-700 dark:text-slate-300">RUC</TableHead>
+                                <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300" title="Último Dígito">Últ.</TableHead>
                                 <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Razón Social</TableHead>
                                 <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Propietario</TableHead>
                                 <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Responsable</TableHead>
@@ -256,6 +257,15 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                         )}
                                         <TableCell className="text-slate-600 dark:text-slate-400">{index + 1}</TableCell>
                                         <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">{client.ruc}</TableCell>
+                                        <TableCell className="text-center">
+                                            {client.ultimo_digito_ruc ? (
+                                                <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                                                    {client.ultimo_digito_ruc}
+                                                </Badge>
+                                            ) : (
+                                                <span className="text-muted-foreground">-</span>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="font-medium text-slate-900 dark:text-slate-100">{client.razon_social}</TableCell>
                                         <TableCell className="text-slate-600 text-center dark:text-slate-400">{client.propietario}</TableCell>
                                         <TableCell className="text-slate-600 text-center dark:text-slate-400">
@@ -325,7 +335,14 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                             </div>
                                         )}
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-mono text-blue-500 text-sm font-semibold">{client.ruc}</p>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <p className="font-mono text-blue-500 text-sm font-semibold">{client.ruc}</p>
+                                                {client.ultimo_digito_ruc && (
+                                                    <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                                                        {client.ultimo_digito_ruc}
+                                                    </Badge>
+                                                )}
+                                            </div>
                                             <p className="font-medium truncate text-foreground">{client.razon_social}</p>
                                             <p className="text-muted-foreground text-sm">{client.propietario}</p>
                                         </div>
