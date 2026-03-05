@@ -11,7 +11,7 @@ import { ICliente } from '@/features/shared/types';
 interface FinancialCardProps {
   client: ICliente;
   isEditMode?: boolean;
-  onUpdateField?: (field: string, value: any) => void;
+  onUpdateField?: (field: string, value: string | boolean) => void;
 }
 
 export function FinancialCard({ client, isEditMode, onUpdateField }: FinancialCardProps) {
@@ -42,7 +42,7 @@ export function FinancialCard({ client, isEditMode, onUpdateField }: FinancialCa
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-3.5">
-          <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-3 border border-primary/20">
+          <div className="bg-linear-to-br from-primary/5 to-primary/10 rounded-lg p-3 border border-primary/20">
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Ingresos Mensuales</p>
             {isEditMode ? (
               <Input

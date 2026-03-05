@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react';
 interface LaboralCardProps {
   client: ICliente;
   isEditMode?: boolean;
-  onUpdateField?: (field: string, value: any) => void;
+  onUpdateField?: (field: string, value: string | boolean) => void;
 }
 
 export function LaboralCard({ client, isEditMode, onUpdateField }: LaboralCardProps) {

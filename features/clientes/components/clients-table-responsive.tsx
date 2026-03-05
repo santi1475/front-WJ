@@ -215,14 +215,15 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">
                                 {isSelectionMode && (
-                                    <TableHead className="w-[50px]">
+                                    <TableHead className="w-12.5">
                                         <Checkbox
                                             checked={filteredClients.length > 0 && selectedRucs.length === filteredClients.length}
                                             onCheckedChange={toggleSelectAll}
+                                            className="border-border bg-input"
                                         />
                                     </TableHead>
                                 )}
-                                <TableHead className="w-[50px] font-semibold text-slate-700 dark:text-slate-300">N°</TableHead>
+                                <TableHead className="w-12.5 font-semibold text-slate-700 dark:text-slate-300">N°</TableHead>
                                 <TableHead className="font-semibold text-slate-700 dark:text-slate-300">RUC</TableHead>
                                 <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300" title="Último Dígito">Últ.</TableHead>
                                 <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Razón Social</TableHead>
@@ -230,7 +231,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Responsable</TableHead>
                                 <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Categoria</TableHead>
                                 <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Estado</TableHead>
-                                <TableHead className="text-center font-semibold text-slate-700 text-center dark:text-slate-300">Acciones</TableHead>
+                                <TableHead className="text-center font-semibold text-slate-700 dark:text-slate-300">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -252,6 +253,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                 <Checkbox
                                                     checked={selectedRucs.includes(client.ruc)}
                                                     onCheckedChange={() => toggleSelectClient(client.ruc)}
+                                                    className="border-border bg-input"
                                                 />
                                             </TableCell>
                                         )}

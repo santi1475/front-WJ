@@ -50,7 +50,7 @@ export default function ClientProfilePage() {
         }
     };
 
-    const handleUpdate = (field: string, value: any) => {
+    const handleUpdate = (field: string, value: string | number | boolean | object | null | undefined) => {
         if (!editData) return;
         setEditData((prev) => {
             if (!prev) return null;
@@ -105,7 +105,7 @@ export default function ClientProfilePage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/20">
+            <div className="min-h-screen flex items-center justify-center bg-linear-to-b from-background to-muted/20">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                     <p className="text-muted-foreground">Cargando información del cliente...</p>
@@ -116,7 +116,7 @@ export default function ClientProfilePage() {
 
     if (error || !client || !editData) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-background to-muted/20">
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-linear-to-b from-background to-muted/20">
                 <div className="text-center space-y-2">
                     <h2 className="text-2xl font-bold text-destructive">Error</h2>
                     <p className="text-muted-foreground">{error || 'No se encontró el cliente'}</p>
@@ -130,7 +130,7 @@ export default function ClientProfilePage() {
     }
 
     return (
-        <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-background dark:to-background/80">
+        <main className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100/50 dark:from-background dark:to-background/80">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <Button
                     onClick={() => router.back()}
