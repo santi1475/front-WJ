@@ -233,6 +233,7 @@ export function ClientsTable() {
                                     <Checkbox
                                         checked={filteredClients.length > 0 && selectedRucs.length === filteredClients.length}
                                         onCheckedChange={toggleSelectAll}
+                                        className="border-border bg-input"
                                     />
                                 </TableHead>
                             )}
@@ -268,6 +269,7 @@ export function ClientsTable() {
                                             <Checkbox
                                                 checked={selectedRucs.includes(client.ruc)}
                                                 onCheckedChange={() => toggleSelectClient(client.ruc)}
+                                                className="border-border bg-input"
                                             />
                                         </TableCell>
                                     )}

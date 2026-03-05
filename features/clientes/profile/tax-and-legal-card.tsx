@@ -16,7 +16,7 @@ import { ICliente } from '@/features/shared/types';
 interface TaxAndLegalCardProps {
   client: ICliente;
   isEditMode?: boolean;
-  onUpdateField?: (field: string, value: any) => void;
+  onUpdateField?: (field: string, value: string | number) => void;
 }
 
 const regimenTributarioColors: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -35,10 +35,10 @@ const tipoEmpresaColors: Record<string, 'default' | 'secondary' | 'destructive' 
 };
 
 const categoriaInfo: Record<string, { label: string; description: string }> = {
-  A: { label: 'Categoría A', description: 'Mayor tamaño' },
-  B: { label: 'Categoría B', description: 'Tamaño medio' },
-  C: { label: 'Categoría C', description: 'Pequeño' },
-  'N/T': { label: 'No Tributario', description: 'Especial' },
+  A: { label: 'A', description: 'A' },
+  B: { label: 'B', description: 'B' },
+  C: { label: 'C', description: 'C' },
+  'N/T': { label: 'N/T', description: 'N/T' },
 };
 
 export function TaxAndLegalCard({ client, isEditMode, onUpdateField }: TaxAndLegalCardProps) {
@@ -102,7 +102,7 @@ export function TaxAndLegalCard({ client, isEditMode, onUpdateField }: TaxAndLeg
             )}
           </div>
 
-          <div className="bg-gradient-to-br from-accent/5 to-accent/10 rounded-lg p-3 border border-accent/20">
+          <div className="bg-linear-to-br from-accent/5 to-accent/10 rounded-lg p-3 border border-accent/20">
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
               Categoría
             </p>
