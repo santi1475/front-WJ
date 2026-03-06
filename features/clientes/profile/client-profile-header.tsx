@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Building2, Pencil } from 'lucide-react';
+import { formatLocalDate, parseLocalDate } from '@/lib/utils';
 
 import { ICliente } from '@/features/shared/types';
 
@@ -16,17 +17,12 @@ interface ClientProfileHeaderProps {
 
 export function ClientProfileHeader({ client, onEdit, isEditMode, onUpdateField }: ClientProfileHeaderProps) {
   const formatDate = (date?: string) => {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return formatLocalDate(date);
   };
 
   const calculateMonthsActive = (date?: string) => {
-    if (!date) return 0;
-    const startDate = new Date(date);
+    const startDate = parseLocalDate(date);
+    if (!startDate) return 0;
     const today = new Date();
     const months = (today.getFullYear() - startDate.getFullYear()) * 12 + (today.getMonth() - startDate.getMonth());
     return months;

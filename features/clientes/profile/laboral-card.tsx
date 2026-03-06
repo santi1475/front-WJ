@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Users } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { formatLocalDate } from '@/lib/utils';
 
 import { ICliente, ITipoRegimenLaboral } from '@/features/shared/types';
 import { tipoRegimenLaboralService } from '../services/tipos-regimen-laboral';
@@ -41,13 +42,7 @@ export function LaboralCard({ client, isEditMode, onUpdateField }: LaboralCardPr
 
   const formatDate = (date?: string) => {
     if (!date) return 'No registrado';
-    const d = new Date(date);
-    const parts = date.split('-');
-    if (parts.length === 3) {
-      const [y, m, d] = parts;
-      return `${d}/${m}/${y}`; // Manual formatting to avoid Timezone
-    }
-    return new Date(date).toLocaleDateString('es-PE');
+    return formatLocalDate(date);
   };
 
   const isAccredited = !!client.regimen_laboral_fecha;
