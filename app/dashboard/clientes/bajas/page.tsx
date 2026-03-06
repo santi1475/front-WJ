@@ -5,6 +5,7 @@ import { clientesService } from "@/features/clientes/services/clientes"
 import type { ICliente } from "@/features/shared/types"
 import type { IHistorialBaja } from "@/features/shared/types"
 import { Button } from "@/components/ui/button"
+import { formatLocalDate } from "@/lib/utils"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, RotateCcw, ArrowLeft, History } from "lucide-react"
@@ -83,6 +84,9 @@ export default function BajasPage() {
 
     const formatDate = (dateString: string) => {
         if (!dateString) return "-"
+
+        // This comes from the DB as a datetime, so we can use the local date parser
+        // or just let Date parse it because it's a full ISO timestamp.
         return new Date(dateString).toLocaleDateString('es-PE', {
             year: 'numeric',
             month: '2-digit',
@@ -180,7 +184,7 @@ export default function BajasPage() {
                                                 <TableCell className="font-medium text-foreground">{client.razon_social}</TableCell>
                                                 <TableCell className="text-muted-foreground">{client.propietario}</TableCell>
                                                 <TableCell className="text-muted-foreground">
-                                                    {client.fecha_baja ? new Date(client.fecha_baja).toLocaleDateString('es-PE') : "-"}
+                                                    {client.fecha_baja ? formatLocalDate(client.fecha_baja) : "-"}
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <Button
