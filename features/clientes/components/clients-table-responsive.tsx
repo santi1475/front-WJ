@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "@/features/clientes/components/client-form"
 import { CredentialsViewer } from "@/features/clientes/components/credentials-viewer"
-import { Loader2, Plus, Search, Edit2, ChevronDown, Key } from "lucide-react"
+import { Loader2, Plus, Search, Edit2, ChevronDown, Key, ArrowRight } from "lucide-react"
 import { AxiosError } from "axios"
 import { categoriaConfig } from "@/features/shared/types"
 import { useResponsive } from "@/hooks/use-responsive"
@@ -47,6 +47,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const [isPaginating, setIsPaginating] = useState(false)
     const [nextUrl, setNextUrl] = useState<string | null>(null)
     const [prevUrl, setPrevUrl] = useState<string | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
 
     const { isMobile } = useResponsive()
 
@@ -54,13 +55,14 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
         fetchClients()
     }, [showAllClients])
 
-    const fetchClients = async (url?: string) => {
+    const fetchClients = async (url?: string, page: number = 1) => {
         try {
             if (url) {
                 setIsPaginating(true)
             } else {
                 setLoading(true)
             }
+            setCurrentPage(page)
             const data = showAllClients
                 ? await clientesService.getAllForDashboard(url)
                 : await clientesService.getAll(url)
@@ -271,7 +273,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                 />
                                             </TableCell>
                                         )}
-                                        <TableCell className="text-slate-600 dark:text-slate-400">{index + 1}</TableCell>
+                                        <TableCell className="text-slate-600 dark:text-slate-400">{(currentPage - 1) * 50 + index + 1}</TableCell>
                                         <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">{client.ruc}</TableCell>
                                         <TableCell className="text-center">
                                             {client.ultimo_digito_ruc ? (
@@ -426,29 +428,42 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             {(!loading && clients.length > 0) && (
                 <div className="flex items-center justify-between border-t pt-4 mt-4 text-sm w-full dark:border-slate-800">
                     <div className="flex-1 text-muted-foreground mr-4">
-                        Página actual
+                        Página {currentPage}
                     </div>
                     <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => fetchClients(prevUrl!)}
-                            disabled={!prevUrl || isPaginating}
-                            className={isPaginating && prevUrl ? "opacity-50" : ""}
-                        >
-                            {isPaginating && prevUrl ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
-                            Anterior
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => fetchClients(nextUrl!)}
-                            disabled={!nextUrl || isPaginating}
-                            className={isPaginating && nextUrl ? "opacity-50" : ""}
-                        >
-                            Siguiente
-                            {isPaginating && nextUrl ? <Loader2 className="h-4 w-4 ml-1 animate-spin" /> : null}
-                        </Button>
+                        {showAllClients && clients.length === 50 ? (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => router.push('/dashboard/clientes')}
+                            >
+                                Ver todos los clientes
+                                <ArrowRight className="h-4 w-4 ml-1" />
+                            </Button>
+                        ) : (
+                            <>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => fetchClients(prevUrl!, currentPage - 1)}
+                                    disabled={!prevUrl || isPaginating}
+                                    className={isPaginating && prevUrl ? "opacity-50" : ""}
+                                >
+                                    {isPaginating && prevUrl ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+                                    Anterior
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => fetchClients(nextUrl!, currentPage + 1)}
+                                    disabled={!nextUrl || isPaginating}
+                                    className={isPaginating && nextUrl ? "opacity-50" : ""}
+                                >
+                                    Siguiente
+                                    {isPaginating && nextUrl ? <Loader2 className="h-4 w-4 ml-1 animate-spin" /> : null}
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
