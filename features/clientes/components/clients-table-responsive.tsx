@@ -42,19 +42,32 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const [isSelectionMode, setIsSelectionMode] = useState(false)
     const [selectedRucs, setSelectedRucs] = useState<string[]>([])
     const [isExporting, setIsExporting] = useState(false)
+
+    // Pagination states
+    const [isPaginating, setIsPaginating] = useState(false)
+    const [nextUrl, setNextUrl] = useState<string | null>(null)
+    const [prevUrl, setPrevUrl] = useState<string | null>(null)
+
     const { isMobile } = useResponsive()
 
     useEffect(() => {
         fetchClients()
     }, [showAllClients])
 
-    const fetchClients = async () => {
+    const fetchClients = async (url?: string) => {
         try {
-            setLoading(true)
+            if (url) {
+                setIsPaginating(true)
+            } else {
+                setLoading(true)
+            }
             const data = showAllClients
-                ? await clientesService.getAllForDashboard()
-                : await clientesService.getAll()
-            setClients(data)
+                ? await clientesService.getAllForDashboard(url)
+                : await clientesService.getAll(url)
+
+            setClients(data.results)
+            setNextUrl(data.next)
+            setPrevUrl(data.previous)
         } catch (err: unknown) {
             setError("Error al cargar clientes")
 
@@ -68,6 +81,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             }
         } finally {
             setLoading(false)
+            setIsPaginating(false)
         }
     }
 
@@ -194,7 +208,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 <span className="hidden sm:inline">Nuevo</span>
                             </Button>
                             <Button
-                                onClick={fetchClients}
+                                onClick={() => fetchClients()}
                                 variant="outline"
                                 className="border-input hover:bg-muted"
                             >
@@ -405,6 +419,37 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                             </Card>
                         ))
                     )}
+                </div>
+            )}
+
+            {/* Pagination Controls */}
+            {(!loading && clients.length > 0) && (
+                <div className="flex items-center justify-between border-t pt-4 mt-4 text-sm w-full dark:border-slate-800">
+                    <div className="flex-1 text-muted-foreground mr-4">
+                        Página actual
+                    </div>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fetchClients(prevUrl!)}
+                            disabled={!prevUrl || isPaginating}
+                            className={isPaginating && prevUrl ? "opacity-50" : ""}
+                        >
+                            {isPaginating && prevUrl ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+                            Anterior
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fetchClients(nextUrl!)}
+                            disabled={!nextUrl || isPaginating}
+                            className={isPaginating && nextUrl ? "opacity-50" : ""}
+                        >
+                            Siguiente
+                            {isPaginating && nextUrl ? <Loader2 className="h-4 w-4 ml-1 animate-spin" /> : null}
+                        </Button>
+                    </div>
                 </div>
             )}
 

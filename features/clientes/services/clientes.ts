@@ -41,8 +41,8 @@ const clientesServiceImplementation: ICRUDService<
   IClienteFormData,
   IClienteFormData
 > & {
-  getAll: () => Promise<ICliente[]>;
-  getAllForDashboard: () => Promise<ICliente[]>;
+  getAll: (url?: string) => Promise<PaginatedResponse<ICliente>>;
+  getAllForDashboard: (url?: string) => Promise<PaginatedResponse<ICliente>>;
   getById: (ruc: string) => Promise<ICliente>;
   getStats: () => Promise<IClientStats>;
   search: (query: string) => Promise<ICliente[]>;
@@ -76,10 +76,18 @@ const clientesServiceImplementation: ICRUDService<
     }
   },
 
-  getAll: async (): Promise<ICliente[]> => {
+  getAll: async (url?: string): Promise<PaginatedResponse<ICliente>> => {
     try {
       const axios = getAxiosInstance();
-      const response = await axios.get<ICliente[]>(`${API_ENDPOINT}/`);
+      if (
+        url &&
+        url.startsWith("http://") &&
+        window.location.protocol === "https:"
+      ) {
+        url = url.replace("http://", "https://");
+      }
+      const targetUrl = url || `${API_ENDPOINT}/`;
+      const response = await axios.get<PaginatedResponse<ICliente>>(targetUrl);
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError<IClientServiceError>;
@@ -91,12 +99,21 @@ const clientesServiceImplementation: ICRUDService<
     }
   },
 
-  getAllForDashboard: async (): Promise<ICliente[]> => {
+  getAllForDashboard: async (
+    url?: string,
+  ): Promise<PaginatedResponse<ICliente>> => {
     try {
       const axios = getAxiosInstance();
-      const response = await axios.get<ICliente[]>(
-        `${API_ENDPOINT}/dashboard-all/`,
-      );
+      // Resolve HTTPS for next/prev DRF pagination URLs missing it behind proxies
+      if (
+        url &&
+        url.startsWith("http://") &&
+        window.location.protocol === "https:"
+      ) {
+        url = url.replace("http://", "https://");
+      }
+      const targetUrl = url || `${API_ENDPOINT}/dashboard-all/`;
+      const response = await axios.get<PaginatedResponse<ICliente>>(targetUrl);
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError<IClientServiceError>;
@@ -341,7 +358,9 @@ const clientesServiceImplementation: ICRUDService<
   getHistorialBajas: async (): Promise<IHistorialBaja[]> => {
     try {
       const axios = getAxiosInstance();
-      const response = await axios.get<IHistorialBaja[]>(`${API_ENDPOINT}/historial-bajas/`);
+      const response = await axios.get<IHistorialBaja[]>(
+        `${API_ENDPOINT}/historial-bajas/`,
+      );
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError<IClientServiceError>;
