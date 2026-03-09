@@ -23,6 +23,16 @@ import { toast } from "sonner"
 import { Check, X } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { HighlightedText } from "@/components/ui/highlighted-text"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface ClientsTableResponsiveProps {
     disableEdit?: boolean
@@ -45,6 +55,8 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const [isSelectionMode, setIsSelectionMode] = useState(false)
     const [selectedRucs, setSelectedRucs] = useState<string[]>([])
     const [isExporting, setIsExporting] = useState(false)
+    const [isExportingAll, setIsExportingAll] = useState(false)
+    const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false)
 
     // Pagination states
     const [isPaginating, setIsPaginating] = useState(false)
@@ -108,10 +120,21 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     }
 
     const toggleSelectAll = () => {
-        if (selectedRucs.length === filteredClients.length) {
-            setSelectedRucs([])
+        const visibleRucs = filteredClients.map((c) => c.ruc)
+        const allVisibleSelected = visibleRucs.every(ruc => selectedRucs.includes(ruc));
+
+        if (allVisibleSelected) {
+            // Remover los visibles de la selección total
+            setSelectedRucs(prev => prev.filter(r => !visibleRucs.includes(r)))
         } else {
-            setSelectedRucs(filteredClients.map((c) => c.ruc))
+            // Añadir los visibles a la selección que no estén todavía
+            setSelectedRucs(prev => {
+                const newSelection = [...prev];
+                visibleRucs.forEach(r => {
+                    if (!newSelection.includes(r)) newSelection.push(r);
+                });
+                return newSelection;
+            });
         }
     }
 
@@ -150,6 +173,56 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             toast.error("Error al exportar clientes", { position: "bottom-right" })
         } finally {
             setIsExporting(false)
+        }
+    }
+
+    const handleExportAll = async () => {
+        try {
+            setIsExportingAll(true)
+            const toastId = toast.loading("Generando Excel con todos los clientes de la base...", { position: "bottom-right" })
+
+            const blob = await clientesService.exportAll()
+
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "Todos_Los_Clientes.xlsx"
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success("Exportación total completada", { id: toastId, position: "bottom-right" })
+        } catch (error) {
+            console.error(error)
+            toast.error("Error al generar el archivo Excel", { position: "bottom-right" })
+        } finally {
+            setIsExportingAll(false)
+        }
+    }
+
+    const handleExportSearch = async () => {
+        try {
+            setIsExportingAll(true)
+            const toastId = toast.loading(`Exportando resultados para "${debouncedSearchTerm}"...`, { position: "bottom-right" })
+
+            const blob = await clientesService.exportAll(debouncedSearchTerm)
+
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = `Clientes_Busqueda_${debouncedSearchTerm}.xlsx`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success("Exportación de búsqueda completada", { id: toastId, position: "bottom-right" })
+        } catch (error) {
+            console.error(error)
+            toast.error("Error al generar el archivo Excel", { position: "bottom-right" })
+        } finally {
+            setIsExportingAll(false)
         }
     }
 
@@ -195,8 +268,12 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                     ) : (
                         <>
                             <ExcelButton
-                                onClick={toggleSelectionMode}
+                                onExportAll={() => setIsExportConfirmOpen(true)}
+                                onExportSearch={handleExportSearch}
+                                onClickManual={toggleSelectionMode}
                                 isSelectionMode={isSelectionMode}
+                                isExportingAll={isExportingAll}
+                                searchTerm={debouncedSearchTerm}
                             />
                             <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none text-white">
                                 <Plus className="h-4 w-4 mr-2" />
@@ -226,7 +303,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 {isSelectionMode && (
                                     <TableHead className="w-12.5">
                                         <Checkbox
-                                            checked={filteredClients.length > 0 && selectedRucs.length === filteredClients.length}
+                                            checked={filteredClients.length > 0 && filteredClients.every(c => selectedRucs.includes(c.ruc))}
                                             onCheckedChange={toggleSelectAll}
                                             className="border-border bg-input"
                                         />
@@ -505,6 +582,29 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                 onOpenChange={setIsCredentialsModalOpen}
                 client={selectedCredentialsClient}
             />
+
+            <AlertDialog open={isExportConfirmOpen} onOpenChange={setIsExportConfirmOpen}>
+                <AlertDialogContent className="bg-slate-900 border-slate-700 text-white w-[95%] sm:max-w-md rounded-lg">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Confirmar exportación masiva?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            Se descargarán todos los clientes registrados en el sistema. Dependiendo del volumen de datos, esto puede tomar unos segundos.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+                        <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-600 mt-0">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                setIsExportConfirmOpen(false);
+                                handleExportAll();
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                            Confirmar y Descargar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

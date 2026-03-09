@@ -43,8 +43,10 @@ export function ClientsTable() {
     const [isSelectionMode, setIsSelectionMode] = useState(false)
     const [selectedRucs, setSelectedRucs] = useState<string[]>([])
     const [isExporting, setIsExporting] = useState(false)
+    const [isExportingAll, setIsExportingAll] = useState(false)
     const [clientToDelete, setClientToDelete] = useState<ICliente | null>(null)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+    const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false)
 
     // Pagination states
     const [isPaginating, setIsPaginating] = useState(false)
@@ -100,10 +102,21 @@ export function ClientsTable() {
     }
 
     const toggleSelectAll = () => {
-        if (selectedRucs.length === filteredClients.length) {
-            setSelectedRucs([])
+        const visibleRucs = filteredClients.map((c) => c.ruc)
+        const allVisibleSelected = visibleRucs.every(ruc => selectedRucs.includes(ruc));
+
+        if (allVisibleSelected) {
+            // Remover los visibles de la selección total
+            setSelectedRucs(prev => prev.filter(r => !visibleRucs.includes(r)))
         } else {
-            setSelectedRucs(filteredClients.map((c) => c.ruc))
+            // Añadir los visibles a la selección que no estén todavía
+            setSelectedRucs(prev => {
+                const newSelection = [...prev];
+                visibleRucs.forEach(r => {
+                    if (!newSelection.includes(r)) newSelection.push(r);
+                });
+                return newSelection;
+            });
         }
     }
 
@@ -142,6 +155,57 @@ export function ClientsTable() {
             toast.error("Error al exportar clientes", { position: "bottom-right" })
         } finally {
             setIsExporting(false)
+        }
+    }
+
+    const handleExportAll = async () => {
+        try {
+            setIsExportingAll(true)
+            const toastId = toast.loading("Generando Excel con todos los clientes de la base...", { position: "bottom-right" })
+
+            // Quitamos el searchterm para que traiga la base limpia
+            const blob = await clientesService.exportAll()
+
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "Todos_Los_Clientes.xlsx"
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success("Exportación total completada", { id: toastId, position: "bottom-right" })
+        } catch (error) {
+            console.error(error)
+            toast.error("Error al generar el archivo Excel", { position: "bottom-right" })
+        } finally {
+            setIsExportingAll(false)
+        }
+    }
+
+    const handleExportSearch = async () => {
+        try {
+            setIsExportingAll(true)
+            const toastId = toast.loading(`Exportando resultados para "${debouncedSearchTerm}"...`, { position: "bottom-right" })
+
+            const blob = await clientesService.exportAll(debouncedSearchTerm)
+
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = `Clientes_Busqueda_${debouncedSearchTerm}.xlsx`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success("Exportación de búsqueda completada", { id: toastId, position: "bottom-right" })
+        } catch (error) {
+            console.error(error)
+            toast.error("Error al generar el archivo Excel", { position: "bottom-right" })
+        } finally {
+            setIsExportingAll(false)
         }
     }
 
@@ -207,8 +271,12 @@ export function ClientsTable() {
                 ) : (
                     <>
                         <ExcelButton
-                            onClick={toggleSelectionMode}
+                            onExportAll={() => setIsExportConfirmOpen(true)}
+                            onExportSearch={handleExportSearch}
+                            onClickManual={toggleSelectionMode}
                             isSelectionMode={isSelectionMode}
+                            isExportingAll={isExportingAll}
+                            searchTerm={debouncedSearchTerm}
                         />
                         <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 text-white">
                             <Plus className="h-4 w-4 mr-2" />
@@ -236,7 +304,7 @@ export function ClientsTable() {
                             {isSelectionMode && (
                                 <TableHead className="w-50px text-muted-foreground">
                                     <Checkbox
-                                        checked={filteredClients.length > 0 && selectedRucs.length === filteredClients.length}
+                                        checked={filteredClients.length > 0 && filteredClients.every(c => selectedRucs.includes(c.ruc))}
                                         onCheckedChange={toggleSelectAll}
                                         className="border-border bg-input"
                                     />
@@ -418,6 +486,29 @@ export function ClientsTable() {
                             className="bg-red-600 hover:bg-red-700 text-white"
                         >
                             Dar de baja
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={isExportConfirmOpen} onOpenChange={setIsExportConfirmOpen}>
+                <AlertDialogContent className="bg-slate-900 border-slate-700 text-white">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Confirmar exportación masiva?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            Se descargarán todos los clientes registrados en el sistema. Dependiendo del volumen de datos, esto puede tomar unos segundos.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-600">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                setIsExportConfirmOpen(false);
+                                handleExportAll();
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                            Confirmar y Descargar
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
