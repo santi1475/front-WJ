@@ -21,6 +21,7 @@ import { ExcelButton } from "./excel-button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { Check, X } from "lucide-react"
+import { useDebounce } from "@/hooks/use-debounce"
 
 interface ClientsTableResponsiveProps {
     disableEdit?: boolean
@@ -34,6 +35,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string>("")
     const [searchTerm, setSearchTerm] = useState("")
+    const debouncedSearchTerm = useDebounce(searchTerm, 500)
     const [selectedClient, setSelectedClient] = useState<ICliente | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
@@ -52,8 +54,8 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const { isMobile } = useResponsive()
 
     useEffect(() => {
-        fetchClients()
-    }, [showAllClients])
+        fetchClients(undefined, 1)
+    }, [showAllClients, debouncedSearchTerm])
 
     const fetchClients = async (url?: string, page: number = 1) => {
         try {
@@ -64,8 +66,8 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             }
             setCurrentPage(page)
             const data = showAllClients
-                ? await clientesService.getAllForDashboard(url)
-                : await clientesService.getAll(url)
+                ? await clientesService.getAllForDashboard(url, debouncedSearchTerm)
+                : await clientesService.getAll(url, debouncedSearchTerm)
 
             setClients(data.results)
             setNextUrl(data.next)
@@ -87,9 +89,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
         }
     }
 
-    const filteredClients = clients.filter(
-        (client) => client.razon_social.toLowerCase().includes(searchTerm.toLowerCase()) || client.ruc.includes(searchTerm),
-    )
+    const filteredClients = clients
 
     const handleCreate = () => {
         setSelectedClient(null)

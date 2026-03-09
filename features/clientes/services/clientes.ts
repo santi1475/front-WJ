@@ -41,8 +41,14 @@ const clientesServiceImplementation: ICRUDService<
   IClienteFormData,
   IClienteFormData
 > & {
-  getAll: (url?: string) => Promise<PaginatedResponse<ICliente>>;
-  getAllForDashboard: (url?: string) => Promise<PaginatedResponse<ICliente>>;
+  getAll: (
+    url?: string,
+    searchStr?: string,
+  ) => Promise<PaginatedResponse<ICliente>>;
+  getAllForDashboard: (
+    url?: string,
+    searchStr?: string,
+  ) => Promise<PaginatedResponse<ICliente>>;
   getById: (ruc: string) => Promise<ICliente>;
   getStats: () => Promise<IClientStats>;
   search: (query: string) => Promise<ICliente[]>;
@@ -76,7 +82,10 @@ const clientesServiceImplementation: ICRUDService<
     }
   },
 
-  getAll: async (url?: string): Promise<PaginatedResponse<ICliente>> => {
+  getAll: async (
+    url?: string,
+    searchStr?: string,
+  ): Promise<PaginatedResponse<ICliente>> => {
     try {
       const axios = getAxiosInstance();
       if (
@@ -86,8 +95,15 @@ const clientesServiceImplementation: ICRUDService<
       ) {
         url = url.replace("http://", "https://");
       }
+
+      const config =
+        searchStr && !url ? { params: { search: searchStr } } : undefined;
       const targetUrl = url || `${API_ENDPOINT}/`;
-      const response = await axios.get<PaginatedResponse<ICliente>>(targetUrl);
+
+      const response = await axios.get<PaginatedResponse<ICliente>>(
+        targetUrl,
+        config,
+      );
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError<IClientServiceError>;
@@ -101,6 +117,7 @@ const clientesServiceImplementation: ICRUDService<
 
   getAllForDashboard: async (
     url?: string,
+    searchStr?: string,
   ): Promise<PaginatedResponse<ICliente>> => {
     try {
       const axios = getAxiosInstance();
@@ -112,8 +129,15 @@ const clientesServiceImplementation: ICRUDService<
       ) {
         url = url.replace("http://", "https://");
       }
+
+      const config =
+        searchStr && !url ? { params: { search: searchStr } } : undefined;
       const targetUrl = url || `${API_ENDPOINT}/dashboard-all/`;
-      const response = await axios.get<PaginatedResponse<ICliente>>(targetUrl);
+
+      const response = await axios.get<PaginatedResponse<ICliente>>(
+        targetUrl,
+        config,
+      );
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError<IClientServiceError>;

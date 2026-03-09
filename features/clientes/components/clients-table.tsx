@@ -16,6 +16,7 @@ import { categoriaConfig } from "@/features/shared/types"
 import { ExcelButton } from "./excel-button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
+import { useDebounce } from "@/hooks/use-debounce"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -33,6 +34,7 @@ export function ClientsTable() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string>("")
     const [searchTerm, setSearchTerm] = useState("")
+    const debouncedSearchTerm = useDebounce(searchTerm, 500)
     const [selectedClient, setSelectedClient] = useState<ICliente | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedCredentialsClient, setSelectedCredentialsClient] = useState<ICliente | null>(null)
@@ -50,8 +52,8 @@ export function ClientsTable() {
     const [currentPage, setCurrentPage] = useState(1)
 
     useEffect(() => {
-        fetchClients()
-    }, [])
+        fetchClients(undefined, 1)
+    }, [debouncedSearchTerm])
 
     const fetchClients = async (url?: string, page: number = 1) => {
         try {
@@ -61,7 +63,7 @@ export function ClientsTable() {
                 setLoading(true)
             }
             setCurrentPage(page)
-            const data = await clientesService.getAll(url)
+            const data = await clientesService.getAll(url, debouncedSearchTerm)
             setClients(data.results)
             setNextUrl(data.next)
             setPrevUrl(data.previous)
@@ -75,11 +77,7 @@ export function ClientsTable() {
         }
     }
 
-    const filteredClients = clients.filter(
-        (client) =>
-            client.razon_social.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            client.propietario.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
+    const filteredClients = clients
 
     const handleCreate = () => {
         setSelectedClient(null)
