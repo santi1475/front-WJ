@@ -22,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { Check, X } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
+import { HighlightedText } from "@/components/ui/highlighted-text"
 
 interface ClientsTableResponsiveProps {
     disableEdit?: boolean
@@ -152,14 +153,6 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
         }
     }
 
-    if (loading && clients.length === 0) {
-        return (
-            <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
-            </div>
-        )
-    }
-
     return (
         <div className="space-y-4">
             {/* Search and Actions */}
@@ -251,10 +244,19 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredClients.length === 0 ? (
+                            {loading && clients.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                                        No hay clientes registrados
+                                    <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center py-8">
+                                        <div className="flex justify-center flex-col items-center gap-2">
+                                            <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
+                                            <span className="text-sm text-muted-foreground">Buscando clientes...</span>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : filteredClients.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center text-muted-foreground py-8">
+                                        No hay clientes que coincidan con la búsqueda
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -274,7 +276,9 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                             </TableCell>
                                         )}
                                         <TableCell className="text-slate-600 dark:text-slate-400">{(currentPage - 1) * 50 + index + 1}</TableCell>
-                                        <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">{client.ruc}</TableCell>
+                                        <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">
+                                            <HighlightedText text={client.ruc} highlight={searchTerm} />
+                                        </TableCell>
                                         <TableCell className="text-center">
                                             {client.ultimo_digito_ruc ? (
                                                 <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
@@ -284,8 +288,12 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                 <span className="text-muted-foreground">-</span>
                                             )}
                                         </TableCell>
-                                        <TableCell className="font-medium text-slate-900 dark:text-slate-100">{client.razon_social}</TableCell>
-                                        <TableCell className="text-slate-600 text-center dark:text-slate-400">{client.propietario}</TableCell>
+                                        <TableCell className="font-medium text-slate-900 dark:text-slate-100">
+                                            <HighlightedText text={client.razon_social} highlight={searchTerm} />
+                                        </TableCell>
+                                        <TableCell className="text-slate-600 text-center dark:text-slate-400">
+                                            <HighlightedText text={client.propietario} highlight={searchTerm} />
+                                        </TableCell>
                                         <TableCell className="text-slate-600 text-center dark:text-slate-400">
                                             {client.responsable_info?.nombre || "-"}
                                         </TableCell>
@@ -330,9 +338,16 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             {/* Mobile Card View */}
             {isMobile && (
                 <div className="space-y-3">
-                    {filteredClients.length === 0 ? (
+                    {loading && clients.length === 0 ? (
+                        <Card className="bg-muted/30 border-dashed">
+                            <CardContent className="pt-6 text-center flex flex-col items-center gap-2">
+                                <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
+                                <span className="text-sm text-muted-foreground">Buscando clientes...</span>
+                            </CardContent>
+                        </Card>
+                    ) : filteredClients.length === 0 ? (
                         <Card className="bg-muted/30">
-                            <CardContent className="pt-6 text-center text-muted-foreground">No hay clientes registrados</CardContent>
+                            <CardContent className="pt-6 text-center text-muted-foreground">No hay clientes que coincidan con la búsqueda</CardContent>
                         </Card>
                     ) : (
                         filteredClients.map((client) => (
@@ -354,15 +369,21 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                         )}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <p className="font-mono text-blue-500 text-sm font-semibold">{client.ruc}</p>
+                                                <p className="font-mono text-blue-500 text-sm font-semibold">
+                                                    <HighlightedText text={client.ruc} highlight={searchTerm} />
+                                                </p>
                                                 {client.ultimo_digito_ruc && (
                                                     <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
                                                         {client.ultimo_digito_ruc}
                                                     </Badge>
                                                 )}
                                             </div>
-                                            <p className="font-medium truncate text-foreground">{client.razon_social}</p>
-                                            <p className="text-muted-foreground text-sm">{client.propietario}</p>
+                                            <p className="font-medium truncate text-foreground">
+                                                <HighlightedText text={client.razon_social} highlight={searchTerm} />
+                                            </p>
+                                            <p className="text-muted-foreground text-sm">
+                                                <HighlightedText text={client.propietario} highlight={searchTerm} />
+                                            </p>
                                         </div>
                                         <div className="flex gap-2 shrink-0">
                                             <Button
