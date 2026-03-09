@@ -60,6 +60,7 @@ const clientesServiceImplementation: ICRUDService<
     data: Partial<IClienteFormData>,
   ) => Promise<ICliente>;
   exportSelected: (rucs: string[]) => Promise<Blob>;
+  exportAll: (searchQuery?: string) => Promise<Blob>;
   darBaja: (id: string | number) => Promise<void>;
   reactivar: (id: string | number) => Promise<void>;
   getBajas: () => Promise<ICliente[]>;
@@ -329,7 +330,28 @@ const clientesServiceImplementation: ICRUDService<
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError<IClientServiceError>;
-      console.error("Error al exportar clientes:", axiosError.response?.data);
+      console.error(
+        "Error al exportar clientes seleccionados:",
+        axiosError.response?.data,
+      );
+      throw error;
+    }
+  },
+
+  exportAll: async (searchQuery?: string): Promise<Blob> => {
+    try {
+      const axios = getAxiosInstance();
+      const response = await axios.get(`${API_ENDPOINT}/exportar-filtro/`, {
+        params: searchQuery ? { search: searchQuery } : undefined,
+        responseType: "blob",
+      });
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<IClientServiceError>;
+      console.error(
+        "Error al exportar todos los clientes:",
+        axiosError.response?.data,
+      );
       throw error;
     }
   },

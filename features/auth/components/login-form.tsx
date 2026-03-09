@@ -10,13 +10,14 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuthStore } from "@/lib/store"
 import { authService } from "@/features/auth/services/auth"
-import { Loader2, KeyRound, User, ChevronRight } from "lucide-react"
+import { Loader2, KeyRound, User, ChevronRight, Eye, EyeOff } from "lucide-react"
 
 export function LoginForm() {
   const router = useRouter()
   const setUser = useAuthStore((state) => state.setUser)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>("")
+  const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -112,7 +113,7 @@ export function LoginForm() {
                     value={formData.username}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="pl-11 bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all hover:bg-slate-900/50 h-12 text-base rounded-xl"
+                    className="pl-11 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:bg-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all hover:bg-slate-800/80 h-12 text-base rounded-xl"
                   />
                 </div>
               </div>
@@ -128,13 +129,24 @@ export function LoginForm() {
                   <Input
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="pl-11 bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all hover:bg-slate-900/50 h-12 text-base rounded-xl"
+                    className="pl-11 pr-11 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:bg-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all hover:bg-slate-800/80 h-12 text-base rounded-xl"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-indigo-400 transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
               </div>
 
