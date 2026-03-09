@@ -76,7 +76,7 @@ export function ExcelButton({
                 <DropdownMenuItem onClick={onExportAll} className="cursor-pointer">
                     Descargar toda la base de clientes
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportSearch} className="cursor-pointer font-medium text-blue-400 focus:text-blue-500">
+                <DropdownMenuItem onClick={handleExportSearch} className="cursor-pointer font-medium text-blue-400 hover:text-white focus:text-white data-[highlighted]:text-white">
                     Descargar solo los resultados de búsqueda {searchTerm ? `("${searchTerm}")` : ""}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
