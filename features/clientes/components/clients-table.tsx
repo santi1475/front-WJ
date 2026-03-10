@@ -11,13 +11,15 @@ import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "./client-form"
 import { CredentialsViewer } from "./credentials-viewer"
 import { Loader2, Plus, Search, Key, X, Check, ArrowBigDownDash } from "lucide-react"
-import type { AxiosError } from "axios"
-import { categoriaConfig } from "@/features/shared/types"
-import { ExcelButton } from "./excel-button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { useDebounce } from "@/hooks/use-debounce"
 import { HighlightedText } from "@/components/ui/highlighted-text"
+import { responsableService } from "@/features/responsables/services/responsable.service"
+import { IResponsable } from "@/features/responsables/types/responsable"
+import type { AxiosError } from "axios"
+import { categoriaConfig } from "@/features/shared/types"
+import { ExcelButton } from "./excel-button"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -48,6 +50,12 @@ export function ClientsTable() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false)
 
+    // Responsible Export states
+    const [responsables, setResponsables] = useState<IResponsable[]>([])
+    const [selectedResponsableIds, setSelectedResponsableIds] = useState<number[]>([])
+    const [isResponsableModalOpen, setIsResponsableModalOpen] = useState(false)
+    const [isExportingResponsible, setIsExportingResponsible] = useState(false)
+
     // Pagination states
     const [isPaginating, setIsPaginating] = useState(false)
     const [nextUrl, setNextUrl] = useState<string | null>(null)
@@ -57,6 +65,18 @@ export function ClientsTable() {
     useEffect(() => {
         fetchClients(undefined, 1)
     }, [debouncedSearchTerm])
+
+    useEffect(() => {
+        const fetchResponsables = async () => {
+            try {
+                const data = await responsableService.getAll()
+                setResponsables(data)
+            } catch (error) {
+                console.error("Error loading responsables:", error)
+            }
+        }
+        fetchResponsables()
+    }, [])
 
     const fetchClients = async (url?: string, page: number = 1) => {
         try {
@@ -132,9 +152,10 @@ export function ClientsTable() {
             return
         }
 
+        let toastId;
         try {
             setIsExporting(true)
-            const toastId = toast.loading("Exportando clientes...", { position: "bottom-right" })
+            toastId = toast.loading("Exportando clientes...", { position: "bottom-right" })
 
             const blob = await clientesService.exportSelected(selectedRucs)
 
@@ -152,16 +173,17 @@ export function ClientsTable() {
             setSelectedRucs([])
         } catch (error) {
             console.error(error)
-            toast.error("Error al exportar clientes", { position: "bottom-right" })
+            toast.error("Error al exportar clientes", { id: toastId, position: "bottom-right" })
         } finally {
             setIsExporting(false)
         }
     }
 
     const handleExportAll = async () => {
+        let toastId;
         try {
             setIsExportingAll(true)
-            const toastId = toast.loading("Generando Excel con todos los clientes de la base...", { position: "bottom-right" })
+            toastId = toast.loading("Generando Excel con todos los clientes de la base...", { position: "bottom-right" })
 
             // Quitamos el searchterm para que traiga la base limpia
             const blob = await clientesService.exportAll()
@@ -178,34 +200,41 @@ export function ClientsTable() {
             toast.success("Exportación total completada", { id: toastId, position: "bottom-right" })
         } catch (error) {
             console.error(error)
-            toast.error("Error al generar el archivo Excel", { position: "bottom-right" })
+            toast.error("Error al generar el archivo Excel", { id: toastId, position: "bottom-right" })
         } finally {
             setIsExportingAll(false)
         }
     }
 
-    const handleExportSearch = async () => {
-        try {
-            setIsExportingAll(true)
-            const toastId = toast.loading(`Exportando resultados para "${debouncedSearchTerm}"...`, { position: "bottom-right" })
+    const handleExportByResponsables = async () => {
+        if (selectedResponsableIds.length === 0) {
+            toast.error("Debe seleccionar al menos un responsable", { position: "bottom-right" })
+            return
+        }
 
-            const blob = await clientesService.exportAll(debouncedSearchTerm)
+        let toastId;
+        try {
+            setIsExportingResponsible(true)
+            toastId = toast.loading("Generando Excel por responsables...", { position: "bottom-right" })
+
+            const blob = await clientesService.exportByResponsables(selectedResponsableIds)
 
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement("a")
             a.href = url
-            a.download = `Clientes_Busqueda_${debouncedSearchTerm}.xlsx`
+            a.download = "Clientes_Por_Responsable.xlsx"
             document.body.appendChild(a)
             a.click()
             window.URL.revokeObjectURL(url)
             document.body.removeChild(a)
 
-            toast.success("Exportación de búsqueda completada", { id: toastId, position: "bottom-right" })
+            toast.success("Exportación por responsable completada", { id: toastId, position: "bottom-right" })
+            setIsResponsableModalOpen(false)
         } catch (error) {
             console.error(error)
-            toast.error("Error al generar el archivo Excel", { position: "bottom-right" })
+            toast.error("Error al generar el archivo Excel o responsables sin clientes", { id: toastId, position: "bottom-right" })
         } finally {
-            setIsExportingAll(false)
+            setIsExportingResponsible(false)
         }
     }
 
@@ -272,11 +301,10 @@ export function ClientsTable() {
                     <>
                         <ExcelButton
                             onExportAll={() => setIsExportConfirmOpen(true)}
-                            onExportSearch={handleExportSearch}
+                            onClickExportResponsible={() => setIsResponsableModalOpen(true)}
                             onClickManual={toggleSelectionMode}
                             isSelectionMode={isSelectionMode}
                             isExportingAll={isExportingAll}
-                            searchTerm={debouncedSearchTerm}
                         />
                         <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 text-white">
                             <Plus className="h-4 w-4 mr-2" />
@@ -462,6 +490,86 @@ export function ClientsTable() {
                     fetchClients()
                 }}
             />
+
+            {/* Responsible Export Modal */}
+            <AlertDialog open={isResponsableModalOpen} onOpenChange={setIsResponsableModalOpen}>
+                <AlertDialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Exportar por Responsable</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            Selecciona los responsables para generar el reporte de sus clientes asociados.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    <div className="my-4 space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                        {responsables.length === 0 ? (
+                            <p className="text-slate-400 text-sm italic">Cargando responsables...</p>
+                        ) : (
+                            <>
+                                <div className="flex items-center space-x-2 p-2 border border-slate-700 rounded-md bg-slate-800/50">
+                                    <Checkbox
+                                        id="resp-null"
+                                        checked={selectedResponsableIds.includes(0)}
+                                        onCheckedChange={(checked) => {
+                                            if (checked) {
+                                                setSelectedResponsableIds(prev => [...prev, 0])
+                                            } else {
+                                                setSelectedResponsableIds(prev => prev.filter(id => id !== 0))
+                                            }
+                                        }}
+                                        className="border-slate-500 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                                    />
+                                    <label htmlFor="resp-null" className="text-sm font-medium leading-none cursor-pointer flex-1">
+                                        Sin responsable asignado
+                                    </label>
+                                </div>
+                                {responsables.map((resp) => (
+                                    <div key={resp.id} className="flex items-center space-x-2 p-2 border border-slate-700 rounded-md bg-slate-800/50">
+                                        <Checkbox
+                                            id={`resp-${resp.id}`}
+                                            checked={selectedResponsableIds.includes(resp.id)}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setSelectedResponsableIds(prev => [...prev, resp.id])
+                                                } else {
+                                                    setSelectedResponsableIds(prev => prev.filter(id => id !== resp.id))
+                                                }
+                                            }}
+                                            className="border-slate-500 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                                        />
+                                        <label htmlFor={`resp-${resp.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
+                                            {resp.nombre}
+                                        </label>
+                                    </div>
+                                ))}
+                            </>
+                        )}
+                    </div>
+
+                    <AlertDialogFooter>
+                        <AlertDialogCancel
+                            className="bg-transparent border-slate-700 hover:bg-slate-800"
+                            onClick={() => setSelectedResponsableIds([])}
+                        >
+                            Cancelar
+                        </AlertDialogCancel>
+                        <Button
+                            onClick={handleExportByResponsables}
+                            disabled={isExportingResponsible || selectedResponsableIds.length === 0}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                            {isExportingResponsible ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Generando...
+                                </>
+                            ) : (
+                                "Exportar Excel"
+                            )}
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Credentials Modal */}
             <CredentialsViewer

@@ -200,32 +200,6 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             setIsExportingAll(false)
         }
     }
-
-    const handleExportSearch = async () => {
-        try {
-            setIsExportingAll(true)
-            const toastId = toast.loading(`Exportando resultados para "${debouncedSearchTerm}"...`, { position: "bottom-right" })
-
-            const blob = await clientesService.exportAll(debouncedSearchTerm)
-
-            const url = window.URL.createObjectURL(blob)
-            const a = document.createElement("a")
-            a.href = url
-            a.download = `Clientes_Busqueda_${debouncedSearchTerm}.xlsx`
-            document.body.appendChild(a)
-            a.click()
-            window.URL.revokeObjectURL(url)
-            document.body.removeChild(a)
-
-            toast.success("Exportación de búsqueda completada", { id: toastId, position: "bottom-right" })
-        } catch (error) {
-            console.error(error)
-            toast.error("Error al generar el archivo Excel", { position: "bottom-right" })
-        } finally {
-            setIsExportingAll(false)
-        }
-    }
-
     return (
         <div className="space-y-4">
             {/* Search and Actions */}
@@ -269,11 +243,9 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                         <>
                             <ExcelButton
                                 onExportAll={() => setIsExportConfirmOpen(true)}
-                                onExportSearch={handleExportSearch}
                                 onClickManual={toggleSelectionMode}
                                 isSelectionMode={isSelectionMode}
                                 isExportingAll={isExportingAll}
-                                searchTerm={debouncedSearchTerm}
                             />
                             <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none text-white">
                                 <Plus className="h-4 w-4 mr-2" />
@@ -295,276 +267,282 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             {error && <div className="p-3 bg-red-900/20 border border-red-700/50 rounded text-red-400 text-sm">{error}</div>}
 
             {/* Desktop Table View */}
-            {!isMobile && (
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="hover:bg-transparent">
-                                {isSelectionMode && (
-                                    <TableHead className="w-12.5">
-                                        <Checkbox
-                                            checked={filteredClients.length > 0 && filteredClients.every(c => selectedRucs.includes(c.ruc))}
-                                            onCheckedChange={toggleSelectAll}
-                                            className="border-border bg-input"
-                                        />
-                                    </TableHead>
-                                )}
-                                <TableHead className="w-12.5 font-semibold text-slate-700 dark:text-slate-300">N°</TableHead>
-                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">RUC</TableHead>
-                                <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300" title="Último Dígito">Últ.</TableHead>
-                                <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Razón Social</TableHead>
-                                <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Propietario</TableHead>
-                                <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Responsable</TableHead>
-                                <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Categoria</TableHead>
-                                <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Estado</TableHead>
-                                <TableHead className="text-center font-semibold text-slate-700 dark:text-slate-300">Acciones</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading && clients.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center py-8">
-                                        <div className="flex justify-center flex-col items-center gap-2">
-                                            <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
-                                            <span className="text-sm text-muted-foreground">Buscando clientes...</span>
-                                        </div>
-                                    </TableCell>
+            {
+                !isMobile && (
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="hover:bg-transparent">
+                                    {isSelectionMode && (
+                                        <TableHead className="w-12.5">
+                                            <Checkbox
+                                                checked={filteredClients.length > 0 && filteredClients.every(c => selectedRucs.includes(c.ruc))}
+                                                onCheckedChange={toggleSelectAll}
+                                                className="border-border bg-input"
+                                            />
+                                        </TableHead>
+                                    )}
+                                    <TableHead className="w-12.5 font-semibold text-slate-700 dark:text-slate-300">N°</TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-300">RUC</TableHead>
+                                    <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300" title="Último Dígito">Últ.</TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Razón Social</TableHead>
+                                    <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Propietario</TableHead>
+                                    <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Responsable</TableHead>
+                                    <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Categoria</TableHead>
+                                    <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Estado</TableHead>
+                                    <TableHead className="text-center font-semibold text-slate-700 dark:text-slate-300">Acciones</TableHead>
                                 </TableRow>
-                            ) : filteredClients.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center text-muted-foreground py-8">
-                                        No hay clientes que coincidan con la búsqueda
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                filteredClients.map((client, index) => (
-                                    <TableRow
-                                        key={client.ruc}
-                                        className="cursor-pointer"
-                                        onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
-                                    >
-                                        {isSelectionMode && (
-                                            <TableCell>
-                                                <Checkbox
-                                                    checked={selectedRucs.includes(client.ruc)}
-                                                    onCheckedChange={() => toggleSelectClient(client.ruc)}
-                                                    className="border-border bg-input"
-                                                />
-                                            </TableCell>
-                                        )}
-                                        <TableCell className="text-slate-600 dark:text-slate-400">{(currentPage - 1) * 50 + index + 1}</TableCell>
-                                        <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">
-                                            <HighlightedText text={client.ruc} highlight={searchTerm} />
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            {client.ultimo_digito_ruc ? (
-                                                <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
-                                                    {client.ultimo_digito_ruc}
-                                                </Badge>
-                                            ) : (
-                                                <span className="text-muted-foreground">-</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="font-medium text-slate-900 dark:text-slate-100">
-                                            <HighlightedText text={client.razon_social} highlight={searchTerm} />
-                                        </TableCell>
-                                        <TableCell className="text-slate-600 text-center dark:text-slate-400">
-                                            <HighlightedText text={client.propietario} highlight={searchTerm} />
-                                        </TableCell>
-                                        <TableCell className="text-slate-600 text-center dark:text-slate-400">
-                                            {client.responsable_info?.nombre || "-"}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
-                                                {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Badge
-                                                className={
-                                                    client.estado
-                                                        ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                                                        : "bg-red-100 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
-                                                }
-                                                variant="outline"
-                                            >
-                                                {client.estado ? "Activo" : "Inactivo"}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <div className="flex justify-center gap-2">
-                                                <Button
-                                                    onClick={() => handleViewCredentials(client)}
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="text-yellow-400 hover:bg-yellow-900/20"
-                                                    title="Ver credenciales"
-                                                >
-                                                    <Key className="h-4 w-4" />
-                                                </Button>
+                            </TableHeader>
+                            <TableBody>
+                                {loading && clients.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center py-8">
+                                            <div className="flex justify-center flex-col items-center gap-2">
+                                                <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
+                                                <span className="text-sm text-muted-foreground">Buscando clientes...</span>
                                             </div>
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            )}
-
-            {/* Mobile Card View */}
-            {isMobile && (
-                <div className="space-y-3">
-                    {loading && clients.length === 0 ? (
-                        <Card className="bg-muted/30 border-dashed">
-                            <CardContent className="pt-6 text-center flex flex-col items-center gap-2">
-                                <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
-                                <span className="text-sm text-muted-foreground">Buscando clientes...</span>
-                            </CardContent>
-                        </Card>
-                    ) : filteredClients.length === 0 ? (
-                        <Card className="bg-muted/30">
-                            <CardContent className="pt-6 text-center text-muted-foreground">No hay clientes que coincidan con la búsqueda</CardContent>
-                        </Card>
-                    ) : (
-                        filteredClients.map((client) => (
-                            <Card
-                                key={client.ruc}
-                                className="cursor-pointer hover:bg-accent/50 transition-colors"
-                                onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
-                            >
-                                <CardContent className="pt-6">
-                                    {/* Main row */}
-                                    <div className="flex items-start justify-between gap-2">
-                                        {isSelectionMode && (
-                                            <div className="pt-1">
-                                                <Checkbox
-                                                    checked={selectedRucs.includes(client.ruc)}
-                                                    onCheckedChange={() => toggleSelectClient(client.ruc)}
-                                                />
-                                            </div>
-                                        )}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <p className="font-mono text-blue-500 text-sm font-semibold">
-                                                    <HighlightedText text={client.ruc} highlight={searchTerm} />
-                                                </p>
-                                                {client.ultimo_digito_ruc && (
+                                ) : filteredClients.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center text-muted-foreground py-8">
+                                            No hay clientes que coincidan con la búsqueda
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredClients.map((client, index) => (
+                                        <TableRow
+                                            key={client.ruc}
+                                            className="cursor-pointer"
+                                            onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
+                                        >
+                                            {isSelectionMode && (
+                                                <TableCell>
+                                                    <Checkbox
+                                                        checked={selectedRucs.includes(client.ruc)}
+                                                        onCheckedChange={() => toggleSelectClient(client.ruc)}
+                                                        className="border-border bg-input"
+                                                    />
+                                                </TableCell>
+                                            )}
+                                            <TableCell className="text-slate-600 dark:text-slate-400">{(currentPage - 1) * 50 + index + 1}</TableCell>
+                                            <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">
+                                                <HighlightedText text={client.ruc} highlight={searchTerm} />
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                {client.ultimo_digito_ruc ? (
                                                     <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
                                                         {client.ultimo_digito_ruc}
                                                     </Badge>
+                                                ) : (
+                                                    <span className="text-muted-foreground">-</span>
                                                 )}
-                                            </div>
-                                            <p className="font-medium truncate text-foreground">
+                                            </TableCell>
+                                            <TableCell className="font-medium text-slate-900 dark:text-slate-100">
                                                 <HighlightedText text={client.razon_social} highlight={searchTerm} />
-                                            </p>
-                                            <p className="text-muted-foreground text-sm">
+                                            </TableCell>
+                                            <TableCell className="text-slate-600 text-center dark:text-slate-400">
                                                 <HighlightedText text={client.propietario} highlight={searchTerm} />
-                                            </p>
-                                        </div>
-                                        <div className="flex gap-2 shrink-0">
-                                            <Button
-                                                onClick={() => handleViewCredentials(client)}
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-yellow-400 hover:bg-yellow-900/20 h-8 w-8 p-0"
-                                                title="Ver credenciales"
-                                            >
-                                                <Key className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                onClick={() => setExpandedRow(expandedRow === client.ruc ? null : client.ruc)}
-                                                size="sm"
-                                                variant="ghost"
-                                                className="h-8 w-8 p-0"
-                                            >
-                                                <ChevronDown
-                                                    className={`h-4 w-4 transition-transform ${expandedRow === client.ruc ? "rotate-180" : ""}`}
-                                                />
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    {/* Expanded details */}
-                                    {expandedRow === client.ruc && (
-                                        <div className="mt-4 pt-4 border-t space-y-3">
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground text-sm">Responsable:</span>
-                                                <span className="text-foreground text-sm">
-                                                    {client.responsable_info?.nombre || "-"}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground text-sm">Régimen:</span>
-                                                <Badge variant="outline" className="text-foreground">
-                                                    {client.regimen_tributario}
+                                            </TableCell>
+                                            <TableCell className="text-slate-600 text-center dark:text-slate-400">
+                                                {client.responsable_info?.nombre || "-"}
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
+                                                    {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
                                                 </Badge>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground text-sm">Estado:</span>
+                                            </TableCell>
+                                            <TableCell className="text-center">
                                                 <Badge
                                                     className={
                                                         client.estado
-                                                            ? "bg-green-900/30 text-green-400 border border-green-700/50"
-                                                            : "bg-red-900/30 text-red-400 border border-red-700/50"
+                                                            ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                                                            : "bg-red-100 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
                                                     }
                                                     variant="outline"
                                                 >
                                                     {client.estado ? "Activo" : "Inactivo"}
                                                 </Badge>
-                                            </div>
-                                        </div>
-                                    )}
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <div className="flex justify-center gap-2">
+                                                    <Button
+                                                        onClick={() => handleViewCredentials(client)}
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="text-yellow-400 hover:bg-yellow-900/20"
+                                                        title="Ver credenciales"
+                                                    >
+                                                        <Key className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )
+            }
+
+            {/* Mobile Card View */}
+            {
+                isMobile && (
+                    <div className="space-y-3">
+                        {loading && clients.length === 0 ? (
+                            <Card className="bg-muted/30 border-dashed">
+                                <CardContent className="pt-6 text-center flex flex-col items-center gap-2">
+                                    <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
+                                    <span className="text-sm text-muted-foreground">Buscando clientes...</span>
                                 </CardContent>
                             </Card>
-                        ))
-                    )}
-                </div>
-            )}
-
-            {/* Pagination Controls */}
-            {(!loading && clients.length > 0) && (
-                <div className="flex items-center justify-between border-t pt-4 mt-4 text-sm w-full dark:border-slate-800">
-                    <div className="flex-1 text-muted-foreground mr-4">
-                        Página {currentPage}
-                    </div>
-                    <div className="flex gap-2">
-                        {showAllClients && clients.length === 50 ? (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => router.push('/dashboard/clientes')}
-                            >
-                                Ver todos los clientes
-                                <ArrowRight className="h-4 w-4 ml-1" />
-                            </Button>
+                        ) : filteredClients.length === 0 ? (
+                            <Card className="bg-muted/30">
+                                <CardContent className="pt-6 text-center text-muted-foreground">No hay clientes que coincidan con la búsqueda</CardContent>
+                            </Card>
                         ) : (
-                            <>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => fetchClients(prevUrl!, currentPage - 1)}
-                                    disabled={!prevUrl || isPaginating}
-                                    className={isPaginating && prevUrl ? "opacity-50" : ""}
+                            filteredClients.map((client) => (
+                                <Card
+                                    key={client.ruc}
+                                    className="cursor-pointer hover:bg-accent/50 transition-colors"
+                                    onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
                                 >
-                                    {isPaginating && prevUrl ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
-                                    Anterior
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => fetchClients(nextUrl!, currentPage + 1)}
-                                    disabled={!nextUrl || isPaginating}
-                                    className={isPaginating && nextUrl ? "opacity-50" : ""}
-                                >
-                                    Siguiente
-                                    {isPaginating && nextUrl ? <Loader2 className="h-4 w-4 ml-1 animate-spin" /> : null}
-                                </Button>
-                            </>
+                                    <CardContent className="pt-6">
+                                        {/* Main row */}
+                                        <div className="flex items-start justify-between gap-2">
+                                            {isSelectionMode && (
+                                                <div className="pt-1">
+                                                    <Checkbox
+                                                        checked={selectedRucs.includes(client.ruc)}
+                                                        onCheckedChange={() => toggleSelectClient(client.ruc)}
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <p className="font-mono text-blue-500 text-sm font-semibold">
+                                                        <HighlightedText text={client.ruc} highlight={searchTerm} />
+                                                    </p>
+                                                    {client.ultimo_digito_ruc && (
+                                                        <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                                                            {client.ultimo_digito_ruc}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                <p className="font-medium truncate text-foreground">
+                                                    <HighlightedText text={client.razon_social} highlight={searchTerm} />
+                                                </p>
+                                                <p className="text-muted-foreground text-sm">
+                                                    <HighlightedText text={client.propietario} highlight={searchTerm} />
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-2 shrink-0">
+                                                <Button
+                                                    onClick={() => handleViewCredentials(client)}
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="text-yellow-400 hover:bg-yellow-900/20 h-8 w-8 p-0"
+                                                    title="Ver credenciales"
+                                                >
+                                                    <Key className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    onClick={() => setExpandedRow(expandedRow === client.ruc ? null : client.ruc)}
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="h-8 w-8 p-0"
+                                                >
+                                                    <ChevronDown
+                                                        className={`h-4 w-4 transition-transform ${expandedRow === client.ruc ? "rotate-180" : ""}`}
+                                                    />
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Expanded details */}
+                                        {expandedRow === client.ruc && (
+                                            <div className="mt-4 pt-4 border-t space-y-3">
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground text-sm">Responsable:</span>
+                                                    <span className="text-foreground text-sm">
+                                                        {client.responsable_info?.nombre || "-"}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground text-sm">Régimen:</span>
+                                                    <Badge variant="outline" className="text-foreground">
+                                                        {client.regimen_tributario}
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground text-sm">Estado:</span>
+                                                    <Badge
+                                                        className={
+                                                            client.estado
+                                                                ? "bg-green-900/30 text-green-400 border border-green-700/50"
+                                                                : "bg-red-900/30 text-red-400 border border-red-700/50"
+                                                        }
+                                                        variant="outline"
+                                                    >
+                                                        {client.estado ? "Activo" : "Inactivo"}
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            ))
                         )}
                     </div>
-                </div>
-            )}
+                )
+            }
+
+            {/* Pagination Controls */}
+            {
+                (!loading && clients.length > 0) && (
+                    <div className="flex items-center justify-between border-t pt-4 mt-4 text-sm w-full dark:border-slate-800">
+                        <div className="flex-1 text-muted-foreground mr-4">
+                            Página {currentPage}
+                        </div>
+                        <div className="flex gap-2">
+                            {showAllClients && clients.length === 50 ? (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => router.push('/dashboard/clientes')}
+                                >
+                                    Ver todos los clientes
+                                    <ArrowRight className="h-4 w-4 ml-1" />
+                                </Button>
+                            ) : (
+                                <>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => fetchClients(prevUrl!, currentPage - 1)}
+                                        disabled={!prevUrl || isPaginating}
+                                        className={isPaginating && prevUrl ? "opacity-50" : ""}
+                                    >
+                                        {isPaginating && prevUrl ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+                                        Anterior
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => fetchClients(nextUrl!, currentPage + 1)}
+                                        disabled={!nextUrl || isPaginating}
+                                        className={isPaginating && nextUrl ? "opacity-50" : ""}
+                                    >
+                                        Siguiente
+                                        {isPaginating && nextUrl ? <Loader2 className="h-4 w-4 ml-1 animate-spin" /> : null}
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )
+            }
 
             {/* Client Form Modal */}
             <ClientForm
@@ -605,6 +583,6 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </div >
     )
 }
