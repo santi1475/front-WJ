@@ -345,7 +345,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                 <HighlightedText text={client.propietario} highlight={searchTerm} />
                                             </TableCell>
                                             <TableCell className="text-slate-600 text-center dark:text-slate-400">
-                                                {client.responsable_info?.nombre || "-"}
+                                                {client.responsable_nombre || client.responsable_info?.nombre || "-"}
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">

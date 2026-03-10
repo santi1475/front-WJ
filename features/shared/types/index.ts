@@ -108,6 +108,7 @@ export interface ICliente {
   codigo_control?: number;
   responsable?: number;
   responsable_info?: IResponsableInfo | null;
+  responsable_nombre?: string;
   regimen_tributario: RegimenTributario;
   tipo_empresa: TipoEmpresa;
   categoria: "A" | "B" | "C" | "N/T";
