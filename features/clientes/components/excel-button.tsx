@@ -13,33 +13,23 @@ import { toast } from "sonner"
 
 interface ExcelButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     onExportAll?: () => void
-    onExportSearch?: () => void
     onClickManual?: () => void
+    onClickExportResponsible?: () => void
     className?: string
     isSelectionMode?: boolean
     isExportingAll?: boolean
-    searchTerm?: string
 }
 
 export function ExcelButton({
     onExportAll,
-    onExportSearch,
     onClickManual,
+    onClickExportResponsible,
     className,
     isSelectionMode,
     isExportingAll,
-    searchTerm,
     ...props
 }: ExcelButtonProps) {
     if (isSelectionMode) return null;
-
-    const handleExportSearch = () => {
-        if (!searchTerm) {
-            toast.info("Debes ingresar un término de búsqueda para exportar resultados específicos.", { position: "bottom-right" })
-            return;
-        }
-        if (onExportSearch) onExportSearch();
-    }
 
     return (
         <DropdownMenu>
@@ -76,9 +66,14 @@ export function ExcelButton({
                 <DropdownMenuItem onClick={onExportAll} className="cursor-pointer">
                     Descargar toda la base de clientes
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportSearch} className="cursor-pointer font-medium text-blue-400 hover:text-white focus:text-white data-[highlighted]:text-white">
-                    Descargar solo los resultados de búsqueda {searchTerm ? `("${searchTerm}")` : ""}
-                </DropdownMenuItem>
+
+                {/* Nueva Opción - Exportar por Responsables */}
+                {onClickExportResponsible && (
+                    <DropdownMenuItem onClick={onClickExportResponsible} className="cursor-pointer font-medium text-blue-400 hover:text-white focus:text-white data-[highlighted]:text-white">
+                        Descargar por Responsable
+                    </DropdownMenuItem>
+                )}
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onClickManual} className="cursor-pointer">
                     Seleccionar Manualmente en esta página
