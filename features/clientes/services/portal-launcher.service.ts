@@ -70,6 +70,7 @@ export const launchPortalLogin = (
   const statusHandler = (e: Event) => {
     const customEvent = e as CustomEvent;
     const { type, message } = customEvent.detail;
+    console.log(`[ERP Frontend] Status recibido de la extensión: [${type}] ${message}`);
     const toastId = `${config.portalName.toLowerCase()}-login-status`;
 
     if (type === "INFO") {
@@ -89,6 +90,7 @@ export const launchPortalLogin = (
     document.removeEventListener("WJ_LOGIN_STATUS", statusHandler);
   }, 30000);
 
+  console.log(`[ERP Frontend] Despachando WJ_LOGIN_REQUEST para ${config.portalName}. URL: ${config.url}`);
   const event = new CustomEvent("WJ_LOGIN_REQUEST", { detail: loginData });
   document.dispatchEvent(event);
 

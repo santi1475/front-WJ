@@ -57,6 +57,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const [isExporting, setIsExporting] = useState(false)
     const [isExportingAll, setIsExportingAll] = useState(false)
     const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false)
+    const [fetchingCredentialsId, setFetchingCredentialsId] = useState<string | null>(null)
 
     // Pagination states
     const [isPaginating, setIsPaginating] = useState(false)
@@ -109,9 +110,22 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
         setIsModalOpen(true)
     }
 
-    const handleViewCredentials = (client: ICliente) => {
-        setSelectedCredentialsClient(client)
-        setIsCredentialsModalOpen(true)
+    const handleViewCredentials = async (client: ICliente) => {
+        try {
+            setFetchingCredentialsId(client.ruc)
+            // Buscamos el detalle completo del cliente porque el dashboard-all a veces omite las credenciales
+            const fullClient = await clientesService.getById(client.ruc)
+            setSelectedCredentialsClient(fullClient)
+            setIsCredentialsModalOpen(true)
+        } catch (error) {
+            console.error("Error al obtener credenciales del cliente:", error)
+            toast.error("Error al cargar las credenciales del cliente", { position: "bottom-right" })
+            // Fallback al cliente actual en caso de error
+            setSelectedCredentialsClient(client)
+            setIsCredentialsModalOpen(true)
+        } finally {
+            setFetchingCredentialsId(null)
+        }
     }
 
     const toggleSelectionMode = () => {
@@ -367,13 +381,17 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                             <TableCell className="text-center">
                                                 <div className="flex justify-center gap-2">
                                                     <Button
-                                                        onClick={() => handleViewCredentials(client)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleViewCredentials(client);
+                                                        }}
                                                         size="sm"
                                                         variant="ghost"
                                                         className="text-yellow-400 hover:bg-yellow-900/20"
                                                         title="Ver credenciales"
+                                                        disabled={fetchingCredentialsId === client.ruc}
                                                     >
-                                                        <Key className="h-4 w-4" />
+                                                        {fetchingCredentialsId === client.ruc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -439,13 +457,17 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                             </div>
                                             <div className="flex gap-2 shrink-0">
                                                 <Button
-                                                    onClick={() => handleViewCredentials(client)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewCredentials(client);
+                                                    }}
                                                     size="sm"
                                                     variant="ghost"
-                                                    className="text-yellow-400 hover:bg-yellow-900/20 h-8 w-8 p-0"
+                                                    className="text-yellow-400 hover:bg-yellow-900/20 h-8 w-8 p-0 shrink-0"
                                                     title="Ver credenciales"
+                                                    disabled={fetchingCredentialsId === client.ruc}
                                                 >
-                                                    <Key className="h-4 w-4" />
+                                                    {fetchingCredentialsId === client.ruc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
                                                 </Button>
                                                 <Button
                                                     onClick={() => setExpandedRow(expandedRow === client.ruc ? null : client.ruc)}
