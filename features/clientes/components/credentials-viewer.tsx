@@ -16,13 +16,15 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { Briefcase, Copy, Eye, EyeOff, Key } from "lucide-react"
+import { Copy, Eye, EyeOff, Key } from "lucide-react"
 import { toast } from "sonner"
 import type { ICliente } from "@/features/shared/types"
-import { SunatLauncher } from "./sunat-launcher"
-import { SunafilLauncher } from "./sunafil-launcher"
-import { AfpLauncher } from "./afp-launcher"
-import { SisLauncher } from "./sis-launcher"
+import { TramitesLauncher } from "./lauchers/tramites-launcher"
+import { SunafilLauncher } from "./lauchers/sunafil-launcher"
+import { AfpLauncher } from "./lauchers/afp-launcher"
+import { SisLauncher } from "./lauchers/sis-launcher"
+import { PagosLauncher } from "./lauchers/pagos-launche"
+import { MitraLauncher } from "./lauchers/mintra-launcher"
 
 interface CredentialsViewerProps {
     client: ICliente | null
@@ -131,7 +133,6 @@ const SystemAccordionItem = ({
             </AccordionTrigger>
             <AccordionContent className="p-4 space-y-0 text-sm border-t border-border/40 bg-card">
                 {children}
-                {/* Auto-login and fast-links are grouped at the bottom of the section now */}
                 {(customActions || actionLinks.length > 0) && (
                     <div className="mt-4 pt-3 border-t border-border/50 flex flex-col gap-2">
                         {customActions}
@@ -181,25 +182,7 @@ export function CredentialsViewer({ client, open, onOpenChange }: CredentialsVie
         })
     }
 
-    const handleSunatLogin = (portalUrl: string) => {
-        if (!client.ruc || !client.credenciales?.sol_usuario || !client.credenciales?.sol_clave) {
-            toast.error("Faltan credenciales SOL para realizar el auto-login.", { position: "bottom-right" })
-            return
-        }
 
-        const pasos = [
-            { action: 'escribir', selector: '#txtRuc', value: client.ruc },
-            { action: 'escribir', selector: '#txtUsuario', value: client.credenciales.sol_usuario },
-            { action: 'escribir', selector: '#txtContrasena', value: client.credenciales.sol_clave },
-            { action: 'click', selector: '#btnAceptar' }
-        ]
-
-        window.dispatchEvent(new CustomEvent('WJ_LOGIN_REQUEST', {
-            detail: { url: portalUrl, pasos, openInTab: true }
-        }))
-
-        toast.info("Solicitud de auto-login enviada a la extensión.", { position: "bottom-right" })
-    }
 
     const hasAnyCredential = client && client.credenciales && (
         client.credenciales.sol_usuario || client.credenciales.sol_clave ||
@@ -249,7 +232,11 @@ export function CredentialsViewer({ client, open, onOpenChange }: CredentialsVie
                             </p>
                         </div>
                     ) : (
-                        <Accordion type="multiple" defaultValue={["sunat"]} className="w-full flex flex-col gap-4">
+                        <Accordion
+                            type="multiple"
+                            defaultValue={["sunat", "afpnet", "detracciones", "sis", "viva", "inei", "otros"]}
+                            className="w-full flex flex-col gap-4"
+                        >
                             {/* SUNAT SOL */}
                             {(client.credenciales?.sol_usuario || client.credenciales?.sol_clave) && (
                                 <SystemAccordionItem
@@ -257,41 +244,23 @@ export function CredentialsViewer({ client, open, onOpenChange }: CredentialsVie
                                     title="CLAVE SOL (SUNAT)"
                                     customActions={
                                         <div className="flex flex-col gap-3 mt-2 w-full">
-                                            {/* --- Phase 2: SUNAT Auto-Login Launchers --- */}
-                                            <Button
-                                                variant="outline"
-                                                className="w-full justify-start gap-3 h-auto py-3 px-4"
-                                                onClick={() => handleSunatLogin(
-                                                    'https://api-seguridad.sunat.gob.pe/v1/clientessol/4f3b88b3-d9d6-402a-b85d-6a0bc857746a/oauth2/loginMenuSol?lang=es-PE&showDni=true&showLanguages=false&originalUrl=https://e-menu.sunat.gob.pe/cl-ti-itmenu/AutenticaMenuInternet.htm&state=rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAx3CAAAABAAAAADdAADZXhlcHQABnBhcmFtc3QASyomKiYvY2wtdGktaXRtZW51L01lbnVJbnRlcm5ldC5odG0mYjY0ZDI2YThiNWFmMDkxOTIzYjIzYjY0MDdhMWMxZGI0MWU3MzNhNnQABGV4ZWNweA=='
-                                                )}
-                                            >
-                                                <Briefcase className="h-5 w-5 shrink-0 text-primary" />
-                                                <div className="flex flex-col items-start">
-                                                    <span className="font-semibold text-sm">Mis Trámites y Consultas</span>
-                                                    <span className="text-xs text-muted-foreground font-normal">Auto-login con Clave SOL en el portal SUNAT</span>
-                                                </div>
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                className="w-full justify-start gap-3 h-auto py-3 px-4"
-                                                // TODO: Actualizar URL cuando se obtenga la URL definitiva de Declaraciones y Pagos
-                                                onClick={() => handleSunatLogin(
-                                                    'https://api-seguridad.sunat.gob.pe/v1/clientessol/4f3b88b3-d9d6-402a-b85d-6a0bc857746a/oauth2/loginMenuSol?lang=es-PE&showDni=true&showLanguages=false&originalUrl=https://e-menu.sunat.gob.pe/cl-ti-itmenu/AutenticaMenuInternet.htm&state=rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAx3CAAAABAAAAADdAADZXhlcHQABnBhcmFtc3QASyomKiYvY2wtdGktaXRtZW51L01lbnVJbnRlcm5ldC5odG0mYjY0ZDI2YThiNWFmMDkxOTIzYjIzYjY0MDdhMWMxZGI0MWU3MzNhNnQABGV4ZWNweA=='
-                                                )}
-                                            >
-                                                <Briefcase className="h-5 w-5 shrink-0 text-primary" />
-                                                <div className="flex flex-col items-start">
-                                                    <span className="font-semibold text-sm">Mis Declaraciones y Pagos</span>
-                                                    <span className="text-xs text-muted-foreground font-normal">Auto-login con Clave SOL en el portal SUNAT</span>
-                                                </div>
-                                            </Button>
-                                            {/* --- Existing launchers --- */}
-                                            <SunatLauncher
+                                            <TramitesLauncher
+                                                ruc={client.ruc}
+                                                usuario={client.credenciales.sol_usuario}
+                                                clave={client.credenciales.sol_clave}
+                                            />
+
+                                            <PagosLauncher
                                                 ruc={client.ruc}
                                                 usuario={client.credenciales.sol_usuario}
                                                 clave={client.credenciales.sol_clave}
                                             />
                                             <SunafilLauncher
+                                                ruc={client.ruc}
+                                                usuario={client.credenciales.sol_usuario}
+                                                clave={client.credenciales.sol_clave}
+                                            />
+                                            <MitraLauncher
                                                 ruc={client.ruc}
                                                 usuario={client.credenciales.sol_usuario}
                                                 clave={client.credenciales.sol_clave}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { launchPortalLogin } from '../services/portal-launcher.service';
+import { launchPortalLogin } from '../../services/portal-launcher.service';
 import { HeartPulse } from 'lucide-react';
 
 interface SisLauncherProps {
@@ -38,14 +38,16 @@ export const SisLauncher: React.FC<SisLauncherProps> = ({ ruc, className, disabl
         <Button
             onClick={handleLogin}
             disabled={isDisabled}
-            variant="secondary"
-            size="sm"
-            className={`${className || ""} flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 font-bold`}
+            variant="outline"
+            className="w-full justify-start gap-3 h-auto py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-600 font-bold"
             title={isDisabled ? "Falta RUC del cliente" : "Ir al SIS"}
-            type="button"
         >
-            <HeartPulse className="w-4 h-4" />
-            <span className="text-xs">SIS</span>
+            <div className="relative w-5 h-5 shrink-0 rounded-md overflow-hidden">
+                <HeartPulse className="w-4 h-4 dark:text-emerald-600" />
+            </div>
+            <div className="flex flex-col items-start">
+                <span className="font-semibold text-sm">SIS</span>
+            </div>
         </Button>
     );
 };
