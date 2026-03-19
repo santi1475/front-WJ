@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { launchPortalLogin } from '../services/portal-launcher.service';
+import { launchPortalLogin } from '../../services/portal-launcher.service';
 import { Building2 } from 'lucide-react';
 
 interface AfpLauncherProps {
@@ -40,14 +40,16 @@ export const AfpLauncher: React.FC<AfpLauncherProps> = ({ ruc, usuario, clave, c
         <Button
             onClick={handleLogin}
             disabled={isDisabled}
-            variant="secondary"
-            size="sm"
-            className={`${className || ""} flex items-center gap-2 bg-blue-700 hover:bg-blue-600 text-white border border-blue-600 font-bold`}
+            variant="outline"
+            className="w-full justify-start gap-3 h-auto py-3 px-4 bg-blue-700 hover:bg-blue-600 text-white border border-blue-600 font-bold"
             title={isDisabled ? "Faltan credenciales" : "Ir a AFP Net"}
-            type="button"
         >
-            <Building2 className="w-4 h-4" />
-            <span className="text-xs">AFP Net</span>
+            <div className="relative w-5 h-5 shrink-0 rounded-md overflow-hidden">
+                <Building2 className="w-4 h-4 dark:text-blue-600" />
+            </div>
+            <div className="flex flex-col items-start">
+                <span className="font-semibold text-sm">AFP Net</span>
+            </div>
         </Button>
     );
 };

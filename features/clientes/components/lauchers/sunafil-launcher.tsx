@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Button } from "@/components/ui/button";
-import { launchPortalLogin } from '../services/portal-launcher.service';
+import { launchPortalLogin } from '../../services/portal-launcher.service';
 
 interface SunafilLauncherProps {
     ruc?: string;
@@ -33,18 +33,20 @@ export const SunafilLauncher: React.FC<SunafilLauncherProps> = ({ ruc, usuario, 
         <Button
             onClick={handleLogin}
             disabled={isDisabled}
-            size="sm"
-            className={`${className || ""} flex items-center gap-2 bg-slate-300 hover:bg-slate-200 text-slate-900 border border-slate-600`}
-            title={isDisabled ? "Faltan credenciales" : "Ir a Casilla SUNAFIL"}
-            type="button"
+            variant="outline"
+            className="w-full justify-start gap-3 h-auto py-3 px-4 group"
+            title={isDisabled ? "Faltan credenciales" : "Ir al Portal SOL"}
         >
-            <div className="relative w-5 h-5 shrink-0">
+            <div className="relative w-5 h-5 shrink-0 rounded-md overflow-hidden border border-primary bg-white">
                 <Image
                     src="/sunafil-logo.svg"
                     alt="SUNAFIL Logo"
                     fill
                     className="object-contain"
                 />
+            </div>
+            <div className="flex flex-col items-start">
+                <span className="font-semibold text-sm">Casilla SUNAFIL</span>
             </div>
         </Button>
     );
