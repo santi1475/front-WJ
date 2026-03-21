@@ -22,7 +22,7 @@ export interface ListFilters {
   page_size?: number;
   search?: string;
   ordering?: string;
-  [key: string]: string | number | undefined; // Permite filtros adicionales pero controlados
+  [key: string]: string | number | boolean | undefined; // Permite filtros adicionales pero controlados
 }
 
 export interface EntityState<T> {

@@ -130,15 +130,17 @@ export default function ClientProfilePage() {
     }
 
     return (
-        <main className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100/50 dark:from-background dark:to-background/80">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <main className="min-h-screen bg-slate-50/50 dark:bg-[#020617] relative selection:bg-blue-500/30">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-6 md:py-10 animate-in fade-in slide-in-from-bottom-8 duration-700 relative z-10">
                 <Button
                     onClick={() => router.back()}
                     variant="ghost"
-                    className="mb-8 pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors group"
+                    className="mb-8 pl-0 hover:bg-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all group font-bold tracking-wide"
                 >
-                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                    Volver al listado
+                    <div className="h-8 w-8 rounded-full bg-slate-200/50 dark:bg-slate-800/50 flex items-center justify-center mr-3 group-hover:bg-slate-200 dark:group-hover:bg-slate-800 transition-colors">
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                    </div>
+                    Volver al directorio
                 </Button>
 
                 <ClientProfileHeader
@@ -152,12 +154,12 @@ export default function ClientProfilePage() {
                 />
 
                 {isEditMode && (
-                    <div className="flex items-center justify-end gap-3 mt-6 mb-8 sticky top-4 z-50 bg-background/90 backdrop-blur-md p-3 rounded-xl border border-border/50 shadow-lg shadow-black/5 dark:shadow-black/20 transition-all">
+                    <div className="flex items-center justify-end gap-4 mt-8 mb-8 sticky top-6 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-2xl shadow-blue-900/5 dark:shadow-black/40 transition-all duration-300 ring-1 ring-white/20 dark:ring-white/5">
                         <Button
                             onClick={handleCancel}
                             variant="outline"
-                            size="sm"
-                            className="gap-2 border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-300 font-medium"
+                            size="default"
+                            className="gap-2 h-11 px-6 border-slate-200 hover:bg-slate-100/50 hover:text-rose-500 dark:border-slate-800 dark:hover:bg-slate-800/50 rounded-xl text-slate-700 dark:text-slate-300 font-bold"
                             disabled={isSaving}
                         >
                             <X className="w-4 h-4" />
@@ -165,8 +167,8 @@ export default function ClientProfilePage() {
                         </Button>
                         <Button
                             onClick={handleSave}
-                            size="sm"
-                            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 rounded-lg font-medium"
+                            size="default"
+                            className="gap-2 h-11 px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 rounded-xl font-bold active:scale-95 transition-all"
                             disabled={isSaving}
                         >
                             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}

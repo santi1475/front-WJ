@@ -37,7 +37,7 @@ export function ExcelButton({
                 <Button
                     variant="ghost"
                     className={cn(
-                        "hover:bg-slate-800 px-3",
+                        "hover:bg-slate-800 rounded-xl h-11 px-6",
                         className
                     )}
                     disabled={isExportingAll}

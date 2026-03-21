@@ -84,6 +84,18 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     hasEditPermission: true,
     hasDeletePermission: false,
   },
+
+  FILTROS_AVANZADOS: {
+    id: "filtros-avanzados",
+    name: "Filtros Avanzados",
+    path: "/dashboard/clientes/filtros",
+    icon: "SlidersHorizontal",
+    description: "Búsqueda avanzada y profesional de clientes",
+    requiredRoles: ["ADMIN"],
+    hasCreatePermission: false,
+    hasEditPermission: false,
+    hasDeletePermission: false,
+  },
 } as const;
 
 function isValidRole(role: string): role is IUser["role"] {

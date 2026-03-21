@@ -60,8 +60,8 @@ export function ResponsableCard({ responsable, isEditMode, onUpdateField }: Resp
   };
   if (!responsable && !isEditMode) {
     return (
-      <Card className="border border-border/50 shadow-sm">
-        <CardHeader className="pb-3">
+      <Card className="border-slate-200/60 dark:border-slate-800/60 shadow-lg shadow-slate-200/40 dark:shadow-black/20 bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl overflow-hidden">
+        <CardHeader className="pb-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800/60">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
               <UserCheck className="w-4 h-4 text-muted-foreground" />
@@ -87,8 +87,8 @@ export function ResponsableCard({ responsable, isEditMode, onUpdateField }: Resp
   };
 
   return (
-    <Card className="border border-border/50 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
-      <CardHeader className="pb-4">
+    <Card className="border-slate-200/60 dark:border-slate-800/60 shadow-lg shadow-slate-200/40 dark:shadow-black/20 bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl hover:shadow-xl hover:border-blue-500/20 transition-all duration-300 group h-full overflow-hidden">
+      <CardHeader className="pb-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800/60">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
@@ -104,7 +104,7 @@ export function ResponsableCard({ responsable, isEditMode, onUpdateField }: Resp
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-5 pt-5">
         <div className={`rounded-lg p-4 border ${isEditMode ? 'bg-primary/5 border-primary/20' : 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20'}`}>
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold text-primary flex-shrink-0">
