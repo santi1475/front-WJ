@@ -207,7 +207,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     return (
         <div className="space-y-6">
             {/* Search and Actions with Glassmorphism */}
-            <div className="flex flex-col sm:flex-row gap-3 items-center bg-white/40 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-md shadow-sm animate-in fade-in duration-500">
+            <div className="flex flex-col sm:flex-row gap-3 items-center bg-white/40 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-md shadow-sm animate-in fade-in duration-300">
                 <div className="flex-1 relative w-full group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                     <Input
@@ -278,39 +278,29 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             {/* View Switching */}
             {!isMobile ? (
                 /* Desktop Dashboard Table (Harmonized with main ClientsTable) */
-                <div className="bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm animate-in fade-in duration-700">
-                    <div className="overflow-x-auto">
-                        <Table>
+                <div className="bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="overflow-x-auto rounded-2xl">
+                        <Table className="min-w-[700px]">
                             <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
                                 <TableRow className="hover:bg-transparent border-b border-slate-200 dark:border-slate-800">
                                     {isSelectionMode && (
-                                        <TableHead className="w-12 text-center">
-                                            <Checkbox
-                                                checked={filteredClients.length > 0 && filteredClients.every(c => selectedRucs.includes(c.ruc))}
-                                                onCheckedChange={toggleSelectAll}
-                                                className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-blue-600"
-                                            />
-                                        </TableHead>
+                                        <TableHead className="w-12 text-center">...</TableHead>
                                     )}
                                     <TableHead className="w-12 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
-                                        <div className="flex items-center justify-center gap-1">
-                                            <Hash className="h-3 w-3" />
-                                        </div>
+                                        <div className="flex items-center justify-center gap-1"><Hash className="h-3 w-3" /></div>
                                     </TableHead>
-                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Identificación</TableHead>
-                                    <TableHead className="w-12 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Últ.</TableHead>
-                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Razón Social</TableHead>
-                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Propietario</TableHead>
-                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Responsable</TableHead>
-                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Cat.</TableHead>
-                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Estado</TableHead>
-                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Info</TableHead>
+                                    <TableHead className="min-w-[130px] text-[10px] font-bold text-slate-400 uppercase tracking-widest">Identificación</TableHead>
+                                    <TableHead className="min-w-[220px] text-[10px] font-bold text-slate-400 uppercase tracking-widest">Razón Social</TableHead>
+                                    <TableHead className="min-w-[120px] text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Responsable</TableHead>
+                                    <TableHead className="w-16 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Cat.</TableHead>
+                                    <TableHead className="w-20 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Estado</TableHead>
+                                    <TableHead className="w-16 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Info</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {loading && clients.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center py-20">
+                                        <TableCell colSpan={isSelectionMode ? 8 : 7} className="text-center py-20">
                                             <div className="flex flex-col items-center gap-3">
                                                 <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
                                                 <span className="text-sm font-bold text-slate-400 uppercase tracking-widest animate-pulse">Consultando base...</span>
@@ -319,7 +309,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                     </TableRow>
                                 ) : filteredClients.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center py-20">
+                                        <TableCell colSpan={isSelectionMode ? 8 : 7} className="text-center py-20">
                                             <div className="flex flex-col items-center gap-2 grayscale">
                                                 <Info className="h-10 w-10 text-slate-300" />
                                                 <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Sin resultados</p>
@@ -332,7 +322,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                             key={client.ruc}
                                             className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer border-b border-slate-100 dark:border-slate-800/60 transition-colors"
                                             onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
-                                            style={{ animationDelay: `${index * 30}ms`, animation: 'fade-in 0.3s ease-out forwards', opacity: 0 }}
+                                            style={{ animation: `fade-in 0.3s ease-out ${index * 30}ms forwards`, opacity: 0 }}
                                         >
                                             {isSelectionMode && (
                                                 <TableCell className="text-center">
@@ -346,28 +336,27 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                 {(currentPage - 1) * 50 + index + 1}
                                             </TableCell>
                                             <TableCell>
-                                                <div className="flex flex-col">
-                                                    <span className="font-mono text-sm font-black text-blue-600 dark:text-blue-400">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="font-mono text-sm font-black text-blue-600 dark:text-blue-400 flex items-center gap-2">
                                                         <HighlightedText text={client.ruc} highlight={searchTerm} />
+                                                        {client.ultimo_digito_ruc && (
+                                                            <Badge variant="outline" className="h-5 w-5 p-0 flex items-center justify-center font-mono text-[10px] font-black bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700">
+                                                                {client.ultimo_digito_ruc}
+                                                            </Badge>
+                                                        )}
                                                     </span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-center">
-                                                {client.ultimo_digito_ruc && (
-                                                    <div className="h-6 w-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-mono text-[13px] font-black text-slate-500">
-                                                        {client.ultimo_digito_ruc}
-                                                    </div>
-                                                )}
-                                            </TableCell>
                                             <TableCell>
-                                                <span className="font-black text-slate-900 dark:text-white text-base md:text-lg">
-                                                    <HighlightedText text={client.razon_social} highlight={searchTerm} />
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <span className="text-sm font-bold text-slate-500">
-                                                    <HighlightedText text={client.propietario} highlight={searchTerm} />
-                                                </span>
+                                                <div className="flex flex-col">
+                                                    <span className="font-black text-slate-900 dark:text-white text-base md:text-lg">
+                                                        <HighlightedText text={client.razon_social} highlight={searchTerm} />
+                                                    </span>
+                                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                                        <User className="h-3 w-3 text-slate-400" />
+                                                        <HighlightedText text={client.propietario} highlight={searchTerm} />
+                                                    </span>
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 <div className="flex items-center justify-center gap-1.5">
@@ -384,11 +373,10 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 <Badge
-                                                    className={`font-black text-[9px] rounded-md ${
-                                                        client.estado
+                                                    className={`font-black text-[9px] rounded-md ${client.estado
                                                             ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
                                                             : "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800"
-                                                    }`}
+                                                        }`}
                                                     variant="outline"
                                                 >
                                                     {client.estado ? "ACTIVO" : "BAJA"}
@@ -433,15 +421,20 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 key={client.ruc}
                                 className="group relative border-slate-200 dark:border-slate-800 shadow-lg bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm overflow-hidden active:scale-[0.98] transition-all"
                                 onClick={() => setExpandedRow(expandedRow === client.ruc ? null : client.ruc)}
-                                style={{ animationDelay: `${index * 40}ms`, animation: 'fade-in 0.4s ease-out forwards', opacity: 0 }}
+                                style={{ animation: `fade-in 0.4s ease-out ${index * 40}ms forwards`, opacity: 0 }}
                             >
                                 <div className={`absolute top-0 left-0 bottom-0 w-1.5 transition-colors ${client.estado ? "bg-blue-600" : "bg-rose-500"}`} />
                                 <CardContent className="p-5 pl-7">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1 min-w-0 space-y-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-black text-blue-600 dark:text-blue-400 text-sm tracking-tighter font-mono bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-md">
+                                                <span className="font-black text-blue-600 dark:text-blue-400 text-sm tracking-tighter font-mono bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-md flex items-center gap-1.5">
                                                     <HighlightedText text={client.ruc} highlight={searchTerm} />
+                                                    {client.ultimo_digito_ruc && (
+                                                        <span className="flex items-center justify-center bg-blue-100 dark:bg-blue-800/50 text-blue-700 dark:text-blue-300 rounded text-[10px] h-4 w-4">
+                                                            {client.ultimo_digito_ruc}
+                                                        </span>
+                                                    )}
                                                 </span>
                                                 <Badge className={`h-4 text-[8px] font-black tracking-tighter rounded-md border-0 ${(categoriaConfig[client.categoria] || categoriaConfig.default).className}`}>
                                                     {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
@@ -488,7 +481,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                         {client.regimen_tributario}
                                                     </Badge>
                                                 </div>
-                                                <Button 
+                                                <Button
                                                     className="w-full bg-slate-900 dark:bg-blue-600 text-white font-black text-xs h-12 rounded-xl mt-2 group shadow-lg active:scale-95 transition-all"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -593,7 +586,7 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            
+
             <style jsx global>{`
                 @keyframes fade-in {
                     from { opacity: 0; transform: translateY(10px); }

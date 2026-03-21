@@ -45,8 +45,8 @@ export function TaxAndLegalCard({ client, isEditMode, onUpdateField }: TaxAndLeg
   const catInfo = categoriaInfo[client.categoria] || { label: client.categoria, description: 'No especificada' };
 
   return (
-    <Card className="border border-border/50 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 group h-full">
-      <CardHeader className="pb-3">
+    <Card className="border-slate-200/60 dark:border-slate-800/60 shadow-lg shadow-slate-200/40 dark:shadow-black/20 bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl hover:shadow-xl hover:border-blue-500/20 transition-all duration-300 group h-full overflow-hidden">
+      <CardHeader className="pb-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800/60">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
             <Scale className="w-4 h-4 text-primary" />
@@ -57,7 +57,7 @@ export function TaxAndLegalCard({ client, isEditMode, onUpdateField }: TaxAndLeg
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-4">
         <div className="space-y-3.5">
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">Régimen Tributario</p>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import type { AxiosError } from "axios"
 import { useForm, Controller, useWatch } from "react-hook-form"
 import { Button } from "@/components/ui/button"
@@ -36,6 +37,9 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string>("")
     const [internalOpen, setInternalOpen] = useState(false)
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => setMounted(true), [])
 
     const [enableSol, setEnableSol] = useState(false)
     const [enableDetraccion, setEnableDetraccion] = useState(false)
@@ -100,7 +104,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                 setEnableSis(!!creds.sis_clave)
                 setEnableOsce(!!creds.clave_osce)
                 setEnableSencico(!!creds.clave_sencico)
-                
+
                 // Set passwords to visible by default
                 setShowPasswords({
                     sol: true,
@@ -275,6 +279,19 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
             // Crear copia del payload
             const payload = { ...data };
 
+            // Filtrar credenciales según checkboxes
+            const creds = payload.credenciales ? { ...payload.credenciales } : {};
+            if (!enableSol) { delete creds.sol_usuario; delete creds.sol_clave; }
+            if (!enableDetraccion) { delete creds.detraccion_cuenta; delete creds.detraccion_usuario; delete creds.detraccion_clave; }
+            if (!enableInei) { delete creds.inei_usuario; delete creds.inei_clave; }
+            if (!enableAfpNet) { delete creds.afp_net_usuario; delete creds.afp_net_clave; }
+            if (!enableVivaEssalud) { delete creds.viva_essalud_usuario; delete creds.viva_essalud_clave; }
+            if (!enablePe) { delete creds.pe; }
+            if (!enableSis) { delete creds.sis_clave; }
+            if (!enableOsce) { delete creds.clave_osce; }
+            if (!enableSencico) { delete creds.clave_sencico; }
+            payload.credenciales = creds;
+
             // Si el usuario no es admin/superadmin, establecer automáticamente como responsable
             if (!user?.is_superuser && user?.id !== 1) {
                 payload.responsable = user?.id ?? undefined;
@@ -313,7 +330,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         })
     }
 
-    if (!isOpen) {
+    if (!isOpen || !mounted) {
         return !isControlled ? (
             <Button
                 onClick={() => setIsOpen?.(true)}
@@ -324,22 +341,22 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         ) : null
     }
 
-    return (
-        <>
+    return createPortal(
+        <div className="portal-client-form">
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/80 z-50 animate-in fade-in duration-200"
+                className="fixed inset-0 bg-black/50 z-50 animate-in fade-in duration-200 backdrop-blur-sm"
                 onClick={() => setIsOpen?.(false)}
             />
 
             {/* Modal Content */}
-            <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto">
+            <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto pointer-events-none">
                 <div
-                    className="relative w-full max-w-1600px my-4 animate-in zoom-in-95 duration-200"
+                    className="relative w-full max-w-5xl my-4 animate-in zoom-in-95 duration-200 pointer-events-auto"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
-                    <div className="sticky top-0 z-20 bg-card/80 backdrop-blur-md border-b border-white/10 rounded-t-2xl px-8 py-5 flex items-center justify-between shadow-xl">
+                    <div className="sticky top-0 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 rounded-t-2xl px-8 py-5 flex items-center justify-between shadow-sm">
                         <div className="flex items-center gap-4">
                             <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
                                 {client ? <SlidersHorizontal className="h-6 w-6 text-white" /> : <Plus className="h-6 w-6 text-white" />}
@@ -365,7 +382,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                     </div>
 
                     {/* Form Content */}
-                    <div className="bg-slate-50/50 dark:bg-slate-950/50 backdrop-blur-xl rounded-b-2xl p-6 border-x border-b border-white/10">
+                    <div className="bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-xl rounded-b-2xl p-6 border-x border-b border-slate-200 dark:border-slate-800 shadow-xl">
                         <form onSubmit={handleSubmit(onSubmitHandler, onErrorHandler)} className="space-y-6">
                             {error && (
                                 <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-600 dark:text-rose-400 text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -377,9 +394,9 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                             {/* GRID PRINCIPAL DE TARJETAS */}
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                                 {/* Lateral Izquierdo: Información General (Col 1-4) */}
-                                <div className="lg:col-span-4 space-y-6 animate-in fade-in slide-in-from-left-4 duration-500 fill-mode-both">
-                                    <Card className="border-white/10 bg-white/80 dark:bg-slate-900/40 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-300">
-                                        <CardHeader className="bg-gradient-to-r from-blue-600/10 to-transparent border-b border-white/20 pb-4">
+                                <div className="lg:col-span-4 space-y-6 animate-in fade-in slide-in-from-left-4 duration-300 fill-mode-both">
+                                    <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-300">
+                                        <CardHeader className="bg-slate-50/50 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800/80 pb-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-8 w-8 rounded-lg bg-blue-600/20 flex items-center justify-center">
                                                     <Building2 className="h-4 w-4 text-blue-600" />
@@ -399,12 +416,12 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     control={control}
                                                     rules={{ required: "RUC es requerido" }}
                                                     render={({ field }) => (
-                                                            <Input
-                                                                {...field}
-                                                                placeholder="Ej: 20123456789"
-                                                                disabled={!!client || isSubmitting}
-                                                                className="h-11 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 focus:ring-blue-500/20 shadow-inner font-mono font-bold text-base"
-                                                            />
+                                                        <Input
+                                                            {...field}
+                                                            placeholder="Ej: 20123456789"
+                                                            disabled={!!client || isSubmitting}
+                                                            className="h-11 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 focus:ring-blue-500/20 shadow-inner font-mono font-bold text-base"
+                                                        />
                                                     )}
                                                 />
                                                 {errors.ruc && <p className="text-rose-500 text-xs mt-1 font-bold animate-pulse">{errors.ruc.message}</p>}
@@ -469,7 +486,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                 value={field.value || ""}
                                                                 type="date"
                                                                 disabled={isSubmitting}
-                                                                className="h-10 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 font-medium"
+                                                                className="h-10 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 font-medium w-32"
                                                             />
                                                         )}
                                                     />
@@ -616,11 +633,11 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                 </div>
 
                                 {/* Centro y Derecha: Información Laboral, Adicionales y Credenciales (Col 5-12) */}
-                                <div className="lg:col-span-8 space-y-6 animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both">
+                                <div className="lg:col-span-8 space-y-6 animate-in fade-in slide-in-from-right-4 duration-300 fill-mode-both">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {/* Card 2: Información Laboral */}
-                                        <Card className="border-white/10 bg-white/80 dark:bg-slate-900/40 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden hover:border-indigo-500/30 transition-all duration-300">
-                                            <CardHeader className="bg-gradient-to-r from-indigo-600/10 to-transparent border-b border-white/20 pb-4">
+                                        <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm rounded-2xl overflow-hidden hover:border-indigo-500/30 transition-all duration-300">
+                                            <CardHeader className="bg-slate-50/50 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800/80 pb-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-8 w-8 rounded-lg bg-indigo-600/20 flex items-center justify-center">
                                                         <Briefcase className="h-4 w-4 text-indigo-600" />
@@ -670,8 +687,8 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                         </Card>
 
                                         {/* Card 3: Datos Adicionales */}
-                                        <Card className="border-white/10 bg-white/80 dark:bg-slate-900/40 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden hover:border-cyan-500/30 transition-all duration-300">
-                                            <CardHeader className="bg-gradient-to-r from-cyan-600/10 to-transparent border-b border-white/20 pb-4">
+                                        <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm rounded-2xl overflow-hidden hover:border-cyan-500/30 transition-all duration-300">
+                                            <CardHeader className="bg-slate-50/50 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800/80 pb-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-8 w-8 rounded-lg bg-cyan-600/20 flex items-center justify-center">
                                                         <FileText className="h-4 w-4 text-cyan-600" />
@@ -690,6 +707,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     id="planilla_chk"
                                                                     checked={field.value}
                                                                     onCheckedChange={field.onChange}
+                                                                    className="border-indigo-500 dark:border-indigo-300"
                                                                 />
                                                             )}
                                                         />
@@ -704,6 +722,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     id="selectivo_chk"
                                                                     checked={field.value}
                                                                     onCheckedChange={field.onChange}
+                                                                    className="border-amber-500 dark:border-amber-300"
                                                                 />
                                                             )}
                                                         />
@@ -733,8 +752,8 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                     </div>
 
                                     {/* Card 4: Credenciales (Tabs) */}
-                                    <Card className="border-white/10 bg-white/80 dark:bg-slate-900/40 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden hover:border-blue-500/20 transition-all duration-300">
-                                        <CardHeader className="bg-slate-900/5 dark:bg-white/5 border-b border-white/20 py-4">
+                                    <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm rounded-2xl overflow-hidden hover:border-blue-500/20 transition-all duration-300">
+                                        <CardHeader className="bg-slate-50/50 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800/80 py-4">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-8 w-8 rounded-lg bg-slate-900/10 dark:bg-white/10 flex items-center justify-center">
@@ -764,8 +783,12 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                 <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Acceso SOL</h4>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
-                                                                <Checkbox checked={enableSol} onCheckedChange={(val) => setEnableSol(!!val)} />
+                                                                <Label className="text-[10px] font-bold text-slate-950 dark:text-slate-50 uppercase">Activar</Label>
+                                                                <Checkbox
+                                                                    checked={enableSol}
+                                                                    onCheckedChange={(val) => setEnableSol(!!val)}
+                                                                    className="border-gray-800 dark:border-gray-200"
+                                                                />
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -803,8 +826,12 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                 <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Cuenta Detracción</h4>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
-                                                                <Checkbox checked={enableDetraccion} onCheckedChange={(val) => setEnableDetraccion(!!val)} />
+                                                                <Label className="text-[10px] font-bold text-slate-950 dark:text-slate-50 uppercase">Activar</Label>
+                                                                <Checkbox
+                                                                    checked={enableDetraccion}
+                                                                    onCheckedChange={(val) => setEnableDetraccion(!!val)}
+                                                                    className="border-gray-800 dark:border-gray-200"
+                                                                />
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -852,8 +879,12 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                                                                 <Label className="text-sm font-black text-slate-800 dark:text-slate-200">AFP Net</Label>
                                                                 <div className="flex items-center gap-2">
-                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
-                                                                    <Checkbox checked={enableAfpNet} onCheckedChange={(val) => setEnableAfpNet(!!val)} />
+                                                                    <Label className="text-[10px] font-bold text-slate-950 dark:text-slate-50 uppercase">Activar</Label>
+                                                                    <Checkbox
+                                                                        checked={enableAfpNet}
+                                                                        onCheckedChange={(val) => setEnableAfpNet(!!val)}
+                                                                        className="border-gray-800 dark:border-gray-200"
+                                                                    />
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-2">
@@ -866,8 +897,12 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                                                                 <Label className="text-sm font-black text-slate-800 dark:text-slate-200">Viva Essalud</Label>
                                                                 <div className="flex items-center gap-2">
-                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
-                                                                    <Checkbox checked={enableVivaEssalud} onCheckedChange={(val) => setEnableVivaEssalud(!!val)} />
+                                                                    <Label className="text-[10px] font-bold text-slate-950 dark:text-slate-50 uppercase">Activar</Label>
+                                                                    <Checkbox
+                                                                        checked={enableVivaEssalud}
+                                                                        onCheckedChange={(val) => setEnableVivaEssalud(!!val)}
+                                                                        className="border-gray-800 dark:border-gray-200"
+                                                                    />
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-2">
@@ -880,8 +915,12 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                                                                 <Label className="text-sm font-black text-slate-800 dark:text-slate-200">SIS (Salud)</Label>
                                                                 <div className="flex items-center gap-2">
-                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
-                                                                    <Checkbox checked={enableSis} onCheckedChange={(val) => setEnableSis(!!val)} />
+                                                                    <Label className="text-[10px] font-bold text-slate-950 dark:text-slate-50 uppercase">Activar</Label>
+                                                                    <Checkbox
+                                                                        checked={enableSis}
+                                                                        onCheckedChange={(val) => setEnableSis(!!val)}
+                                                                        className="border-gray-800 dark:border-gray-200"
+                                                                    />
                                                                 </div>
                                                             </div>
                                                             <div className="max-w-xs">
@@ -898,8 +937,12 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                                                                 <Label className="text-sm font-black text-slate-800 dark:text-slate-200">INEI</Label>
                                                                 <div className="flex items-center gap-2">
-                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
-                                                                    <Checkbox checked={enableInei} onCheckedChange={(val) => setEnableInei(!!val)} />
+                                                                    <Label className="text-[10px] font-bold text-slate-950 dark:text-slate-50 uppercase">Activar</Label>
+                                                                    <Checkbox
+                                                                        checked={enableInei}
+                                                                        onCheckedChange={(val) => setEnableInei(!!val)}
+                                                                        className="border-gray-800 dark:border-gray-200"
+                                                                    />
                                                                 </div>
                                                             </div>
                                                             <div className="flex gap-2">
@@ -913,8 +956,12 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                                                                 <Label className="text-sm font-black text-slate-800 dark:text-slate-200">Partida Electrónica</Label>
                                                                 <div className="flex items-center gap-2">
-                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
-                                                                    <Checkbox checked={enablePe} onCheckedChange={(val) => setEnablePe(!!val)} />
+                                                                    <Label className="text-[10px] font-bold text-slate-950 dark:text-slate-50 uppercase">Activar</Label>
+                                                                    <Checkbox
+                                                                        checked={enablePe}
+                                                                        onCheckedChange={(val) => setEnablePe(!!val)}
+                                                                        className="border-gray-800 dark:border-gray-200"
+                                                                    />
                                                                 </div>
                                                             </div>
                                                             <Controller name="credenciales.pe" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enablePe} placeholder="Nº Partida" className="h-9 text-sm font-mono" />} />
@@ -925,8 +972,12 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                                                                 <Label className="text-sm font-black text-slate-800 dark:text-slate-200">Clave OSCE</Label>
                                                                 <div className="flex items-center gap-2">
-                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
-                                                                    <Checkbox checked={enableOsce} onCheckedChange={(val) => setEnableOsce(!!val)} />
+                                                                    <Label className="text-[10px] font-bold text-slate-950 dark:text-slate-50 uppercase">Activar</Label>
+                                                                    <Checkbox
+                                                                        checked={enableOsce}
+                                                                        onCheckedChange={(val) => setEnableOsce(!!val)}
+                                                                        className="border-gray-800 dark:border-gray-200"
+                                                                    />
                                                                 </div>
                                                             </div>
                                                             <Controller name="credenciales.clave_osce" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableOsce} type={showPasswords["osce"] ? "text" : "password"} placeholder="Contraseña" className="h-9 text-sm font-mono" />} />
@@ -937,8 +988,12 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                                                                 <Label className="text-sm font-black text-slate-800 dark:text-slate-200">Clave SENCICO</Label>
                                                                 <div className="flex items-center gap-2">
-                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
-                                                                    <Checkbox checked={enableSencico} onCheckedChange={(val) => setEnableSencico(!!val)} />
+                                                                    <Label className="text-[10px] font-bold text-slate-950 dark:text-slate-50 uppercase">Activar</Label>
+                                                                    <Checkbox
+                                                                        checked={enableSencico}
+                                                                        onCheckedChange={(val) => setEnableSencico(!!val)}
+                                                                        className="border-gray-800 dark:border-gray-200"
+                                                                    />
                                                                 </div>
                                                             </div>
                                                             <Controller name="credenciales.clave_sencico" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableSencico} type={showPasswords["sencico"] ? "text" : "password"} placeholder="Contraseña" className="h-9 text-sm font-mono" />} />
@@ -981,6 +1036,7 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                     </div>
                 </div>
             </div>
-        </>
+        </div>,
+        document.body
     )
 }

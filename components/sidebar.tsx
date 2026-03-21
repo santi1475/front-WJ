@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuthStore } from "@/lib/store"
 import { useSidebarContext } from "@/app/dashboard/layout"
+import { useResponsive } from "@/hooks/use-responsive"
 import { SIDEBAR_ROUTES, type RouteConfig } from "@/config/routes"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -38,6 +39,7 @@ export function Sidebar() {
     const pathname = usePathname()
     const { user, logout } = useAuthStore()
     const { isSidebarOpen, setIsSidebarOpen } = useSidebarContext()
+    const { isDesktop } = useResponsive()
 
     const [mounted, setMounted] = useState(false)
     useEffect(() => {
@@ -47,8 +49,8 @@ export function Sidebar() {
     const [openMenus, setOpenMenus] = useState<string[]>([])
 
     useEffect(() => {
-        // Auto-close sidebar if not in main dashboard on mobile or if requested
-        if (pathname !== "/dashboard" && pathname !== "/dashboard/") {
+        // Auto-close sidebar if not in main dashboard ON MOBILE ONLY
+        if (!isDesktop && pathname !== "/dashboard" && pathname !== "/dashboard/") {
             setIsSidebarOpen(false)
         }
 
@@ -60,7 +62,7 @@ export function Sidebar() {
                 }
             }
         })
-    }, [pathname])
+    }, [pathname, isDesktop])
 
     const handleLogout = () => {
         logout()
@@ -68,11 +70,6 @@ export function Sidebar() {
     }
 
     const toggleMenu = (label: string) => {
-        if (isSidebarOpen) {
-            setIsSidebarOpen(true)
-            setOpenMenus([label])
-            return
-        }
         setOpenMenus((prev) =>
             prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
         )
@@ -128,27 +125,36 @@ export function Sidebar() {
                         variant="ghost"
                         onClick={() => toggleMenu(route.label)}
                         className={cn(
-                            "w-full justify-between transition-colors",
-                            (isActive || isChildActive)
-                                ? "bg-slate-800 text-blue-400"
-                                : "text-slate-400 hover:bg-slate-800 hover:text-slate-100",
-                            !isSidebarOpen && "justify-center px-2"
+                            "w-full flex items-center transition-all duration-300 rounded-xl font-medium group/link border border-transparent hover:translate-x-1",
+                            isActive
+                                ? "bg-gradient-to-r from-blue-600/20 to-indigo-600/5 text-blue-400 border-l-blue-500/80 shadow-[0_0_15px_-3px_rgba(37,99,235,0.15)] font-black tracking-wide"
+                                : "text-slate-400/90 hover:bg-slate-800/40 hover:text-slate-100 hover:border-slate-700/50",
+                            isSidebarOpen
+                                ? "h-9 px-3 justify-start gap-3"
+                                : "justify-center p-0 h-9 w-9 mx-auto"  
                         )}
                         title={!isSidebarOpen ? route.label : undefined}
                     >
-                        <div className="flex items-center">
-                            <IconComponent className={cn("h-4 w-4", isSidebarOpen ? "mr-3" : "mr-0")} />
-                            {isSidebarOpen && <span className="truncate">{route.label}</span>}
+                        <div className="flex items-center gap-3">
+                            <IconComponent className={cn("shrink-0 h-5 w-5 transition-transform", isOpen && isSidebarOpen && "text-blue-400 scale-110")} />
+                            {isSidebarOpen && <span className="truncate tracking-wide">{route.label}</span>}
                         </div>
 
                         {isSidebarOpen && (
-                            isOpen ? <ChevronDown className="h-4 w-4 opacity-50 ml-auto" /> : <ChevronRight className="h-4 w-4 opacity-50 ml-auto" />
+                            isOpen
+                                ? <ChevronDown className="h-4 w-4 text-blue-400 opacity-80 ml-auto transition-transform" />
+                                : <ChevronRight className="h-4 w-4 opacity-50 ml-auto transition-transform" />
                         )}
                     </Button>
 
-                    {/* Submenú (Solo visible si el menú está desplegado Y el sidebar abierto) */}
+                    {/* Submenú (Visible si está abierto, con estilos adaptados si el sidebar está cerrado) */}
                     {isOpen && (
-                        <div className="ml-4 mt-1 space-y-1 border-l border-slate-700 pl-2 animate-in slide-in-from-top-2 duration-200">
+                        <div className={cn(
+                            "mt-1.5 animate-in slide-in-from-top-2 fade-in duration-200",
+                            isSidebarOpen
+                                ? "ml-4 space-y-1 border-l-2 border-slate-800/60 pl-2"
+                                : "flex flex-col items-center gap-1 border-l-2 border-blue-500/30 ml-3 pl-1"  // ← esto
+                        )}>
                             {route.children!.map((child) => renderRoute(child))}
                         </div>
                     )}
@@ -162,16 +168,16 @@ export function Sidebar() {
                 <Button
                     variant="ghost"
                     className={cn(
-                        "w-full justify-start",
+                        "w-full flex items-center transition-all duration-300 rounded-xl font-medium group/link border border-transparent hover:translate-x-1",
                         isActive
-                            ? "bg-blue-900/20 text-blue-400 hover:bg-blue-900/30 hover:text-blue-300"
-                            : "text-slate-400 hover:bg-slate-800 hover:text-slate-100",
-                        !isSidebarOpen && "justify-center px-2"
+                            ? "bg-gradient-to-r from-blue-600/20 to-indigo-600/5 text-blue-400 border-l-blue-500/80 shadow-[0_0_15px_-3px_rgba(37,99,235,0.15)] font-black tracking-wide"
+                            : "text-slate-400/90 hover:bg-slate-800/40 hover:text-slate-100 hover:border-slate-700/50",
+                        isSidebarOpen ? "h-9 px-3 justify-start gap-3" : "justify-center p-0 h-9 w-9 mx-auto scale-95 hover:translate-x-0"
                     )}
                     title={!isSidebarOpen ? route.label : undefined}
                 >
-                    <IconComponent className={cn("h-4 w-4", isSidebarOpen ? "mr-3" : "mr-0")} />
-                    {isSidebarOpen && <span className="truncate">{route.label}</span>}
+                    <IconComponent className={cn("shrink-0 h-4 w-4 transition-transform", isActive && "text-blue-400 scale-110")} />
+                    {isSidebarOpen && <span className="truncate tracking-wide">{route.label}</span>}
                 </Button>
             </Link>
         )
@@ -188,19 +194,23 @@ export function Sidebar() {
             )}
             <div
                 className={cn(
-                    "h-screen bg-slate-900 border-r border-slate-800 flex flex-col fixed left-0 top-0 z-40 transition-all duration-300 ease-in-out",
+                    "h-screen bg-[#020617] bg-gradient-to-br from-slate-950 via-[#0a0f1c] to-slate-950 border-r border-slate-800/60 flex flex-col fixed left-0 top-0 z-40 transition-all duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] shadow-2xl shadow-black/50 overflow-hidden",
                     isSidebarOpen ? "w-64" : "w-20",
                     // Mobile behavior: always w-64 when open, but use transform to hide/show
-                    "max-lg:w-64 max-lg:shadow-2xl",
+                    "max-lg:w-64 max-lg:shadow-3xl max-lg:z-50",
                     !isSidebarOpen && "max-lg:-translate-x-full"
                 )}
             >
                 {/* Header del Sidebar */}
-                <div className="p-4 h-16 border-b border-slate-800 flex items-center justify-between overflow-hidden">
+                <div className="p-4 h-20 border-b border-slate-800/60 flex items-center justify-between overflow-hidden relative group/header bg-slate-950/20">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-transparent opacity-0 group-hover/header:opacity-100 transition-opacity duration-200" />
                     {isSidebarOpen && (
-                        <div className="animate-in fade-in duration-300">
-                            <h2 className="text-xl font-bold text-white whitespace-nowrap">
-                                WJ <span className="text-blue-500">ERP</span>
+                        <div className="animate-in fade-in slide-in-from-left-4 duration-200 relative z-10 flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                                <span className="text-white font-black text-xs tracking-tighter">WJ</span>
+                            </div>
+                            <h2 className="text-xl font-black text-white whitespace-nowrap tracking-tight">
+                                ERP
                             </h2>
                         </div>
                     )}
@@ -208,34 +218,34 @@ export function Sidebar() {
                         variant="ghost"
                         size="icon"
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="text-slate-400 hover:text-white hover:bg-slate-800 ml-auto shrink-0"
+                        className="text-slate-400 hover:text-white hover:bg-slate-800/80 ml-auto shrink-0 transition-all duration-200 relative z-10 rounded-xl"
                     >
                         {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                     </Button>
                 </div>
 
                 {/* Navegación Scrollable */}
-                <nav className="flex-1 p-3 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-800">
-                    <div className="space-y-1">
+                <nav className="flex-1 p-3 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-800/50 hover:scrollbar-thumb-slate-700/50">
+                    <div className="space-y-1.5 mt-2">
                         {SIDEBAR_ROUTES.map((route) => renderRoute(route))}
                     </div>
                 </nav>
 
                 {/* Footer / Usuario */}
-                <div className="border-t border-slate-800 p-4">
+                <div className="border-t border-slate-800/60 p-4 bg-slate-950/20 backdrop-blur-md">
                     {mounted && (
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button
                                     variant="destructive"
                                     className={cn(
-                                        "w-full bg-red-900/20 hover:bg-red-900/40 text-white border border-red-900/50",
-                                        !isSidebarOpen && "px-0 justify-center"
+                                        "w-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 hover:border-rose-500/30 transition-all duration-200 rounded-xl",
+                                        isSidebarOpen ? "h-11 justify-center gap-2 px-3" : "h-11 w-11 mx-auto justify-center p-0"
                                     )}
                                     title="Cerrar Sesión"
                                 >
-                                    <LogOut className={cn("h-4 w-4", isSidebarOpen ? "mr-2" : "mr-0")} />
-                                    {isSidebarOpen && "Salir"}
+                                    <LogOut className="h-5 w-5 shrink-0" />
+                                    {isSidebarOpen && <span className="font-bold tracking-wide">Salir del Sistema</span>}
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent className="bg-slate-900 border-slate-700">
@@ -258,13 +268,13 @@ export function Sidebar() {
                         <Button
                             variant="destructive"
                             className={cn(
-                                "w-full bg-red-900/20 text-white hover:bg-red-900/40 border border-red-900/50",
-                                !isSidebarOpen && "px-0 justify-center"
+                                "w-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 hover:border-rose-500/30 transition-all duration-200 rounded-xl",
+                                isSidebarOpen ? "h-11 justify-center gap-2 px-3" : "h-11 w-11 mx-auto justify-center p-0"
                             )}
                             title="Cerrar Sesión"
                         >
-                            <LogOut className={cn("h-4 w-4", isSidebarOpen ? "mr-2" : "mr-0")} />
-                            {isSidebarOpen && "Salir"}
+                            <LogOut className="h-5 w-5 shrink-0" />
+                            {isSidebarOpen && <span className="font-bold tracking-wide">Salir del Sistema</span>}
                         </Button>
                     )
                     }

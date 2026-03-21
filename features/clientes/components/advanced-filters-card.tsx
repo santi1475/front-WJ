@@ -59,7 +59,7 @@ function ClearButton({ onClick, visible }: { onClick: () => void; visible: boole
                 e.stopPropagation()
                 onClick()
             }}
-            className="absolute right-8 top-1/2 -translate-y-1/2 z-10 rounded-full p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 rounded-full p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 transition-opacity"
             title="Quitar selección"
         >
             <X className="h-3.5 w-3.5" />
@@ -164,7 +164,7 @@ export function AdvancedFiltersCard({
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400" />
 
             <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-1">
                     <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600">
                             <SlidersHorizontal className="h-5 w-5 text-white" />
@@ -193,8 +193,7 @@ export function AdvancedFiltersCard({
                         </span>
                     </div>
                 ) : (
-                    // ── Grid de columnas verticales ──────────────────────────────
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div className="flex flex-col gap-4">
 
                         {/* Categoría */}
                         <div className="flex flex-col gap-2 group">
@@ -280,7 +279,7 @@ export function AdvancedFiltersCard({
                                 <div className="h-1 w-1 rounded-full bg-slate-400" />
                                 Últ. Dígito
                             </Label>
-                            <div className="relative">
+                            <div className="relative gap-2">
                                 <Select value={ultimoDigitoRuc} onValueChange={setUltimoDigitoRuc}>
                                     <SelectTrigger
                                         id="filter-digito"
@@ -353,7 +352,7 @@ export function AdvancedFiltersCard({
                 {/* Responsables */}
                 {!loadingOptions && (
                     <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/60">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-4 gap-4">
                             <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                                 <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
                                 Responsables de cuenta
@@ -367,7 +366,7 @@ export function AdvancedFiltersCard({
                                 <button
                                     type="button"
                                     onClick={() => setSelectedResponsables([])}
-                                    className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest flex items-center gap-1.5"
+                                    className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest flex items-center"
                                 >
                                     <RotateCcw className="h-3 w-3" />
                                     Resetear responsable
@@ -406,14 +405,14 @@ export function AdvancedFiltersCard({
                 )}
             </CardContent>
 
-            <CardFooter className="flex justify-between items-center gap-4 pt-6 pb-6 bg-slate-50/50 dark:bg-slate-950/20 px-6">
+            <CardFooter className="flex justify-between items-center gap-3 pt-6 pb-6 bg-slate-50/50 dark:bg-slate-950/20 ">
                 <Button
                     variant="ghost"
                     onClick={handleClear}
                     disabled={isLoading || activeFilterCount === 0}
-                    className="text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold text-xs uppercase tracking-widest h-11"
+                    className="text-slate-500 hover:text-slate-200 dark:hover:text-white font-bold text-xs uppercase tracking-widest h-11"
                 >
-                    <RotateCcw className="h-4 w-4 mr-2 opacity-70" />
+                    <RotateCcw className="h-4 w-4 opacity-70 " />
                     Limpiar Filtros
                 </Button>
 
@@ -424,7 +423,7 @@ export function AdvancedFiltersCard({
                 >
                     {isLoading ? (
                         <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            <Loader2 className="h-4 w-4  animate-spin" />
                             Filtrando...
                         </>
                     ) : (

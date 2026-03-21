@@ -176,7 +176,7 @@ export function AdvancedFiltersResults({ filters }: AdvancedFiltersResultsProps)
                     </div>
                 ) : (
                     <>
-                        <div className="overflow-x-auto">
+                        <div className="overflow-auto min-h-[500px] max-h-[75vh] relative rounded-lg border border-slate-200/50 dark:border-slate-800/50 shadow-inner bg-slate-50/30 dark:bg-slate-900/20">
                             <Table>
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent">
