@@ -11,16 +11,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "@/features/clientes/components/client-form"
 import { CredentialsViewer } from "@/features/clientes/components/credentials-viewer"
-import { Loader2, Plus, Search, Edit2, ChevronDown, Key, ArrowRight } from "lucide-react"
+import { Loader2, Plus, Search, ChevronDown, Key, ArrowRight, RefreshCw, User, Briefcase, Hash, Info, Check, X } from "lucide-react"
 import { AxiosError } from "axios"
 import { categoriaConfig } from "@/features/shared/types"
 import { useResponsive } from "@/hooks/use-responsive"
 import { useAuth } from "@/hooks/use-auth"
-import axios from "axios"
 import { ExcelButton } from "./excel-button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
-import { Check, X } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { HighlightedText } from "@/components/ui/highlighted-text"
 import {
@@ -88,14 +86,9 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             setPrevUrl(data.previous)
         } catch (err: unknown) {
             setError("Error al cargar clientes")
-
             if (err instanceof AxiosError) {
                 const axiosError = err as AxiosError<{ detail?: string }>
                 console.error("API Error:", axiosError.response?.data?.detail || axiosError.message)
-            } else if (err instanceof Error) {
-                console.error("System Error:", err.message)
-            } else {
-                console.error("Unknown Error:", err)
             }
         } finally {
             setLoading(false)
@@ -113,14 +106,12 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
     const handleViewCredentials = async (client: ICliente) => {
         try {
             setFetchingCredentialsId(client.ruc)
-            // Buscamos el detalle completo del cliente porque el dashboard-all a veces omite las credenciales
             const fullClient = await clientesService.getById(client.ruc)
             setSelectedCredentialsClient(fullClient)
             setIsCredentialsModalOpen(true)
         } catch (error) {
             console.error("Error al obtener credenciales del cliente:", error)
             toast.error("Error al cargar las credenciales del cliente", { position: "bottom-right" })
-            // Fallback al cliente actual en caso de error
             setSelectedCredentialsClient(client)
             setIsCredentialsModalOpen(true)
         } finally {
@@ -138,10 +129,8 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
         const allVisibleSelected = visibleRucs.every(ruc => selectedRucs.includes(ruc));
 
         if (allVisibleSelected) {
-            // Remover los visibles de la selección total
             setSelectedRucs(prev => prev.filter(r => !visibleRucs.includes(r)))
         } else {
-            // Añadir los visibles a la selección que no estén todavía
             setSelectedRucs(prev => {
                 const newSelection = [...prev];
                 visibleRucs.forEach(r => {
@@ -214,43 +203,43 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             setIsExportingAll(false)
         }
     }
+
     return (
-        <div className="space-y-4">
-            {/* Search and Actions */}
-            <div className="flex flex-col sm:flex-row gap-2">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
+        <div className="space-y-6">
+            {/* Search and Actions with Glassmorphism */}
+            <div className="flex flex-col sm:flex-row gap-3 items-center bg-white/40 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-md shadow-sm animate-in fade-in duration-500">
+                <div className="flex-1 relative w-full group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                     <Input
                         placeholder="Buscar por RUC o razón social..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 w-full bg-muted/50 border-input text-foreground focus:bg-background focus:ring-2 dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-100"
+                        className="pl-11 h-11 bg-white/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
                     />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                     {isSelectionMode ? (
                         <>
                             <Button
                                 onClick={handleExport}
                                 disabled={isExporting || selectedRucs.length === 0}
-                                className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-11 px-6 shadow-lg shadow-emerald-500/10 flex-1 sm:flex-none"
                             >
                                 {isExporting ? (
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                 ) : (
                                     <Check className="h-4 w-4 mr-2" />
                                 )}
-                                <span className="hidden sm:inline">Confirmar ({selectedRucs.length})</span>
+                                <span className="hidden sm:inline">Exportar ({selectedRucs.length})</span>
                                 <span className="sm:hidden">({selectedRucs.length})</span>
                             </Button>
                             <Button
                                 onClick={toggleSelectionMode}
-                                variant="destructive"
+                                variant="outline"
                                 disabled={isExporting}
-                                className="flex-1 sm:flex-none"
+                                className="rounded-xl h-11 border-slate-200 dark:border-slate-800"
                             >
-                                <X className="h-4 w-4 mr-2" />
-                                <span className="hidden sm:inline">Cancelar</span>
+                                <X className="h-4 w-4" />
                             </Button>
                         </>
                     ) : (
@@ -261,16 +250,17 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                 isSelectionMode={isSelectionMode}
                                 isExportingAll={isExportingAll}
                             />
-                            <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none text-white">
+                            <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-11 px-5 shadow-lg shadow-blue-500/10 flex-1 sm:flex-none">
                                 <Plus className="h-4 w-4 mr-2" />
                                 <span className="hidden sm:inline">Nuevo</span>
+                                <span className="sm:hidden">Crear</span>
                             </Button>
                             <Button
                                 onClick={() => fetchClients()}
-                                variant="outline"
-                                className="border-input hover:bg-muted"
+                                variant="ghost"
+                                className="rounded-xl h-11 w-11 p-0 text-slate-400 hover:text-blue-600"
                             >
-                                Actualizar
+                                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                             </Button>
                         </>
                     )}
@@ -278,184 +268,133 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             </div>
 
             {/* Error Message */}
-            {error && <div className="p-3 bg-red-900/20 border border-red-700/50 rounded text-red-400 text-sm">{error}</div>}
+            {error && (
+                <div className="p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 rounded-xl text-rose-600 dark:text-rose-400 text-sm font-bold flex items-center gap-2 animate-in zoom-in duration-300">
+                    <Info className="h-4 w-4" />
+                    {error}
+                </div>
+            )}
 
-            {/* Desktop Table View */}
-            {
-                !isMobile && (
+            {/* View Switching */}
+            {!isMobile ? (
+                /* Desktop Dashboard Table (Harmonized with main ClientsTable) */
+                <div className="bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm animate-in fade-in duration-700">
                     <div className="overflow-x-auto">
                         <Table>
-                            <TableHeader>
-                                <TableRow className="hover:bg-transparent">
+                            <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
+                                <TableRow className="hover:bg-transparent border-b border-slate-200 dark:border-slate-800">
                                     {isSelectionMode && (
-                                        <TableHead className="w-12.5">
+                                        <TableHead className="w-12 text-center">
                                             <Checkbox
                                                 checked={filteredClients.length > 0 && filteredClients.every(c => selectedRucs.includes(c.ruc))}
                                                 onCheckedChange={toggleSelectAll}
-                                                className="border-border bg-input"
+                                                className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-blue-600"
                                             />
                                         </TableHead>
                                     )}
-                                    <TableHead className="w-12.5 font-semibold text-slate-700 dark:text-slate-300">N°</TableHead>
-                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-300">RUC</TableHead>
-                                    <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300" title="Último Dígito">Últ.</TableHead>
-                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Razón Social</TableHead>
-                                    <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Propietario</TableHead>
-                                    <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Responsable</TableHead>
-                                    <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Categoria</TableHead>
-                                    <TableHead className="font-semibold text-slate-700 text-center dark:text-slate-300">Estado</TableHead>
-                                    <TableHead className="text-center font-semibold text-slate-700 dark:text-slate-300">Acciones</TableHead>
+                                    <TableHead className="w-12 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+                                        <div className="flex items-center justify-center gap-1">
+                                            <Hash className="h-3 w-3" />
+                                        </div>
+                                    </TableHead>
+                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Identificación</TableHead>
+                                    <TableHead className="w-12 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Últ.</TableHead>
+                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Razón Social</TableHead>
+                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Propietario</TableHead>
+                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Responsable</TableHead>
+                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Cat.</TableHead>
+                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Estado</TableHead>
+                                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Info</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {loading && clients.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center py-8">
-                                            <div className="flex justify-center flex-col items-center gap-2">
-                                                <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
-                                                <span className="text-sm text-muted-foreground">Buscando clientes...</span>
+                                        <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center py-20">
+                                            <div className="flex flex-col items-center gap-3">
+                                                <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+                                                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest animate-pulse">Consultando base...</span>
                                             </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : filteredClients.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center text-muted-foreground py-8">
-                                            No hay clientes que coincidan con la búsqueda
+                                        <TableCell colSpan={isSelectionMode ? 10 : 9} className="text-center py-20">
+                                            <div className="flex flex-col items-center gap-2 grayscale">
+                                                <Info className="h-10 w-10 text-slate-300" />
+                                                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Sin resultados</p>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     filteredClients.map((client, index) => (
                                         <TableRow
                                             key={client.ruc}
-                                            className="cursor-pointer"
+                                            className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer border-b border-slate-100 dark:border-slate-800/60 transition-colors"
                                             onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
+                                            style={{ animationDelay: `${index * 30}ms`, animation: 'fade-in 0.3s ease-out forwards', opacity: 0 }}
                                         >
                                             {isSelectionMode && (
-                                                <TableCell>
+                                                <TableCell className="text-center">
                                                     <Checkbox
                                                         checked={selectedRucs.includes(client.ruc)}
                                                         onCheckedChange={() => toggleSelectClient(client.ruc)}
-                                                        className="border-border bg-input"
                                                     />
                                                 </TableCell>
                                             )}
-                                            <TableCell className="text-slate-600 dark:text-slate-400">{(currentPage - 1) * 50 + index + 1}</TableCell>
-                                            <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">
-                                                <HighlightedText text={client.ruc} highlight={searchTerm} />
+                                            <TableCell className="text-center font-bold text-slate-300 text-[11px]">
+                                                {(currentPage - 1) * 50 + index + 1}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col">
+                                                    <span className="font-mono text-sm font-black text-blue-600 dark:text-blue-400">
+                                                        <HighlightedText text={client.ruc} highlight={searchTerm} />
+                                                    </span>
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                {client.ultimo_digito_ruc ? (
-                                                    <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                                                {client.ultimo_digito_ruc && (
+                                                    <div className="h-6 w-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-mono text-[13px] font-black text-slate-500">
                                                         {client.ultimo_digito_ruc}
-                                                    </Badge>
-                                                ) : (
-                                                    <span className="text-muted-foreground">-</span>
+                                                    </div>
                                                 )}
                                             </TableCell>
-                                            <TableCell className="font-medium text-slate-900 dark:text-slate-100">
-                                                <HighlightedText text={client.razon_social} highlight={searchTerm} />
-                                            </TableCell>
-                                            <TableCell className="text-slate-600 text-center dark:text-slate-400">
-                                                <HighlightedText text={client.propietario} highlight={searchTerm} />
-                                            </TableCell>
-                                            <TableCell className="text-slate-600 text-center dark:text-slate-400">
-                                                {client.responsable_nombre || client.responsable_info?.nombre || "-"}
+                                            <TableCell>
+                                                <span className="font-black text-slate-900 dark:text-white text-base md:text-lg">
+                                                    <HighlightedText text={client.razon_social} highlight={searchTerm} />
+                                                </span>
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
+                                                <span className="text-sm font-bold text-slate-500">
+                                                    <HighlightedText text={client.propietario} highlight={searchTerm} />
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    <User className="h-3 w-3 text-slate-400" />
+                                                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                                                        {client.responsable_nombre || client.responsable_info?.nombre || "N/A"}
+                                                    </span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Badge className={`font-black text-[9px] rounded-md border-2 ${(categoriaConfig[client.categoria] || categoriaConfig.default).className}`} variant="outline">
                                                     {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 <Badge
-                                                    className={
+                                                    className={`font-black text-[9px] rounded-md ${
                                                         client.estado
-                                                            ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                                                            : "bg-red-100 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
-                                                    }
+                                                            ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                                                            : "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800"
+                                                    }`}
                                                     variant="outline"
                                                 >
-                                                    {client.estado ? "Activo" : "Inactivo"}
+                                                    {client.estado ? "ACTIVO" : "BAJA"}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                <div className="flex justify-center gap-2">
-                                                    <Button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleViewCredentials(client);
-                                                        }}
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="text-yellow-400 hover:bg-yellow-900/20"
-                                                        title="Ver credenciales"
-                                                        disabled={fetchingCredentialsId === client.ruc}
-                                                    >
-                                                        {fetchingCredentialsId === client.ruc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                )
-            }
-
-            {/* Mobile Card View */}
-            {
-                isMobile && (
-                    <div className="space-y-3">
-                        {loading && clients.length === 0 ? (
-                            <Card className="bg-muted/30 border-dashed">
-                                <CardContent className="pt-6 text-center flex flex-col items-center gap-2">
-                                    <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
-                                    <span className="text-sm text-muted-foreground">Buscando clientes...</span>
-                                </CardContent>
-                            </Card>
-                        ) : filteredClients.length === 0 ? (
-                            <Card className="bg-muted/30">
-                                <CardContent className="pt-6 text-center text-muted-foreground">No hay clientes que coincidan con la búsqueda</CardContent>
-                            </Card>
-                        ) : (
-                            filteredClients.map((client) => (
-                                <Card
-                                    key={client.ruc}
-                                    className="cursor-pointer hover:bg-accent/50 transition-colors"
-                                    onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
-                                >
-                                    <CardContent className="pt-6">
-                                        {/* Main row */}
-                                        <div className="flex items-start justify-between gap-2">
-                                            {isSelectionMode && (
-                                                <div className="pt-1">
-                                                    <Checkbox
-                                                        checked={selectedRucs.includes(client.ruc)}
-                                                        onCheckedChange={() => toggleSelectClient(client.ruc)}
-                                                    />
-                                                </div>
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <p className="font-mono text-blue-500 text-sm font-semibold">
-                                                        <HighlightedText text={client.ruc} highlight={searchTerm} />
-                                                    </p>
-                                                    {client.ultimo_digito_ruc && (
-                                                        <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
-                                                            {client.ultimo_digito_ruc}
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                                <p className="font-medium truncate text-foreground">
-                                                    <HighlightedText text={client.razon_social} highlight={searchTerm} />
-                                                </p>
-                                                <p className="text-muted-foreground text-sm">
-                                                    <HighlightedText text={client.propietario} highlight={searchTerm} />
-                                                </p>
-                                            </div>
-                                            <div className="flex gap-2 shrink-0">
                                                 <Button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -463,120 +402,166 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
                                                     }}
                                                     size="sm"
                                                     variant="ghost"
-                                                    className="text-yellow-400 hover:bg-yellow-900/20 h-8 w-8 p-0 shrink-0"
-                                                    title="Ver credenciales"
+                                                    className="h-10 w-10 p-0 text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:hover:bg-amber-900/20 rounded-xl border border-amber-200/50 dark:border-amber-800/50 shadow-sm"
                                                     disabled={fetchingCredentialsId === client.ruc}
                                                 >
-                                                    {fetchingCredentialsId === client.ruc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
+                                                    {fetchingCredentialsId === client.ruc ? <Loader2 className="h-5 w-5 animate-spin" /> : <Key className="h-5 w-5" />}
                                                 </Button>
-                                                <Button
-                                                    onClick={() => setExpandedRow(expandedRow === client.ruc ? null : client.ruc)}
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="h-8 w-8 p-0"
-                                                >
-                                                    <ChevronDown
-                                                        className={`h-4 w-4 transition-transform ${expandedRow === client.ruc ? "rotate-180" : ""}`}
-                                                    />
-                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+            ) : (
+                /* Mobile Card View - Premium Upgrade */
+                <div className="space-y-4">
+                    {loading && clients.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-50 grayscale animate-pulse">
+                            <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Sincronizando clientes móviles...</p>
+                        </div>
+                    ) : filteredClients.length === 0 ? (
+                        <div className="text-center py-12 bg-slate-50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Sin resultados</p>
+                        </div>
+                    ) : (
+                        filteredClients.map((client, index) => (
+                            <Card
+                                key={client.ruc}
+                                className="group relative border-slate-200 dark:border-slate-800 shadow-lg bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm overflow-hidden active:scale-[0.98] transition-all"
+                                onClick={() => setExpandedRow(expandedRow === client.ruc ? null : client.ruc)}
+                                style={{ animationDelay: `${index * 40}ms`, animation: 'fade-in 0.4s ease-out forwards', opacity: 0 }}
+                            >
+                                <div className={`absolute top-0 left-0 bottom-0 w-1.5 transition-colors ${client.estado ? "bg-blue-600" : "bg-rose-500"}`} />
+                                <CardContent className="p-5 pl-7">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1 min-w-0 space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black text-blue-600 dark:text-blue-400 text-sm tracking-tighter font-mono bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-md">
+                                                    <HighlightedText text={client.ruc} highlight={searchTerm} />
+                                                </span>
+                                                <Badge className={`h-4 text-[8px] font-black tracking-tighter rounded-md border-0 ${(categoriaConfig[client.categoria] || categoriaConfig.default).className}`}>
+                                                    {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
+                                                </Badge>
                                             </div>
+                                            <h3 className="font-black text-slate-900 dark:text-white text-lg md:text-xl leading-tight">
+                                                <HighlightedText text={client.razon_social} highlight={searchTerm} />
+                                            </h3>
+                                            <p className="text-sm font-bold text-slate-500 uppercase flex items-center gap-2 tracking-tight line-clamp-1">
+                                                <User className="h-4 w-4" />
+                                                <HighlightedText text={client.propietario} highlight={searchTerm} />
+                                            </p>
                                         </div>
+                                        <div className="flex flex-col items-end gap-2 shrink-0">
+                                            <Button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleViewCredentials(client);
+                                                }}
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-10 w-10 p-0 rounded-xl border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-white/5 shadow-sm text-amber-500"
+                                                disabled={fetchingCredentialsId === client.ruc}
+                                            >
+                                                {fetchingCredentialsId === client.ruc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
+                                            </Button>
+                                            <ChevronDown className={`h-4 w-4 text-slate-300 transition-transform duration-300 ${expandedRow === client.ruc ? "rotate-180 text-blue-500" : ""}`} />
+                                        </div>
+                                    </div>
 
-                                        {/* Expanded details */}
-                                        {expandedRow === client.ruc && (
-                                            <div className="mt-4 pt-4 border-t space-y-3">
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground text-sm">Responsable:</span>
-                                                    <span className="text-foreground text-sm">
-                                                        {client.responsable_info?.nombre || "-"}
+                                    {/* Expanded details - Premium Glass Style */}
+                                    {expandedRow === client.ruc && (
+                                        <div className="mt-5 pt-5 border-t border-slate-100 dark:border-slate-800/80 animate-in slide-in-from-top-2 duration-300">
+                                            <div className="grid gap-3">
+                                                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800">
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Responsable</span>
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                                        {client.responsable_nombre || client.responsable_info?.nombre || "S/A"}
                                                     </span>
                                                 </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground text-sm">Régimen:</span>
-                                                    <Badge variant="outline" className="text-foreground">
+                                                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800">
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Régimen</span>
+                                                    <Badge variant="outline" className="bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-black text-[10px] rounded-lg border-indigo-100 dark:border-indigo-800">
                                                         {client.regimen_tributario}
                                                     </Badge>
                                                 </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground text-sm">Estado:</span>
-                                                    <Badge
-                                                        className={
-                                                            client.estado
-                                                                ? "bg-green-900/30 text-green-400 border border-green-700/50"
-                                                                : "bg-red-900/30 text-red-400 border border-red-700/50"
-                                                        }
-                                                        variant="outline"
-                                                    >
-                                                        {client.estado ? "Activo" : "Inactivo"}
-                                                    </Badge>
-                                                </div>
+                                                <Button 
+                                                    className="w-full bg-slate-900 dark:bg-blue-600 text-white font-black text-xs h-12 rounded-xl mt-2 group shadow-lg active:scale-95 transition-all"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        router.push(`/dashboard/clientes/${client.ruc}`);
+                                                    }}
+                                                >
+                                                    Gestionar Expediente
+                                                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                                                </Button>
                                             </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            ))
-                        )}
-                    </div>
-                )
-            }
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        ))
+                    )}
+                </div>
+            )}
 
             {/* Pagination Controls */}
-            {
-                (!loading && clients.length > 0) && (
-                    <div className="flex items-center justify-between border-t pt-4 mt-4 text-sm w-full dark:border-slate-800">
-                        <div className="flex-1 text-muted-foreground mr-4">
-                            Página {currentPage}
+            {!loading && clients.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between px-2 pt-2 gap-4">
+                    <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-black text-xs">
+                            {currentPage}
                         </div>
-                        <div className="flex gap-2">
-                            {showAllClients && clients.length === 50 ? (
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Panel de navegación</span>
+                    </div>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        {showAllClients && clients.length === 50 ? (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => router.push('/dashboard/clientes')}
+                                className="rounded-xl h-11 px-6 font-bold text-xs uppercase bg-white dark:bg-slate-900 shadow-sm grow sm:grow-0"
+                            >
+                                Ver todos
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                            </Button>
+                        ) : (
+                            <>
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => router.push('/dashboard/clientes')}
+                                    onClick={() => fetchClients(prevUrl!, currentPage - 1)}
+                                    disabled={!prevUrl || isPaginating}
+                                    className="rounded-xl h-11 px-5 grow sm:grow-0 font-bold text-xs uppercase"
                                 >
-                                    Ver todos los clientes
-                                    <ArrowRight className="h-4 w-4 ml-1" />
+                                    {isPaginating && prevUrl ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : "Anterior"}
                                 </Button>
-                            ) : (
-                                <>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => fetchClients(prevUrl!, currentPage - 1)}
-                                        disabled={!prevUrl || isPaginating}
-                                        className={isPaginating && prevUrl ? "opacity-50" : ""}
-                                    >
-                                        {isPaginating && prevUrl ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
-                                        Anterior
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => fetchClients(nextUrl!, currentPage + 1)}
-                                        disabled={!nextUrl || isPaginating}
-                                        className={isPaginating && nextUrl ? "opacity-50" : ""}
-                                    >
-                                        Siguiente
-                                        {isPaginating && nextUrl ? <Loader2 className="h-4 w-4 ml-1 animate-spin" /> : null}
-                                    </Button>
-                                </>
-                            )}
-                        </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => fetchClients(nextUrl!, currentPage + 1)}
+                                    disabled={!nextUrl || isPaginating}
+                                    className="rounded-xl h-11 px-5 grow sm:grow-0 font-bold text-xs uppercase bg-blue-600 text-white border-blue-600 hover:bg-blue-700 active:scale-95 transition-all"
+                                >
+                                    {isPaginating && nextUrl ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : "Siguiente"}
+                                </Button>
+                            </>
+                        )}
                     </div>
-                )
-            }
+                </div>
+            )}
 
-            {/* Client Form Modal */}
+            {/* Modals & Dialogs (Preserving functionality) */}
             <ClientForm
                 open={isModalOpen}
                 onOpenChange={setIsModalOpen}
                 client={selectedClient}
-                onSuccess={() => {
-                    fetchClients()
-                }}
+                onSuccess={() => fetchClients()}
             />
 
-            {/* Credentials Modal */}
             <CredentialsViewer
                 open={isCredentialsModalOpen}
                 onOpenChange={setIsCredentialsModalOpen}
@@ -584,27 +569,37 @@ export function ClientsTableResponsive({ disableEdit = false, showAllClients = f
             />
 
             <AlertDialog open={isExportConfirmOpen} onOpenChange={setIsExportConfirmOpen}>
-                <AlertDialogContent className="bg-slate-900 border-slate-700 text-white w-[95%] sm:max-w-md rounded-lg">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>¿Confirmar exportación masiva?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-400">
+                <AlertDialogContent className="bg-slate-900/95 backdrop-blur-xl border border-white/10 text-white w-[95%] sm:max-w-md rounded-3xl p-8 shadow-2xl">
+                    <AlertDialogHeader className="space-y-4">
+                        <div className="h-14 w-14 rounded-2xl bg-emerald-600/20 border border-emerald-600/30 flex items-center justify-center mb-2 text-emerald-500">
+                            <Briefcase className="h-7 w-7" />
+                        </div>
+                        <AlertDialogTitle className="text-2xl font-black tracking-tight tracking-tight">Exportación Masiva</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400 font-medium leading-relaxed">
                             Se descargarán todos los clientes registrados en el sistema. Dependiendo del volumen de datos, esto puede tomar unos segundos.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
-                        <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-600 mt-0">Cancelar</AlertDialogCancel>
+                    <AlertDialogFooter className="flex flex-col sm:flex-row gap-3 mt-8">
+                        <AlertDialogCancel className="bg-white/5 border-transparent hover:bg-white/10 text-white h-12 rounded-xl grow font-bold uppercase text-[10px] tracking-widest mt-0">Cancelar</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => {
                                 setIsExportConfirmOpen(false);
                                 handleExportAll();
                             }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-xl grow font-bold shadow-lg shadow-blue-500/20"
                         >
-                            Confirmar y Descargar
+                            Descargar Excel
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            
+            <style jsx global>{`
+                @keyframes fade-in {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
         </div >
     )
 }

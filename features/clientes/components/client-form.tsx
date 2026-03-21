@@ -18,9 +18,11 @@ import { libroSocietarioService } from "@/features/shared/services/libro-societa
 import { tipoRegimenLaboralService } from "@/features/clientes/services/tipos-regimen-laboral"
 import { ITipoRegimenLaboral } from "@/features/shared/types"
 import { handleApiError, handleApiSuccess } from "@/lib/api-utils"
-import { X, Eye, EyeOff } from "lucide-react"
+import { X, Eye, EyeOff, Building2, ShieldCheck, Key, FileText, Briefcase, Plus, Save, SlidersHorizontal, Info, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
 import type { FieldErrors } from "react-hook-form"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from "@/lib/utils"
 
 interface ClientFormProps {
     client?: ICliente | null
@@ -88,15 +90,28 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         if (isOpen) {
             if (client) {
                 reset(client)
-                setEnableSol(!!client.credenciales?.sol_usuario)
-                setEnableDetraccion(!!client.credenciales?.detraccion_cuenta)
-                setEnableInei(!!client.credenciales?.inei_usuario)
-                setEnableAfpNet(!!client.credenciales?.afp_net_usuario)
-                setEnableVivaEssalud(!!client.credenciales?.viva_essalud_usuario)
-                setEnablePe(!!client.credenciales?.pe)
-                setEnableSis(!!client.credenciales?.sis_clave)
-                setEnableOsce(!!client.credenciales?.clave_osce)
-                setEnableSencico(!!client.credenciales?.clave_sencico)
+                const creds = client.credenciales || {}
+                setEnableSol(!!creds.sol_usuario || !!creds.sol_clave)
+                setEnableDetraccion(!!creds.detraccion_cuenta || !!creds.detraccion_usuario || !!creds.detraccion_clave)
+                setEnableInei(!!creds.inei_usuario || !!creds.inei_clave)
+                setEnableAfpNet(!!creds.afp_net_usuario || !!creds.afp_net_clave)
+                setEnableVivaEssalud(!!creds.viva_essalud_usuario || !!creds.viva_essalud_clave)
+                setEnablePe(!!creds.pe)
+                setEnableSis(!!creds.sis_clave)
+                setEnableOsce(!!creds.clave_osce)
+                setEnableSencico(!!creds.clave_sencico)
+                
+                // Set passwords to visible by default
+                setShowPasswords({
+                    sol: true,
+                    detraccion: true,
+                    afp_net: true,
+                    viva_essalud: true,
+                    sis: true,
+                    inei: true,
+                    osce: true,
+                    sencico: true
+                })
             } else {
                 const defaultResponsable = (!user?.is_superuser && user?.id !== 1) ? user?.id || 0 : 0
                 reset({
@@ -126,6 +141,16 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                 setEnableSis(false)
                 setEnableOsce(false)
                 setEnableSencico(false)
+                setShowPasswords({
+                    sol: true,
+                    detraccion: true,
+                    afp_net: true,
+                    viva_essalud: true,
+                    sis: true,
+                    inei: true,
+                    osce: true,
+                    sencico: true
+                })
             }
         }
     }, [client, isOpen, reset, user])
@@ -164,6 +189,21 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
         name: "tipo_empresa",
         defaultValue: TipoEmpresa.SAC
     });
+
+    const selectedLibros = useWatch({
+        control,
+        name: "libros_societarios",
+        defaultValue: []
+    }) || [];
+
+    const handleLibroChange = (id: number) => {
+        const current = selectedLibros || [];
+        if (current.includes(id)) {
+            setValue("libros_societarios", current.filter(x => x !== id), { shouldDirty: true });
+        } else {
+            setValue("libros_societarios", [...current, id], { shouldDirty: true });
+        }
+    };
 
     useEffect(() => {
         console.log("DEBUG-LIBROS: effect init | isOpen:", isOpen, "| client:", !!client, "| librosDisp len:", librosDisponibles.length, "| tipoEmpresa:", tipoEmpresaActual);
@@ -299,62 +339,82 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
-                    <div className="sticky top-0 z-10 bg-card border-b border-border rounded-t-lg px-6 py-4 flex items-center justify-between">
-                        <h2 className="text-foreground text-2xl font-semibold">
-                            {client ? "Editar Cliente" : "Nuevo Cliente"}
-                        </h2>
+                    <div className="sticky top-0 z-20 bg-card/80 backdrop-blur-md border-b border-white/10 rounded-t-2xl px-8 py-5 flex items-center justify-between shadow-xl">
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                                {client ? <SlidersHorizontal className="h-6 w-6 text-white" /> : <Plus className="h-6 w-6 text-white" />}
+                            </div>
+                            <div>
+                                <h2 className="text-slate-900 dark:text-white text-2xl font-black tracking-tight">
+                                    {client ? "Editar Perfil del Cliente" : "Registrar Nuevo Cliente"}
+                                </h2>
+                                <p className="text-slate-500 text-sm font-medium">
+                                    {client ? `Actualizando datos de ${client.razon_social}` : "Complete los campos para dar de alta un nuevo cliente"}
+                                </p>
+                            </div>
+                        </div>
                         <Button
                             type="button"
                             variant="ghost"
                             size="icon"
                             onClick={() => setIsOpen?.(false)}
-                            className="text-muted-foreground hover:text-foreground hover:bg-muted"
+                            className="text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full h-10 w-10 transition-colors"
                         >
-                            <X className="h-5 w-5" />
+                            <X className="h-6 w-6" />
                         </Button>
                     </div>
 
                     {/* Form Content */}
-                    <div className="bg-background rounded-b-lg p-4">
-                        <form onSubmit={handleSubmit(onSubmitHandler, onErrorHandler)} className="space-y-3">
+                    <div className="bg-slate-50/50 dark:bg-slate-950/50 backdrop-blur-xl rounded-b-2xl p-6 border-x border-b border-white/10">
+                        <form onSubmit={handleSubmit(onSubmitHandler, onErrorHandler)} className="space-y-6">
                             {error && (
-                                <div className="p-3 bg-destructive/10 border border-destructive/30 rounded text-destructive text-sm">
+                                <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-600 dark:text-rose-400 text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
                                     {error}
                                 </div>
                             )}
 
-                            {/* GRID PRINCIPAL DE TARJETAS - 5 columnas x 5 filas */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 grid-rows-1 gap-3 auto-rows-max">
-                                {/* Card 1: INFORMACIÓN GENERAL - row-span-3 row-start-2 */}
-                                <Card className="border-border bg-card/50 backdrop-blur-sm row-span-3 row-start-2 h-fit">
-                                    <CardHeader className="border-b border-border pb-3">
-                                        <CardTitle className="text-foreground text-lg">📋 Información General</CardTitle>
-                                        <CardDescription className="text-muted-foreground">Datos básicos de la empresa</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="pt-4">
-                                        <div className="grid grid-cols-1 gap-3">
+                            {/* GRID PRINCIPAL DE TARJETAS */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                {/* Lateral Izquierdo: Información General (Col 1-4) */}
+                                <div className="lg:col-span-4 space-y-6 animate-in fade-in slide-in-from-left-4 duration-500 fill-mode-both">
+                                    <Card className="border-white/10 bg-white/80 dark:bg-slate-900/40 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all duration-300">
+                                        <CardHeader className="bg-gradient-to-r from-blue-600/10 to-transparent border-b border-white/20 pb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-lg bg-blue-600/20 flex items-center justify-center">
+                                                    <Building2 className="h-4 w-4 text-blue-600" />
+                                                </div>
+                                                <CardTitle className="text-slate-900 dark:text-white text-lg font-black tracking-tight">Información General</CardTitle>
+                                            </div>
+                                            <CardDescription className="text-slate-500 dark:text-slate-400 font-medium">Datos básicos de identidad</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="pt-6 space-y-5">
                                             {/* RUC */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">RUC</Label>
+                                            <div className="space-y-2">
+                                                <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm flex items-center gap-2">
+                                                    RUC <span className="text-rose-500">*</span>
+                                                </Label>
                                                 <Controller
                                                     name="ruc"
                                                     control={control}
                                                     rules={{ required: "RUC es requerido" }}
                                                     render={({ field }) => (
-                                                        <Input
-                                                            {...field}
-                                                            placeholder="20123456789"
-                                                            disabled={!!client || isSubmitting}
-                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                        />
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="Ej: 20123456789"
+                                                                disabled={!!client || isSubmitting}
+                                                                className="h-11 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 focus:ring-blue-500/20 shadow-inner font-mono font-bold text-base"
+                                                            />
                                                     )}
                                                 />
-                                                {errors.ruc && <p className="text-destructive text-xs mt-1 font-medium">{errors.ruc.message}</p>}
+                                                {errors.ruc && <p className="text-rose-500 text-xs mt-1 font-bold animate-pulse">{errors.ruc.message}</p>}
                                             </div>
 
                                             {/* Razón Social */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Razón Social</Label>
+                                            <div className="space-y-2">
+                                                <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm flex items-center gap-2">
+                                                    Razón Social <span className="text-rose-500">*</span>
+                                                </Label>
                                                 <Controller
                                                     name="razon_social"
                                                     control={control}
@@ -362,20 +422,22 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     render={({ field }) => (
                                                         <Input
                                                             {...field}
-                                                            placeholder="Nombre de la empresa"
+                                                            placeholder="Ej: Inversiones S.A.C."
                                                             disabled={isSubmitting}
-                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
+                                                            className="h-11 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 focus:ring-blue-500/20 text-slate-900 dark:text-white font-bold"
                                                         />
                                                     )}
                                                 />
                                                 {errors.razon_social && (
-                                                    <p className="text-destructive text-xs mt-1 font-medium">{errors.razon_social.message}</p>
+                                                    <p className="text-rose-500 text-xs mt-1 font-bold animate-pulse">{errors.razon_social.message}</p>
                                                 )}
                                             </div>
 
                                             {/* Propietario */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Propietario</Label>
+                                            <div className="space-y-2">
+                                                <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm flex items-center gap-2">
+                                                    Propietario / Representante <span className="text-rose-500">*</span>
+                                                </Label>
                                                 <Controller
                                                     name="propietario"
                                                     control={control}
@@ -383,175 +445,148 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     render={({ field }) => (
                                                         <Input
                                                             {...field}
-                                                            placeholder="Nombre"
+                                                            placeholder="Nombre completo"
                                                             disabled={isSubmitting}
-                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
+                                                            className="h-11 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 focus:ring-blue-500/20 text-slate-900 dark:text-white font-semibold"
                                                         />
                                                     )}
                                                 />
                                                 {errors.propietario && (
-                                                    <p className="text-destructive text-xs mt-1 font-medium">{errors.propietario.message}</p>
+                                                    <p className="text-rose-500 text-xs mt-1 font-bold animate-pulse">{errors.propietario.message}</p>
                                                 )}
                                             </div>
 
-                                            {/* Fecha de Ingreso */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Fecha de Ingreso</Label>
-                                                <Controller
-                                                    name="fecha_ingreso"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <Input
-                                                            {...field}
-                                                            value={field.value || ""}
-                                                            type="date"
-                                                            disabled={isSubmitting}
-                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                        />
-                                                    )}
-                                                />
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {/* Fecha de Ingreso */}
+                                                <div className="space-y-2">
+                                                    <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm">Fecha ingreso</Label>
+                                                    <Controller
+                                                        name="fecha_ingreso"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Input
+                                                                {...field}
+                                                                value={field.value || ""}
+                                                                type="date"
+                                                                disabled={isSubmitting}
+                                                                className="h-10 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 font-medium"
+                                                            />
+                                                        )}
+                                                    />
+                                                </div>
+
+                                                {/* Categoría */}
+                                                <div className="space-y-2">
+                                                    <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm">Categoría</Label>
+                                                    <Controller
+                                                        name="categoria"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Select value={field.value} onValueChange={field.onChange}>
+                                                                <SelectTrigger className="h-10 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 font-bold">
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                                <SelectContent className="rounded-xl border-white/10 dark:bg-slate-900/90 backdrop-blur-lg">
+                                                                    <SelectItem value="A" className="font-bold text-emerald-600">Categoría A</SelectItem>
+                                                                    <SelectItem value="B" className="font-bold text-blue-600">Categoría B</SelectItem>
+                                                                    <SelectItem value="C" className="font-bold text-amber-600">Categoría C</SelectItem>
+                                                                    <SelectItem value="N/T" className="font-bold text-slate-500">No Definido</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        )}
+                                                    />
+                                                </div>
                                             </div>
 
-                                            {/* Régimen Tributario */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Régimen Tributario</Label>
-                                                <Controller
-                                                    name="regimen_tributario"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <Select value={field.value} onValueChange={field.onChange}>
-                                                            <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="bg-card border-border">
-                                                                <SelectItem value={RegimenTributario.RMT}>RMT</SelectItem>
-                                                                <SelectItem value={RegimenTributario.ESPECIAL}>Especial</SelectItem>
-                                                                <SelectItem value={RegimenTributario.RUS}>RUS</SelectItem>
-                                                                <SelectItem value={RegimenTributario.GENERAL}>General</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    )}
-                                                />
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {/* Régimen Tributario */}
+                                                <div className="space-y-2">
+                                                    <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm">Régimen Trib.</Label>
+                                                    <Controller
+                                                        name="regimen_tributario"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Select value={field.value} onValueChange={field.onChange}>
+                                                                <SelectTrigger className="h-10 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 font-bold">
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                                <SelectContent className="rounded-xl border-white/10 dark:bg-slate-900/90 backdrop-blur-lg">
+                                                                    <SelectItem value={RegimenTributario.RMT}>RMT</SelectItem>
+                                                                    <SelectItem value={RegimenTributario.ESPECIAL}>Especial</SelectItem>
+                                                                    <SelectItem value={RegimenTributario.RUS}>RUS</SelectItem>
+                                                                    <SelectItem value={RegimenTributario.GENERAL}>General</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        )}
+                                                    />
+                                                </div>
+
+                                                {/* Tipo de Empresa */}
+                                                <div className="space-y-2">
+                                                    <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm">Empresa</Label>
+                                                    <Controller
+                                                        name="tipo_empresa"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Select value={field.value} onValueChange={field.onChange}>
+                                                                <SelectTrigger className="h-10 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-blue-500 font-bold">
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                                <SelectContent className="rounded-xl border-white/10 dark:bg-slate-900/90 backdrop-blur-lg">
+                                                                    <SelectItem value={TipoEmpresa.SAC}>S.A.C.</SelectItem>
+                                                                    <SelectItem value={TipoEmpresa.EIRL}>E.I.R.L.</SelectItem>
+                                                                    <SelectItem value={TipoEmpresa.SRL}>S.R.L.</SelectItem>
+                                                                    <SelectItem value={TipoEmpresa.SA}>S.A.</SelectItem>
+                                                                    <SelectItem value={TipoEmpresa.PN}>P. Natural</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        )}
+                                                    />
+                                                </div>
                                             </div>
 
-                                            {/* Tipo de Empresa */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Tipo de Empresa</Label>
-                                                <Controller
-                                                    name="tipo_empresa"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <Select value={field.value} onValueChange={field.onChange}>
-                                                            <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="bg-card border-border">
-                                                                <SelectItem value={TipoEmpresa.SAC}>SAC</SelectItem>
-                                                                <SelectItem value={TipoEmpresa.EIRL}>EIRL</SelectItem>
-                                                                <SelectItem value={TipoEmpresa.SRL}>SRL</SelectItem>
-                                                                <SelectItem value={TipoEmpresa.SA}>SA</SelectItem>
-                                                                <SelectItem value={TipoEmpresa.PN}>P.N.</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    )}
-                                                />
-                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {/* Ingresos Mensuales */}
+                                                <div className="space-y-2">
+                                                    <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm">Ingresos Mens.</Label>
+                                                    <Controller
+                                                        name="ingresos_mensuales"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="0.00"
+                                                                disabled={isSubmitting}
+                                                                className="h-10 rounded-xl bg-white/50 dark:bg-slate-950/50 border-white/20 focus:border-blue-500 font-mono"
+                                                            />
+                                                        )}
+                                                    />
+                                                </div>
 
-                                            {/* Ingresos Mensuales */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Ingresos Mensuales</Label>
-                                                <Controller
-                                                    name="ingresos_mensuales"
-                                                    control={control}
-                                                    rules={{
-                                                        pattern: {
-                                                            value: /^\d+([.,]\d{1,2})?$/,
-                                                            message: "Formato inválido. Use ej: 212.90 o 212,90"
-                                                        }
-                                                    }}
-                                                    render={({ field }) => (
-                                                        <Input
-                                                            {...field}
-                                                            placeholder="0.00"
-                                                            disabled={isSubmitting}
-                                                            className={`bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm ${errors.ingresos_mensuales ? 'border-destructive focus:border-destructive' : ''}`}
-                                                        />
-                                                    )}
-                                                />
-                                                {errors.ingresos_mensuales && (
-                                                    <p className="text-destructive text-xs mt-1 font-medium">{errors.ingresos_mensuales.message}</p>
-                                                )}
-                                            </div>
-
-                                            {/* Ingresos Anuales */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Ingresos Anuales</Label>
-                                                <Controller
-                                                    name="ingresos_anuales"
-                                                    control={control}
-                                                    rules={{
-                                                        pattern: {
-                                                            value: /^\d+([.,]\d{1,2})?$/,
-                                                            message: "Formato inválido. Use ej: 212.90 o 212,90"
-                                                        }
-                                                    }}
-                                                    render={({ field }) => (
-                                                        <Input
-                                                            {...field}
-                                                            placeholder="0.00"
-                                                            disabled={isSubmitting}
-                                                            className={`bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm ${errors.ingresos_anuales ? 'border-destructive focus:border-destructive' : ''}`}
-                                                        />
-                                                    )}
-                                                />
-                                                {errors.ingresos_anuales && (
-                                                    <p className="text-destructive text-xs mt-1 font-medium">{errors.ingresos_anuales.message}</p>
-                                                )}
-                                            </div>
-
-                                            {/* Categoría */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Categoría</Label>
-                                                <Controller
-                                                    name="categoria"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <Select value={field.value} onValueChange={field.onChange}>
-                                                            <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="bg-card border-border">
-                                                                <SelectItem value="A">A</SelectItem>
-                                                                <SelectItem value="B">B</SelectItem>
-                                                                <SelectItem value="C">C</SelectItem>
-                                                                <SelectItem value="N/T">N/T - No definido</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    )}
-                                                />
-                                            </div>
-
-                                            {/* Código de Control */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Código de Control</Label>
-                                                <Controller
-                                                    name="codigo_control"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <Input
-                                                            {...field}
-                                                            placeholder="0"
-                                                            disabled={isSubmitting}
-                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                                                        />
-                                                    )}
-                                                />
+                                                {/* Código Control */}
+                                                <div className="space-y-2">
+                                                    <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm">Cód. Control</Label>
+                                                    <Controller
+                                                        name="codigo_control"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="000"
+                                                                disabled={isSubmitting}
+                                                                className="h-10 rounded-xl bg-white/50 dark:bg-slate-950/50 border-white/20 focus:border-blue-500 font-mono font-bold"
+                                                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                                                            />
+                                                        )}
+                                                    />
+                                                </div>
                                             </div>
 
                                             {/* Responsable */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Responsable</Label>
+                                            <div className="space-y-2">
+                                                <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm flex items-center gap-2">
+                                                    Responsable Asignado
+                                                </Label>
                                                 <Controller
                                                     name="responsable"
                                                     control={control}
@@ -561,13 +596,13 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                             onValueChange={(value) => field.onChange(value === "0" ? 0 : Number(value))}
                                                             disabled={isSubmitting || loadingResponsables || (!user?.is_superuser && user?.id !== 1)}
                                                         >
-                                                            <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
+                                                            <SelectTrigger className="h-11 rounded-xl bg-white/50 dark:bg-slate-950/50 border-white/20 focus:border-blue-500 font-bold italic text-blue-600 dark:text-blue-400">
                                                                 <SelectValue placeholder={loadingResponsables ? "Cargando..." : "Seleccionar responsable"} />
                                                             </SelectTrigger>
-                                                            <SelectContent className="bg-slate-700 border-slate-600 max-h-300px">
-                                                                <SelectItem value="0" className="text-white">Sin responsable</SelectItem>
+                                                            <SelectContent className="rounded-xl border-white/10 dark:bg-slate-900/90 backdrop-blur-lg max-h-[300px]">
+                                                                <SelectItem value="0">Sin responsable</SelectItem>
                                                                 {responsables.map((resp) => (
-                                                                    <SelectItem key={resp.id} value={resp.id.toString()} className="text-white">
+                                                                    <SelectItem key={resp.id} value={resp.id.toString()}>
                                                                         {resp.nombre}
                                                                     </SelectItem>
                                                                 ))}
@@ -576,130 +611,77 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                     )}
                                                 />
                                             </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                        </CardContent>
+                                    </Card>
+                                </div>
 
-                                {/* Card 2: INFORMACIÓN LABORAL - row-start-2 */}
-                                <Card className="border-border bg-card/50 backdrop-blur-sm row-start-2 h-fit">
-                                    <CardHeader className="border-b border-border pb-3">
-                                        <CardTitle className="text-foreground text-lg">👔 Información Laboral</CardTitle>
-                                        <CardDescription className="text-muted-foreground">Régimen laboral de la empresa</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="pt-4">
-                                        <div className="grid grid-cols-1 gap-3">
-                                            {/* Régimen Laboral Tipo */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Tipo de Régimen Laboral</Label>
-                                                <Controller
-                                                    name="regimen_laboral_tipo"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <Select value={field.value || undefined} onValueChange={field.onChange}>
-                                                            <SelectTrigger className="bg-input border-border text-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm">
-                                                                <SelectValue placeholder="Seleccionar régimen" />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="bg-card border-border">
-                                                                {regimenesLaborales.map((regimen) => (
-                                                                    <SelectItem key={regimen.id} value={regimen.descripcion}>
-                                                                        {regimen.descripcion}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    )}
-                                                />
-                                            </div>
-
-                                            {/* Régimen Laboral Fecha */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Fecha de Acreditación</Label>
-                                                <Controller
-                                                    name="regimen_laboral_fecha"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <Input
-                                                            {...field}
-                                                            value={field.value || ""}
-                                                            type="date"
-                                                            disabled={isSubmitting}
-                                                            className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                        />
-                                                    )}
-                                                />
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {/* Card 3: DATOS ADICIONALES - row-start-2 */}
-                                <Card className="border-border bg-card/50 backdrop-blur-sm row-start-2 h-fit">
-                                    <CardHeader className="border-b border-border pb-3">
-                                        <CardTitle className="text-foreground text-lg">📊 Datos Adicionales</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="pt-4">
-                                        <div className="grid grid-cols-1 gap-3">
-                                            {/* Libros Societarios */}
-                                            <div>
-                                                <Label className="text-card-foreground font-semibold text-xs mb-2 block">Libros Societarios recomendados</Label>
-                                                <Controller
-                                                    name="libros_societarios"
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <div className="space-y-2 mt-2 border rounded-md p-3 bg-input/30">
-                                                            {librosDisponibles.length === 0 ? (
-                                                                <span className="text-xs text-muted-foreground">Cargando libros...</span>
-                                                            ) : (
-                                                                librosDisponibles.map(libro => (
-                                                                    <div key={libro.id} className="flex items-center space-x-2">
-                                                                        <Checkbox
-                                                                            id={`libro-${libro.id}`}
-                                                                            checked={(field.value || []).includes(libro.id)}
-                                                                            onCheckedChange={(checked) => {
-                                                                                const current = field.value || [];
-                                                                                const newVal = checked
-                                                                                    ? [...current, libro.id]
-                                                                                    : current.filter(id => id !== libro.id);
-                                                                                field.onChange(newVal);
-                                                                            }}
-                                                                            disabled={isSubmitting}
-                                                                            className="border-border bg-input"
-                                                                        />
-                                                                        <Label htmlFor={`libro-${libro.id}`} className="text-sm font-medium leading-none cursor-pointer">
-                                                                            {libro.nombre}
-                                                                        </Label>
-                                                                    </div>
-                                                                ))
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                />
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-2 mt-2">
-                                                {/* Selectivo Consumo */}
-                                                <div className="flex items-center mt-2 border p-2 rounded-md bg-input/20">
-                                                    <div className="flex items-center space-x-2">
-                                                        <Controller
-                                                            name="selectivo_consumo"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Checkbox
-                                                                    id="selectivo_consumo_chk"
-                                                                    checked={field.value}
-                                                                    onCheckedChange={field.onChange}
-                                                                    disabled={isSubmitting}
-                                                                    className="border-border bg-input"
-                                                                />
-                                                            )}
-                                                        />
-                                                        <Label htmlFor="selectivo_consumo_chk" className="text-slate-800 font-semibold text-xs cursor-pointer dark:text-slate-200">Selectivo Consumo</Label>
+                                {/* Centro y Derecha: Información Laboral, Adicionales y Credenciales (Col 5-12) */}
+                                <div className="lg:col-span-8 space-y-6 animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Card 2: Información Laboral */}
+                                        <Card className="border-white/10 bg-white/80 dark:bg-slate-900/40 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden hover:border-indigo-500/30 transition-all duration-300">
+                                            <CardHeader className="bg-gradient-to-r from-indigo-600/10 to-transparent border-b border-white/20 pb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-8 w-8 rounded-lg bg-indigo-600/20 flex items-center justify-center">
+                                                        <Briefcase className="h-4 w-4 text-indigo-600" />
                                                     </div>
+                                                    <CardTitle className="text-slate-900 dark:text-white text-lg font-black tracking-tight">Inf. Laboral</CardTitle>
                                                 </div>
+                                            </CardHeader>
+                                            <CardContent className="pt-6 space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm">Régimen Laboral</Label>
+                                                    <Controller
+                                                        name="regimen_laboral_tipo"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Select value={field.value || undefined} onValueChange={field.onChange}>
+                                                                <SelectTrigger className="h-10 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-indigo-500 font-bold">
+                                                                    <SelectValue placeholder="Seleccionar régimen" />
+                                                                </SelectTrigger>
+                                                                <SelectContent className="rounded-xl border-white/10 dark:bg-slate-900/90 backdrop-blur-lg">
+                                                                    {regimenesLaborales.map((regimen) => (
+                                                                        <SelectItem key={regimen.id} value={regimen.descripcion}>
+                                                                            {regimen.descripcion}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        )}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm">Acreditación</Label>
+                                                    <Controller
+                                                        name="regimen_laboral_fecha"
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <Input
+                                                                {...field}
+                                                                value={field.value || ""}
+                                                                type="date"
+                                                                disabled={isSubmitting}
+                                                                className="h-10 rounded-xl bg-white/70 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 focus:border-indigo-500 font-medium"
+                                                            />
+                                                        )}
+                                                    />
+                                                </div>
+                                            </CardContent>
+                                        </Card>
 
-                                                {/* Planilla */}
-                                                <div className="flex items-center mt-2 border p-2 rounded-md bg-input/20 bg-indigo-50/10 border-indigo-200/50">
-                                                    <div className="flex items-center space-x-2">
+                                        {/* Card 3: Datos Adicionales */}
+                                        <Card className="border-white/10 bg-white/80 dark:bg-slate-900/40 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden hover:border-cyan-500/30 transition-all duration-300">
+                                            <CardHeader className="bg-gradient-to-r from-cyan-600/10 to-transparent border-b border-white/20 pb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-8 w-8 rounded-lg bg-cyan-600/20 flex items-center justify-center">
+                                                        <FileText className="h-4 w-4 text-cyan-600" />
+                                                    </div>
+                                                    <CardTitle className="text-slate-900 dark:text-white text-lg font-black tracking-tight">Datos Adicionales</CardTitle>
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent className="pt-6 space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-indigo-500/5 border border-indigo-500/10">
                                                         <Controller
                                                             name="planilla"
                                                             control={control}
@@ -708,648 +690,291 @@ export function ClientForm({ client, onSuccess, open: constrainedOpen, onOpenCha
                                                                     id="planilla_chk"
                                                                     checked={field.value}
                                                                     onCheckedChange={field.onChange}
-                                                                    disabled={isSubmitting}
-                                                                    className="border-border bg-input"
                                                                 />
                                                             )}
                                                         />
-                                                        <Label htmlFor="planilla_chk" className="text-indigo-800 dark:text-indigo-300 font-semibold text-xs cursor-pointer">Registra Planilla</Label>
+                                                        <Label htmlFor="planilla_chk" className="text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer">Planilla</Label>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                                                        <Controller
+                                                            name="selectivo_consumo"
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <Checkbox
+                                                                    id="selectivo_chk"
+                                                                    checked={field.value}
+                                                                    onCheckedChange={field.onChange}
+                                                                />
+                                                            )}
+                                                        />
+                                                        <Label htmlFor="selectivo_chk" className="text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer">Selectivo Cons.</Label>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <Label className="text-slate-700 dark:text-slate-300 font-bold text-sm">Libros Societarios</Label>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {librosDisponibles.map((libro: ILibroSocietario) => (
+                                                            <div key={libro.id} className="flex items-center gap-2">
+                                                                <Checkbox
+                                                                    id={`libro-${libro.id}`}
+                                                                    checked={selectedLibros.includes(libro.id)}
+                                                                    onCheckedChange={() => handleLibroChange(libro.id)}
+                                                                />
+                                                                <Label htmlFor={`libro-${libro.id}`} className="text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer truncate">
+                                                                    {libro.nombre}
+                                                                </Label>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+
+                                    {/* Card 4: Credenciales (Tabs) */}
+                                    <Card className="border-white/10 bg-white/80 dark:bg-slate-900/40 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden hover:border-blue-500/20 transition-all duration-300">
+                                        <CardHeader className="bg-slate-900/5 dark:bg-white/5 border-b border-white/20 py-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-8 w-8 rounded-lg bg-slate-900/10 dark:bg-white/10 flex items-center justify-center">
+                                                        <Key className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+                                                    </div>
+                                                    <div>
+                                                        <CardTitle className="text-slate-900 dark:text-white text-lg font-black tracking-tight">Credenciales de Acceso</CardTitle>
+                                                        <CardDescription className="text-slate-500 text-xs font-medium">Gestión de accesos a plataformas oficiales</CardDescription>
                                                     </div>
                                                 </div>
                                             </div>
+                                        </CardHeader>
+                                        <CardContent className="p-0">
+                                            <Tabs defaultValue="sunat" className="w-full">
+                                                <TabsList className="w-full flex h-12 bg-slate-900/5 dark:bg-white/5 border-b border-white/10 rounded-none p-0">
+                                                    <TabsTrigger value="sunat" className="flex-1 h-full rounded-none data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-none border-r border-white/10 font-bold text-xs uppercase tracking-wider">SUNAT</TabsTrigger>
+                                                    <TabsTrigger value="laboral" className="flex-1 h-full rounded-none data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-none border-r border-white/10 font-bold text-xs uppercase tracking-wider">Laboral / Seg.</TabsTrigger>
+                                                    <TabsTrigger value="otros" className="flex-1 h-full rounded-none data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-none font-bold text-xs uppercase tracking-wider">Otros Accesos</TabsTrigger>
+                                                </TabsList>
 
-                                            {/* Estado */}
-
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {/* Card 4: CREDENCIALES - col-span-2 row-span-2 col-start-2 row-start-3 */}
-                                <Card className="border-border bg-card/50 backdrop-blur-sm col-span-2 row-span-2 col-start-2 row-start-3 h-fit">
-                                    <CardHeader className="border-b border-border pb-3">
-                                        <CardTitle className="text-foreground text-lg">🔐 Credenciales</CardTitle>
-                                        <CardDescription className="text-muted-foreground">Credenciales de acceso a sistemas</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="pt-4 space-y-4">
-                                        {/* SOL (SUNAT) */}
-                                        <div className="border-b border-border pb-3">
-                                            <div className="flex items-center space-x-2 mb-3">
-                                                <Checkbox
-                                                    id="enable-sol"
-                                                    checked={enableSol}
-                                                    onCheckedChange={(checked) => {
-                                                        setEnableSol(!!checked)
-                                                        if (!checked) {
-                                                            reset({
-                                                                ...control._formValues,
-                                                                credenciales: {
-                                                                    ...control._formValues.credenciales,
-                                                                    sol_usuario: undefined,
-                                                                    sol_clave: undefined,
-                                                                }
-                                                            })
-                                                        }
-                                                    }}
-                                                    className="border-border bg-input"
-                                                />
-                                                <Label htmlFor="enable-sol" className="text-card-foreground font-semibold text-sm cursor-pointer">
-                                                    SOL (SUNAT)
-                                                </Label>
-                                            </div>
-                                            {enableSol && (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Usuario SOL</Label>
-                                                        <Controller
-                                                            name="credenciales.sol_usuario"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    placeholder="Usuario"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
+                                                <TabsContent value="sunat" className="p-6 space-y-6 mt-0">
+                                                    {/* SOL (SUNAT) */}
+                                                    <div className={cn("space-y-4 transition-opacity", !enableSol && "opacity-50")}>
+                                                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                                                <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Acceso SOL</h4>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
+                                                                <Checkbox checked={enableSol} onCheckedChange={(val) => setEnableSol(!!val)} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div className="space-y-2">
+                                                                <Label className="text-xs font-bold text-slate-700 dark:text-slate-400">Usuario SOL</Label>
+                                                                <Controller
+                                                                    name="credenciales.sol_usuario"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <Input {...field} value={field.value || ""} disabled={!enableSol} placeholder="Usuario" className="h-10 rounded-xl bg-white/50 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 font-mono" />
+                                                                    )}
                                                                 />
-                                                            )}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave SOL</Label>
-                                                        <div className="relative">
-                                                            <Controller
-                                                                name="credenciales.sol_clave"
-                                                                control={control}
-                                                                render={({ field }) => (
-                                                                    <Input
-                                                                        {...field}
-                                                                        value={field.value || ""}
-                                                                        type={showPasswords["sol"] ? "text" : "password"}
-                                                                        placeholder="Contraseña"
-                                                                        disabled={isSubmitting}
-                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label className="text-xs font-bold text-slate-700 dark:text-slate-400">Clave SOL</Label>
+                                                                <div className="relative">
+                                                                    <Controller
+                                                                        name="credenciales.sol_clave"
+                                                                        control={control}
+                                                                        render={({ field }) => (
+                                                                            <Input {...field} value={field.value || ""} disabled={!enableSol} type={showPasswords["sol"] ? "text" : "password"} placeholder="Contraseña" className="h-10 rounded-xl bg-white/50 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 pr-10 font-mono" />
+                                                                        )}
                                                                     />
-                                                                )}
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => togglePasswordVisibility("sol")}
-                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                                                tabIndex={-1}
-                                                            >
-                                                                {showPasswords["sol"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                                            </button>
+                                                                    <button type="button" onClick={() => enableSol && togglePasswordVisibility("sol")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-500"><Eye className="h-4 w-4" /></button>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </div>
 
-                                        {/* Detracción */}
-                                        <div className="border-b border-border pb-3">
-                                            <div className="flex items-center space-x-2 mb-3">
-                                                <Checkbox
-                                                    id="enable-detraccion"
-                                                    checked={enableDetraccion}
-                                                    onCheckedChange={(checked) => {
-                                                        setEnableDetraccion(!!checked)
-                                                        if (!checked) {
-                                                            reset({
-                                                                ...control._formValues,
-                                                                credenciales: {
-                                                                    ...control._formValues.credenciales,
-                                                                    detraccion_cuenta: undefined,
-                                                                    detraccion_usuario: undefined,
-                                                                    detraccion_clave: undefined,
-                                                                }
-                                                            })
-                                                        }
-                                                    }}
-                                                    className="border-border bg-input"
-                                                />
-                                                <Label htmlFor="enable-detraccion" className="text-card-foreground font-semibold text-sm cursor-pointer">
-                                                    Detracción
-                                                </Label>
-                                            </div>
-                                            {enableDetraccion && (
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-6">
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Cuenta</Label>
-                                                        <Controller
-                                                            name="credenciales.detraccion_cuenta"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    placeholder="Cuenta"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
+                                                    {/* Detracción */}
+                                                    <div className={cn("space-y-4 transition-opacity", !enableDetraccion && "opacity-50")}>
+                                                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                                                <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Cuenta Detracción</h4>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
+                                                                <Checkbox checked={enableDetraccion} onCheckedChange={(val) => setEnableDetraccion(!!val)} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                            <div className="space-y-2">
+                                                                <Label className="text-xs font-bold text-slate-700 dark:text-slate-400">Nº Cuenta</Label>
+                                                                <Controller
+                                                                    name="credenciales.detraccion_cuenta"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <Input {...field} value={field.value || ""} disabled={!enableDetraccion} placeholder="00-000-000000" className="h-10 rounded-xl bg-white/50 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 font-mono" />
+                                                                    )}
                                                                 />
-                                                            )}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">DNI</Label>
-                                                        <Controller
-                                                            name="credenciales.detraccion_usuario"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    placeholder="DNI"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label className="text-xs font-bold text-slate-700 dark:text-slate-400">DNI / Usuario</Label>
+                                                                <Controller
+                                                                    name="credenciales.detraccion_usuario"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <Input {...field} value={field.value || ""} disabled={!enableDetraccion} placeholder="DNI" className="h-10 rounded-xl bg-white/50 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 font-mono" />
+                                                                    )}
                                                                 />
-                                                            )}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave</Label>
-                                                        <div className="relative">
-                                                            <Controller
-                                                                name="credenciales.detraccion_clave"
-                                                                control={control}
-                                                                render={({ field }) => (
-                                                                    <Input
-                                                                        {...field}
-                                                                        value={field.value || ""}
-                                                                        type={showPasswords["detraccion"] ? "text" : "password"}
-                                                                        placeholder="Contraseña"
-                                                                        disabled={isSubmitting}
-                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label className="text-xs font-bold text-slate-700 dark:text-slate-400">Clave</Label>
+                                                                <div className="relative">
+                                                                    <Controller
+                                                                        name="credenciales.detraccion_clave"
+                                                                        control={control}
+                                                                        render={({ field }) => (
+                                                                            <Input {...field} value={field.value || ""} disabled={!enableDetraccion} type={showPasswords["detraccion"] ? "text" : "password"} placeholder="****" className="h-10 rounded-xl bg-white/50 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 pr-10 font-mono" />
+                                                                        )}
                                                                     />
-                                                                )}
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => togglePasswordVisibility("detraccion")}
-                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                                                tabIndex={-1}
-                                                            >
-                                                                {showPasswords["detraccion"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                                            </button>
+                                                                    <button type="button" onClick={() => enableDetraccion && togglePasswordVisibility("detraccion")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500"><Eye className="h-4 w-4" /></button>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </div>
+                                                </TabsContent>
 
-                                        {/* INEI */}
-                                        <div className="border-b border-border pb-3">
-                                            <div className="flex items-center space-x-2 mb-3">
-                                                <Checkbox
-                                                    id="enable-inei"
-                                                    checked={enableInei}
-                                                    onCheckedChange={(checked) => {
-                                                        setEnableInei(!!checked)
-                                                        if (!checked) {
-                                                            reset({
-                                                                ...control._formValues,
-                                                                credenciales: {
-                                                                    ...control._formValues.credenciales,
-                                                                    inei_usuario: undefined,
-                                                                    inei_clave: undefined,
-                                                                }
-                                                            })
-                                                        }
-                                                    }}
-                                                    className="border-border bg-input"
-                                                />
-                                                <Label htmlFor="enable-inei" className="text-card-foreground font-semibold text-sm cursor-pointer">
-                                                    INEI
-                                                </Label>
-                                            </div>
-                                            {enableInei && (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Usuario INEI</Label>
-                                                        <Controller
-                                                            name="credenciales.inei_usuario"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    placeholder="Usuario"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                                />
-                                                            )}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave INEI</Label>
-                                                        <div className="relative">
-                                                            <Controller
-                                                                name="credenciales.inei_clave"
-                                                                control={control}
-                                                                render={({ field }) => (
-                                                                    <Input
-                                                                        {...field}
-                                                                        value={field.value || ""}
-                                                                        type={showPasswords["inei"] ? "text" : "password"}
-                                                                        placeholder="Contraseña"
-                                                                        disabled={isSubmitting}
-                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
-                                                                    />
-                                                                )}
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => togglePasswordVisibility("inei")}
-                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                                                tabIndex={-1}
-                                                            >
-                                                                {showPasswords["inei"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                                            </button>
+                                                <TabsContent value="laboral" className="p-6 space-y-6 mt-0">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        {/* AFP Net */}
+                                                        <div className={cn("space-y-3 p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 transition-opacity", !enableAfpNet && "opacity-50")}>
+                                                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+                                                                <Label className="text-sm font-black text-slate-800 dark:text-slate-200">AFP Net</Label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
+                                                                    <Checkbox checked={enableAfpNet} onCheckedChange={(val) => setEnableAfpNet(!!val)} />
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Controller name="credenciales.afp_net_usuario" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableAfpNet} placeholder="Usuario" className="h-9 text-sm rounded-lg" />} />
+                                                                <Controller name="credenciales.afp_net_clave" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableAfpNet} type={showPasswords["afp_net"] ? "text" : "password"} placeholder="Clave" className="h-9 text-sm rounded-lg" />} />
+                                                            </div>
+                                                        </div>
+                                                        {/* Viva Essalud */}
+                                                        <div className={cn("space-y-3 p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 transition-opacity", !enableVivaEssalud && "opacity-50")}>
+                                                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+                                                                <Label className="text-sm font-black text-slate-800 dark:text-slate-200">Viva Essalud</Label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
+                                                                    <Checkbox checked={enableVivaEssalud} onCheckedChange={(val) => setEnableVivaEssalud(!!val)} />
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Controller name="credenciales.viva_essalud_usuario" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableVivaEssalud} placeholder="Usuario" className="h-9 text-sm rounded-lg" />} />
+                                                                <Controller name="credenciales.viva_essalud_clave" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableVivaEssalud} type={showPasswords["viva_essalud"] ? "text" : "password"} placeholder="Clave" className="h-9 text-sm rounded-lg" />} />
+                                                            </div>
+                                                        </div>
+                                                        {/* SIS */}
+                                                        <div className={cn("space-y-3 p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 col-span-1 md:col-span-2 transition-opacity", !enableSis && "opacity-50")}>
+                                                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+                                                                <Label className="text-sm font-black text-slate-800 dark:text-slate-200">SIS (Salud)</Label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
+                                                                    <Checkbox checked={enableSis} onCheckedChange={(val) => setEnableSis(!!val)} />
+                                                                </div>
+                                                            </div>
+                                                            <div className="max-w-xs">
+                                                                <Controller name="credenciales.sis_clave" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableSis} type={showPasswords["sis"] ? "text" : "password"} placeholder="Clave SIS" className="h-9 text-sm rounded-lg" />} />
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </div>
+                                                </TabsContent>
 
-                                        {/* AFP Net */}
-                                        <div className="border-b border-border pb-3">
-                                            <div className="flex items-center space-x-2 mb-3">
-                                                <Checkbox
-                                                    id="enable-afp"
-                                                    checked={enableAfpNet}
-                                                    onCheckedChange={(checked) => {
-                                                        setEnableAfpNet(!!checked)
-                                                        if (!checked) {
-                                                            reset({
-                                                                ...control._formValues,
-                                                                credenciales: {
-                                                                    ...control._formValues.credenciales,
-                                                                    afp_net_usuario: undefined,
-                                                                    afp_net_clave: undefined,
-                                                                }
-                                                            })
-                                                        }
-                                                    }}
-                                                    className="border-border bg-input"
-                                                />
-                                                <Label htmlFor="enable-afp" className="text-card-foreground font-semibold text-sm cursor-pointer">
-                                                    AFP Net
-                                                </Label>
-                                            </div>
-                                            {enableAfpNet && (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Usuario AFP Net</Label>
-                                                        <Controller
-                                                            name="credenciales.afp_net_usuario"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    placeholder="Usuario"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                                />
-                                                            )}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave AFP Net</Label>
-                                                        <div className="relative">
-                                                            <Controller
-                                                                name="credenciales.afp_net_clave"
-                                                                control={control}
-                                                                render={({ field }) => (
-                                                                    <Input
-                                                                        {...field}
-                                                                        value={field.value || ""}
-                                                                        type={showPasswords["afp_net"] ? "text" : "password"}
-                                                                        placeholder="Contraseña"
-                                                                        disabled={isSubmitting}
-                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
-                                                                    />
-                                                                )}
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => togglePasswordVisibility("afp_net")}
-                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                                                tabIndex={-1}
-                                                            >
-                                                                {showPasswords["afp_net"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                                            </button>
+                                                <TabsContent value="otros" className="p-6 space-y-6 mt-0">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        {/* INEI */}
+                                                        <div className={cn("space-y-3 p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 transition-opacity", !enableInei && "opacity-50")}>
+                                                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+                                                                <Label className="text-sm font-black text-slate-800 dark:text-slate-200">INEI</Label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
+                                                                    <Checkbox checked={enableInei} onCheckedChange={(val) => setEnableInei(!!val)} />
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-2">
+                                                                <Controller name="credenciales.inei_usuario" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableInei} placeholder="U" className="h-9 text-sm font-mono" />} />
+                                                                <Controller name="credenciales.inei_clave" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableInei} type={showPasswords["inei"] ? "text" : "password"} placeholder="C" className="h-9 text-sm font-mono" />} />
+                                                            </div>
+                                                        </div>
+
+                                                        {/* PE */}
+                                                        <div className={cn("space-y-3 p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 transition-opacity", !enablePe && "opacity-50")}>
+                                                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+                                                                <Label className="text-sm font-black text-slate-800 dark:text-slate-200">Partida Electrónica</Label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
+                                                                    <Checkbox checked={enablePe} onCheckedChange={(val) => setEnablePe(!!val)} />
+                                                                </div>
+                                                            </div>
+                                                            <Controller name="credenciales.pe" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enablePe} placeholder="Nº Partida" className="h-9 text-sm font-mono" />} />
+                                                        </div>
+
+                                                        {/* OSCE */}
+                                                        <div className={cn("space-y-3 p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 transition-opacity", !enableOsce && "opacity-50")}>
+                                                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+                                                                <Label className="text-sm font-black text-slate-800 dark:text-slate-200">Clave OSCE</Label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
+                                                                    <Checkbox checked={enableOsce} onCheckedChange={(val) => setEnableOsce(!!val)} />
+                                                                </div>
+                                                            </div>
+                                                            <Controller name="credenciales.clave_osce" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableOsce} type={showPasswords["osce"] ? "text" : "password"} placeholder="Contraseña" className="h-9 text-sm font-mono" />} />
+                                                        </div>
+
+                                                        {/* SENCICO */}
+                                                        <div className={cn("space-y-3 p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 transition-opacity", !enableSencico && "opacity-50")}>
+                                                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+                                                                <Label className="text-sm font-black text-slate-800 dark:text-slate-200">Clave SENCICO</Label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Activar</Label>
+                                                                    <Checkbox checked={enableSencico} onCheckedChange={(val) => setEnableSencico(!!val)} />
+                                                                </div>
+                                                            </div>
+                                                            <Controller name="credenciales.clave_sencico" control={control} render={({ field }) => <Input {...field} value={field.value || ""} disabled={!enableSencico} type={showPasswords["sencico"] ? "text" : "password"} placeholder="Contraseña" className="h-9 text-sm font-mono" />} />
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Viva Essalud */}
-                                        <div className="border-b border-border pb-3">
-                                            <div className="flex items-center space-x-2 mb-3">
-                                                <Checkbox
-                                                    id="enable-essalud"
-                                                    checked={enableVivaEssalud}
-                                                    onCheckedChange={(checked) => {
-                                                        setEnableVivaEssalud(!!checked)
-                                                        if (!checked) {
-                                                            reset({
-                                                                ...control._formValues,
-                                                                credenciales: {
-                                                                    ...control._formValues.credenciales,
-                                                                    viva_essalud_usuario: undefined,
-                                                                    viva_essalud_clave: undefined,
-                                                                }
-                                                            })
-                                                        }
-                                                    }}
-                                                    className="border-border bg-input"
-                                                />
-                                                <Label htmlFor="enable-essalud" className="text-card-foreground font-semibold text-sm cursor-pointer">
-                                                    Viva Essalud
-                                                </Label>
-                                            </div>
-                                            {enableVivaEssalud && (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Usuario Viva Essalud</Label>
-                                                        <Controller
-                                                            name="credenciales.viva_essalud_usuario"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    placeholder="Usuario"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                                />
-                                                            )}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave Viva Essalud</Label>
-                                                        <div className="relative">
-                                                            <Controller
-                                                                name="credenciales.viva_essalud_clave"
-                                                                control={control}
-                                                                render={({ field }) => (
-                                                                    <Input
-                                                                        {...field}
-                                                                        value={field.value || ""}
-                                                                        type={showPasswords["viva_essalud"] ? "text" : "password"}
-                                                                        placeholder="Contraseña"
-                                                                        disabled={isSubmitting}
-                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
-                                                                    />
-                                                                )}
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => togglePasswordVisibility("viva_essalud")}
-                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                                                tabIndex={-1}
-                                                            >
-                                                                {showPasswords["viva_essalud"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* PE */}
-
-                                        <div className="border-b border-border pb-3">
-                                            <div className="flex items-center space-x-2 mb-3">
-                                                <Checkbox
-                                                    id="enable-pe"
-                                                    checked={enablePe}
-                                                    onCheckedChange={(checked) => {
-                                                        setEnablePe(!!checked)
-                                                        if (!checked) {
-                                                            reset({
-                                                                ...control._formValues,
-                                                                credenciales: {
-                                                                    ...control._formValues.credenciales,
-                                                                    pe: undefined,
-                                                                }
-                                                            })
-                                                        }
-                                                    }}
-                                                    className="border-border bg-input"
-                                                />
-                                                <Label htmlFor="enable-pe" className="text-card-foreground font-semibold text-sm cursor-pointer">
-                                                    PE (Partida Electrónica)
-                                                </Label>
-                                            </div>
-                                            {enablePe && (
-                                                <div className="ml-6">
-                                                    <Label className="text-card-foreground font-semibold text-xs mb-2 block">Código PE</Label>
-                                                    <Controller
-                                                        name="credenciales.pe"
-                                                        control={control}
-                                                        render={({ field }) => (
-                                                            <Input
-                                                                {...field}
-                                                                value={field.value || ""}
-                                                                placeholder="Código"
-                                                                disabled={isSubmitting}
-                                                                className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm"
-                                                            />
-                                                        )}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* SIS (Sistema Integrado de Salud) */}
-                                        <div className="border-b border-border pb-3">
-                                            <div className="flex items-center space-x-2 mb-3">
-                                                <Checkbox
-                                                    id="enable-sis"
-                                                    checked={enableSis}
-                                                    onCheckedChange={(checked) => {
-                                                        setEnableSis(!!checked)
-                                                        if (!checked) {
-                                                            reset({
-                                                                ...control._formValues,
-                                                                credenciales: {
-                                                                    ...control._formValues.credenciales,
-                                                                    sis_usuario: undefined,
-                                                                    sis_clave: undefined,
-                                                                }
-                                                            })
-                                                        }
-                                                    }}
-                                                    className="border-border bg-input"
-                                                />
-                                                <Label htmlFor="enable-sis" className="text-card-foreground font-semibold text-sm cursor-pointer">
-                                                    SIS (Sistema Integrado de Salud)
-                                                </Label>
-                                            </div>
-                                            {enableSis && (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
-                                                    <div>
-                                                        <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave SIS</Label>
-                                                        <div className="relative">
-                                                            <Controller
-                                                                name="credenciales.sis_clave"
-                                                                control={control}
-                                                                render={({ field }) => (
-                                                                    <Input
-                                                                        {...field}
-                                                                        value={field.value || ""}
-                                                                        type={showPasswords["sis"] ? "text" : "password"}
-                                                                        placeholder="Contraseña"
-                                                                        disabled={isSubmitting}
-                                                                        className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
-                                                                    />
-                                                                )}
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => togglePasswordVisibility("sis")}
-                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                                                tabIndex={-1}
-                                                            >
-                                                                {showPasswords["sis"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                        {/* OSCE */}
-                                        <div className="border-b border-border pb-3">
-                                            <div className="flex items-center space-x-2 mb-3">
-                                                <Checkbox
-                                                    id="enable-osce"
-                                                    checked={enableOsce}
-                                                    onCheckedChange={(checked) => {
-                                                        setEnableOsce(!!checked)
-                                                        if (!checked) {
-                                                            reset({
-                                                                ...control._formValues,
-                                                                credenciales: {
-                                                                    ...control._formValues.credenciales,
-                                                                    clave_osce: undefined,
-                                                                }
-                                                            })
-                                                        }
-                                                    }}
-                                                    className="border-border bg-input"
-                                                />
-                                                <Label htmlFor="enable-osce" className="text-card-foreground font-semibold text-sm cursor-pointer">
-                                                    OSCE
-                                                </Label>
-                                            </div>
-                                            {enableOsce && (
-                                                <div className="ml-6 max-w-sm">
-                                                    <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave OSCE</Label>
-                                                    <div className="relative">
-                                                        <Controller
-                                                            name="credenciales.clave_osce"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    type={showPasswords["osce"] ? "text" : "password"}
-                                                                    placeholder="Contraseña"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
-                                                                />
-                                                            )}
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => togglePasswordVisibility("osce")}
-                                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                                            tabIndex={-1}
-                                                        >
-                                                            {showPasswords["osce"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* SENCICO */}
-                                        <div className="pb-3">
-                                            <div className="flex items-center space-x-2 mb-3">
-                                                <Checkbox
-                                                    id="enable-sencico"
-                                                    checked={enableSencico}
-                                                    onCheckedChange={(checked) => {
-                                                        setEnableSencico(!!checked)
-                                                        if (!checked) {
-                                                            reset({
-                                                                ...control._formValues,
-                                                                credenciales: {
-                                                                    ...control._formValues.credenciales,
-                                                                    clave_sencico: undefined,
-                                                                }
-                                                            })
-                                                        }
-                                                    }}
-                                                    className="border-border bg-input"
-                                                />
-                                                <Label htmlFor="enable-sencico" className="text-card-foreground font-semibold text-sm cursor-pointer">
-                                                    SENCICO
-                                                </Label>
-                                            </div>
-                                            {enableSencico && (
-                                                <div className="ml-6 max-w-sm">
-                                                    <Label className="text-card-foreground font-semibold text-xs mb-2 block">Clave SENCICO</Label>
-                                                    <div className="relative">
-                                                        <Controller
-                                                            name="credenciales.clave_sencico"
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <Input
-                                                                    {...field}
-                                                                    value={field.value || ""}
-                                                                    type={showPasswords["sencico"] ? "text" : "password"}
-                                                                    placeholder="Contraseña"
-                                                                    disabled={isSubmitting}
-                                                                    className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all hover:bg-input/80 h-9 text-sm pr-10"
-                                                                />
-                                                            )}
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => togglePasswordVisibility("sencico")}
-                                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                                            tabIndex={-1}
-                                                        >
-                                                            {showPasswords["sencico"] ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                                </TabsContent>
+                                            </Tabs>
+                                        </CardContent>
+                                    </Card>
+                                </div>
                             </div>
 
                             {/* Botones de acción */}
-                            <div className="flex justify-end gap-3 pt-3 border-t border-gray-300">
+                            <div className="flex justify-end gap-3 pt-6 border-t border-white/10">
                                 <Button
                                     type="button"
-                                    variant="outline"
+                                    variant="ghost"
                                     onClick={() => setIsOpen?.(false)}
                                     disabled={isSubmitting}
-                                    className="border-slate-600 text-slate-800 hover:bg-slate-800 dark:text-slate-200"
+                                    className="px-6 h-11 rounded-xl font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
                                 >
                                     Cancelar
                                 </Button>
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                                    className="px-8 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black shadow-lg shadow-blue-500/30 transition-all active:scale-95"
                                 >
-                                    {isSubmitting ? "Guardando..." : "Guardar"}
+                                    {isSubmitting ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            <span>Guardando...</span>
+                                        </div>
+                                    ) : (
+                                        "Guardar Cliente"
+                                    )}
                                 </Button>
                             </div>
                         </form>

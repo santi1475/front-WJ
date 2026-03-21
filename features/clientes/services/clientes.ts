@@ -8,6 +8,7 @@ import type {
 import type {
   PaginatedResponse,
   ICRUDService,
+  ListFilters,
 } from "@/features/shared/types/entities";
 import type { AxiosError } from "axios";
 
@@ -19,7 +20,7 @@ export interface IClientStats {
   pendientes_declaracion: number;
 }
 
-export interface IClientFilters {
+export interface IClientFilters extends ListFilters {
   page?: number;
   page_size?: number;
   search?: string;
@@ -27,7 +28,11 @@ export interface IClientFilters {
   estado?: boolean;
   categoria?: "A" | "B" | "C" | "N/T";
   regimen_tributario?: RegimenTributario;
-  responsable?: number;
+  responsable?: string; 
+  regimen_laboral_tipo?: string;
+  ultimo_digito_ruc?: string;
+  libros_societarios?: number;
+  selectivo_consumo?: string; 
 }
 
 export interface IClientServiceError {

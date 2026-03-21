@@ -26,6 +26,20 @@ export const ROUTES = {
     path: "/dashboard/clientes",
     label: "Clientes",
     icon: "Users",
+    children: [
+      {
+        path: "/dashboard/clientes",
+        label: "Todos los Clientes",
+        icon: "Users",
+        permissions: [UserPermission.VIEW_CLIENTE],
+      },
+      {
+        path: "/dashboard/clientes/filtros",
+        label: "Filtros Avanzados",
+        icon: "SlidersHorizontal",
+        permissions: [UserPermission.CAN_USE_ADVANCED_FILTERS],
+      },
+    ],
     permissions: [UserPermission.VIEW_CLIENTE, UserPermission.ADD_CLIENTE],
   } as const satisfies RouteConfig,
 
@@ -81,6 +95,7 @@ export const PROTECTED_ROUTES = [
   ROUTES.FACTURAS.path,
   ROUTES.REPORTES.path,
   ROUTES.CONFIGURACION.path,
+  "/dashboard/clientes/filtros",
   "/dashboard/configuracion/roles",
   "/dashboard/configuracion/usuarios",
 ];

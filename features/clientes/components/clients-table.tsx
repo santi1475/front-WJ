@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { clientesService } from "../services/clientes"
 import type { ICliente } from "@/features/shared/types"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "./client-form"
 import { CredentialsViewer } from "./credentials-viewer"
-import { Loader2, Plus, Search, Key, X, Check, ArrowBigDownDash } from "lucide-react"
+import { Loader2, Plus, Search, Key, X, Check, ArrowBigDownDash, RefreshCw, Hash, User, ShieldCheck, Briefcase, LayoutGrid, Info } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { useDebounce } from "@/hooks/use-debounce"
@@ -121,7 +121,6 @@ export function ClientsTable() {
         } catch (error) {
             console.error("Error al obtener credenciales del cliente:", error)
             toast.error("Error al cargar las credenciales del cliente", { position: "bottom-right" })
-            // Fallback
             setSelectedCredentialsClient(client)
             setIsCredentialsModalOpen(true)
         } finally {
@@ -139,10 +138,8 @@ export function ClientsTable() {
         const allVisibleSelected = visibleRucs.every(ruc => selectedRucs.includes(ruc));
 
         if (allVisibleSelected) {
-            // Remover los visibles de la selección total
             setSelectedRucs(prev => prev.filter(r => !visibleRucs.includes(r)))
         } else {
-            // Añadir los visibles a la selección que no estén todavía
             setSelectedRucs(prev => {
                 const newSelection = [...prev];
                 visibleRucs.forEach(r => {
@@ -198,7 +195,6 @@ export function ClientsTable() {
             setIsExportingAll(true)
             toastId = toast.loading("Generando Excel con todos los clientes de la base...", { position: "bottom-right" })
 
-            // Quitamos el searchterm para que traiga la base limpia
             const blob = await clientesService.exportAll()
 
             const url = window.URL.createObjectURL(blob)
@@ -273,232 +269,311 @@ export function ClientsTable() {
     }
 
     return (
-        <div className="space-y-4">
-            {/* Search and Actions */}
-            <div className="flex gap-2">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="space-y-6 pt-2">
+            {/* Search and Actions with Glassmorphism */}
+            <div className="flex flex-col md:flex-row gap-4 items-center bg-white/40 dark:bg-slate-900/40 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-md shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="flex-1 relative w-full group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                     <Input
-                        placeholder="Buscar por razón social o propietario..."
+                        placeholder="Buscar por razón social, RUC o propietario..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-muted/50 border-input focus:bg-background dark:bg-slate-950 dark:border-slate-700 dark:text-white"
+                        className="pl-12 h-12 bg-white/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all font-medium text-slate-900 dark:text-white"
                         disabled={isSelectionMode}
                     />
                 </div>
 
-                {isSelectionMode ? (
-                    <>
-                        <Button
-                            onClick={handleExport}
-                            disabled={isExporting || selectedRucs.length === 0}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                            {isExporting ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            ) : (
-                                <Check className="h-4 w-4 mr-2" />
-                            )}
-                            Confirmar ({selectedRucs.length})
-                        </Button>
-                        <Button
-                            onClick={toggleSelectionMode}
-                            variant="destructive"
-                            disabled={isExporting}
-                        >
-                            <X className="h-4 w-4 mr-2" />
-                            Cancelar
-                        </Button>
-                    </>
-                ) : (
-                    <>
-                        <ExcelButton
-                            onExportAll={() => setIsExportConfirmOpen(true)}
-                            onClickExportResponsible={() => setIsResponsableModalOpen(true)}
-                            onClickManual={toggleSelectionMode}
-                            isSelectionMode={isSelectionMode}
-                            isExportingAll={isExportingAll}
-                        />
-                        <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 text-white">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Nuevo Cliente
-                        </Button>
-                        <Button
-                            onClick={handleRefresh}
-                            variant="outline"
-                            className="border-input hover:bg-muted dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:bg-transparent"
-                        >
-                            Actualizar
-                        </Button>
-                    </>
-                )}
+                <div className="flex flex-wrap gap-3 w-full md:w-auto">
+                    {isSelectionMode ? (
+                        <>
+                            <Button
+                                onClick={handleExport}
+                                disabled={isExporting || selectedRucs.length === 0}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-11 px-6 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+                            >
+                                {isExporting ? (
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Check className="h-4 w-4 mr-2" />
+                                )}
+                                Exportar ({selectedRucs.length})
+                            </Button>
+                            <Button
+                                onClick={toggleSelectionMode}
+                                variant="outline"
+                                disabled={isExporting}
+                                className="rounded-xl h-11 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                            >
+                                <X className="h-4 w-4 mr-2" />
+                                Cancelar
+                            </Button>
+                        </>
+                    ) : (
+                        <div className="flex flex-wrap gap-2 w-full justify-end">
+                            <ExcelButton
+                                onExportAll={() => setIsExportConfirmOpen(true)}
+                                onClickExportResponsible={() => setIsResponsableModalOpen(true)}
+                                onClickManual={toggleSelectionMode}
+                                isSelectionMode={isSelectionMode}
+                                isExportingAll={isExportingAll}
+                            />
+                            <Button
+                                onClick={handleCreate}
+                                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-11 px-6 shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Nuevo Cliente
+                            </Button>
+                            <Button
+                                onClick={handleRefresh}
+                                variant="ghost"
+                                className="rounded-xl h-11 w-11 p-0 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                                title="Actualizar datos"
+                            >
+                                <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
+                            </Button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Error Message */}
-            {error && <div className="p-3 bg-red-900/20 border border-red-700/50 rounded text-red-400 text-sm">{error}</div>}
-
-            {/* Table */}
-            <div className="overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="hover:bg-transparent">
-                            {isSelectionMode && (
-                                <TableHead className="w-50px text-muted-foreground">
-                                    <Checkbox
-                                        checked={filteredClients.length > 0 && filteredClients.every(c => selectedRucs.includes(c.ruc))}
-                                        onCheckedChange={toggleSelectAll}
-                                        className="border-border bg-input"
-                                    />
-                                </TableHead>
-                            )}
-                            <TableHead className="w-50px text-muted-foreground">N°</TableHead>
-                            <TableHead className="text-muted-foreground">RUC</TableHead>
-                            <TableHead className="text-muted-foreground text-center" title="Último Dígito">Últ.</TableHead>
-                            <TableHead className="text-muted-foreground">Razón Social</TableHead>
-                            <TableHead className="text-muted-foreground text-center">Propietario</TableHead>
-                            <TableHead className="text-muted-foreground text-center">Codigo de control</TableHead>
-                            <TableHead className="text-muted-foreground text-center">Responsable</TableHead>
-                            <TableHead className="text-muted-foreground text-center">Régimen Tributario</TableHead>
-                            <TableHead className="text-muted-foreground text-center">Régimen Laboral</TableHead>
-                            <TableHead className="text-muted-foreground text-center">Categoria</TableHead>
-                            <TableHead className="text-muted-foreground text-center">Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading && clients.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={isSelectionMode ? 13 : 12} className="text-center py-8">
-                                    <div className="flex justify-center flex-col items-center gap-2">
-                                        <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
-                                        <span className="text-sm text-muted-foreground">Buscando clientes...</span>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ) : filteredClients.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={isSelectionMode ? 13 : 12} className="text-center text-muted-foreground py-8">
-                                    No hay clientes que coincidan con la búsqueda
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            filteredClients.map((client, index) => (
-                                <TableRow
-                                    key={client.ruc}
-                                    className="hover:bg-muted/70 cursor-pointer"
-                                    onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
-                                >
-                                    {isSelectionMode && (
-                                        <TableCell className="w-50px">
-                                            <Checkbox
-                                                checked={selectedRucs.includes(client.ruc)}
-                                                onCheckedChange={() => toggleSelectClient(client.ruc)}
-                                                className="border-border bg-input"
-                                            />
-                                        </TableCell>
-                                    )}
-                                    <TableCell className="text-muted-foreground">{(currentPage - 1) * 50 + index + 1}</TableCell>
-                                    <TableCell className="font-mono text-blue-600 font-medium dark:text-blue-400">
-                                        <HighlightedText text={client.ruc} highlight={searchTerm} />
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        {client.ultimo_digito_ruc ? (
-                                            <Badge variant="outline" className="font-mono text-xs w-6 h-6 p-0 inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
-                                                {client.ultimo_digito_ruc}
-                                            </Badge>
-                                        ) : (
-                                            <span className="text-muted-foreground">-</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="font-medium text-foreground">
-                                        <HighlightedText text={client.razon_social} highlight={searchTerm} />
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground text-center">
-                                        <HighlightedText text={client.propietario} highlight={searchTerm} />
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground text-center">{client.codigo_control || "-"}</TableCell>
-                                    <TableCell className="text-muted-foreground text-center">
-                                        {client.responsable_info?.nombre || "-"}
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <Badge variant="secondary">
-                                            {client.regimen_tributario}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <Badge variant="secondary" className={!client.regimen_laboral_tipo || client.regimen_laboral_tipo === "none" ? "opacity-50" : ""}>
-                                            {client.regimen_laboral_tipo && client.regimen_laboral_tipo !== "none" ? client.regimen_laboral_tipo : "No asignado"}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <Badge className={(categoriaConfig[client.categoria] || categoriaConfig.default).className} variant="outline">
-                                            {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <div className="flex justify-center gap-2">
-                                            <Button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleViewCredentials(client);
-                                                }}
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-yellow-400 hover:bg-yellow-900/20"
-                                                title="Ver credenciales"
-                                                disabled={fetchingCredentialsId === client.ruc}
-                                            >
-                                                {fetchingCredentialsId === client.ruc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
-                                            </Button>
-                                            <Button
-                                                onClick={() => handleDeactivate(client)}
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-red-400 hover:bg-red-900/20"
-                                                title="Dar de baja"
-                                            >
-                                                <ArrowBigDownDash className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-
-            {/* Pagination Controls */}
-            {(!loading && clients.length > 0) && (
-                <div className="flex items-center justify-between border-t pt-4 mt-4 text-sm w-full dark:border-slate-800">
-                    <div className="flex-1 text-muted-foreground mr-4">
-                        Página {currentPage}
-                    </div>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => fetchClients(prevUrl!, currentPage - 1)}
-                            disabled={!prevUrl || isPaginating}
-                            className={isPaginating && prevUrl ? "opacity-50" : ""}
-                        >
-                            {isPaginating && prevUrl ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
-                            Anterior
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => fetchClients(nextUrl!, currentPage + 1)}
-                            disabled={!nextUrl || isPaginating}
-                            className={isPaginating && nextUrl ? "opacity-50" : ""}
-                        >
-                            Siguiente
-                            {isPaginating && nextUrl ? <Loader2 className="h-4 w-4 ml-1 animate-spin" /> : null}
-                        </Button>
+            {error && (
+                <div className="p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 rounded-xl text-rose-600 dark:text-rose-400 text-sm font-semibold animate-in zoom-in duration-300">
+                    <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-5 w-5" />
+                        {error}
                     </div>
                 </div>
             )}
 
-            {/* Client Form Modal */}
+            {/* Premium Table Container */}
+            <div className="bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 fill-mode-both">
+                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
+                    <Table>
+                        <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
+                            <TableRow className="hover:bg-transparent border-b border-slate-200 dark:border-slate-800">
+                                {isSelectionMode && (
+                                    <TableHead className="w-12 text-center">
+                                        <Checkbox
+                                            checked={filteredClients.length > 0 && filteredClients.every(c => selectedRucs.includes(c.ruc))}
+                                            onCheckedChange={toggleSelectAll}
+                                            className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                                        />
+                                    </TableHead>
+                                )}
+                                <TableHead className="w-12 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+                                    <div className="flex items-center justify-center gap-1">
+                                        <Hash className="h-3 w-3" />
+                                    </div>
+                                </TableHead>
+                                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">RUC / ID</TableHead>
+                                <TableHead className="w-12 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Dig.</TableHead>
+                                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest min-w-[250px]">Razón Social / Propietario</TableHead>
+                                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Control</TableHead>
+                                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Responsable</TableHead>
+                                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Tributación</TableHead>
+                                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Laboral</TableHead>
+                                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Cat.</TableHead>
+                                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Acciones</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {loading && clients.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={isSelectionMode ? 11 : 10} className="text-center py-20">
+                                        <div className="flex flex-col items-center gap-4">
+                                            <div className="relative">
+                                                <div className="h-16 w-16 rounded-full border-4 border-slate-100 dark:border-slate-800 animate-pulse" />
+                                                <Loader2 className="absolute inset-0 h-16 w-16 text-blue-500 animate-spin" />
+                                            </div>
+                                            <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em] animate-pulse">
+                                                Cargando registros...
+                                            </p>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : filteredClients.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={isSelectionMode ? 11 : 10} className="text-center py-20">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="h-16 w-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-600 mb-2">
+                                                <Info className="h-8 w-8" />
+                                            </div>
+                                            <p className="text-lg font-bold text-slate-900 dark:text-white">Sin resultados</p>
+                                            <p className="text-sm text-slate-500 max-w-[250px] mx-auto">
+                                                No encontramos clientes que coincidan con &quot;{searchTerm}&quot;
+                                            </p>
+                                            <Button variant="outline" onClick={() => setSearchTerm("")} className="mt-2 rounded-xl text-xs font-bold uppercase">
+                                                Limpiar búsqueda
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                filteredClients.map((client, index) => (
+                                    <TableRow
+                                        key={client.ruc}
+                                        className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer border-b border-slate-100 dark:border-slate-800/60 transition-colors duration-200"
+                                        onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
+                                        style={{ 
+                                            animationDelay: `${index * 30}ms`,
+                                            opacity: 0,
+                                            animation: 'fade-in 0.4s ease-out forwards'
+                                        }}
+                                    >
+                                        {isSelectionMode && (
+                                            <TableCell className="text-center">
+                                                <Checkbox
+                                                    checked={selectedRucs.includes(client.ruc)}
+                                                    onCheckedChange={() => toggleSelectClient(client.ruc)}
+                                                    className="border-slate-300 dark:border-slate-600"
+                                                />
+                                            </TableCell>
+                                        )}
+                                        <TableCell className="text-center font-bold text-slate-400 text-xs">
+                                            {(currentPage - 1) * 50 + index + 1}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="font-mono text-[13px] font-bold text-blue-600 dark:text-blue-400">
+                                                    <HighlightedText text={client.ruc} highlight={searchTerm} />
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            {client.ultimo_digito_ruc ? (
+                                                <div className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-mono text-xs font-black text-slate-900 dark:text-slate-100 shadow-sm">
+                                                    {client.ultimo_digito_ruc}
+                                                </div>
+                                            ) : (
+                                                <span className="text-slate-300">-</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col max-w-[400px]">
+                                                <span className="font-black text-slate-900 dark:text-white text-base md:text-lg lg:text-xl line-clamp-1 group-hover:text-blue-600 transition-colors">
+                                                    <HighlightedText text={client.razon_social} highlight={searchTerm} />
+                                                </span>
+                                                <div className="flex items-center gap-2 mt-1.5 text-slate-500">
+                                                    <User className="h-4 w-4" />
+                                                    <span className="text-sm font-bold truncate">
+                                                        <HighlightedText text={client.propietario} highlight={searchTerm} />
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <span className={`text-s font-black px-2 py-1 rounded-md ${client.codigo_control ? "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300" : "text-slate-300"}`}>
+                                                {client.codigo_control ? `#${client.codigo_control}` : "N/A"}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className="h-6 w-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                                    <User className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                                </div>
+                                                <span className="text-s font-bold text-slate-700 dark:text-slate-300">
+                                                    {client.responsable_info?.nombre || "Sin Asignar"}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <Badge variant="outline" className="bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800 font-black text-[13px] rounded-lg">
+                                                {client.regimen_tributario}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            {!client.regimen_laboral_tipo || client.regimen_laboral_tipo === "none" ? (
+                                                <span className="text-[13px] font-bold text-slate-300 uppercase tracking-tighter">Sin Laboral</span>
+                                            ) : (
+                                                <Badge variant="outline" className="bg-cyan-50/50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 border-cyan-100 dark:border-cyan-800 font-bold text-[13px] rounded-lg">
+                                                    {client.regimen_laboral_tipo}
+                                                </Badge>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <Badge 
+                                                className={`font-black text-[13px] rounded-lg border-2 ${(categoriaConfig[client.categoria] || categoriaConfig.default).className}`} 
+                                                variant="outline"
+                                            >
+                                                {(categoriaConfig[client.categoria] || categoriaConfig.default).label}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex justify-center gap-2 transition-all">
+                                                <Button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewCredentials(client);
+                                                    }}
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="h-10 w-10 p-0 text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:hover:bg-amber-900/40 rounded-xl border border-amber-200/50 dark:border-amber-800/50 shadow-sm"
+                                                    title="Ver credenciales"
+                                                    disabled={fetchingCredentialsId === client.ruc}
+                                                >
+                                                    {fetchingCredentialsId === client.ruc ? <Loader2 className="h-5 w-5 animate-spin" /> : <Key className="h-5 w-5" />}
+                                                </Button>
+                                                <Button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeactivate(client);
+                                                    }}
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="h-10 w-10 p-0 text-rose-500 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-900/40 rounded-xl border border-rose-200/50 dark:border-rose-800/50 shadow-sm"
+                                                    title="Dar de baja"
+                                                >
+                                                    <ArrowBigDownDash className="h-6 w-6" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                {/* Pagination with Refined UI */}
+                {(!loading && clients.length > 0) && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-5 bg-slate-50/50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 space-y-4 sm:space-y-0">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <span className="text-xs font-black text-blue-600">{currentPage}</span>
+                            </div>
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Página Actual</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fetchClients(prevUrl!, currentPage - 1)}
+                                disabled={!prevUrl || isPaginating}
+                                className="rounded-xl h-10 px-5 font-bold text-xs uppercase bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all disabled:opacity-30"
+                            >
+                                {isPaginating && prevUrl ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                                Anterior
+                            </Button>
+                            
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fetchClients(nextUrl!, currentPage + 1)}
+                                disabled={!nextUrl || isPaginating}
+                                className="rounded-xl h-10 px-5 font-bold text-xs uppercase bg-blue-600 dark:bg-blue-600 text-white border-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 shadow-md shadow-blue-500/20 transition-all disabled:opacity-30"
+                            >
+                                Siguiente
+                                {isPaginating && nextUrl ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : null}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Modals & Dialogs (Preserving functionality) */}
             <ClientForm
                 open={isModalOpen}
                 onOpenChange={setIsModalOpen}
@@ -508,64 +583,63 @@ export function ClientsTable() {
                 }}
             />
 
-            {/* Responsible Export Modal */}
             <AlertDialog open={isResponsableModalOpen} onOpenChange={setIsResponsableModalOpen}>
-                <AlertDialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Exportar por Responsable</AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-400">
+                <AlertDialogContent className="bg-slate-900/95 backdrop-blur-xl border border-white/10 text-white max-w-md rounded-3xl p-8 shadow-2xl">
+                    <AlertDialogHeader className="space-y-4">
+                        <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center mb-2 shadow-lg shadow-blue-500/20">
+                            <LayoutGrid className="h-6 w-6 text-white" />
+                        </div>
+                        <AlertDialogTitle className="text-2xl font-black tracking-tight">Exportar por Responsable</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400 font-medium">
                             Selecciona los responsables para generar el reporte de sus clientes asociados.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
 
-                    <div className="my-4 space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                    <div className="my-6 space-y-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
                         {responsables.length === 0 ? (
-                            <p className="text-slate-400 text-sm italic">Cargando responsables...</p>
+                            <div className="flex flex-col items-center py-8 gap-3 opacity-50">
+                                <Loader2 className="h-6 w-6 animate-spin" />
+                                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Sincronizando equipo...</p>
+                            </div>
                         ) : (
-                            <>
-                                <div className="flex items-center space-x-2 p-2 border border-slate-700 rounded-md bg-slate-800/50">
+                            <div className="grid gap-2">
+                                <div className={`flex items-center space-x-3 p-3 rounded-xl border transition-all cursor-pointer ${selectedResponsableIds.includes(0) ? "bg-white/10 border-white/20" : "bg-white/5 border-transparent hover:border-white/10"}`} onClick={() => {
+                                    setSelectedResponsableIds(prev => prev.includes(0) ? prev.filter(id => id !== 0) : [...prev, 0])
+                                }}>
                                     <Checkbox
                                         id="resp-null"
                                         checked={selectedResponsableIds.includes(0)}
+                                        className="h-5 w-5 border-slate-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 rounded-md"
                                         onCheckedChange={(checked) => {
-                                            if (checked) {
-                                                setSelectedResponsableIds(prev => [...prev, 0])
-                                            } else {
-                                                setSelectedResponsableIds(prev => prev.filter(id => id !== 0))
-                                            }
+                                            if (checked) setSelectedResponsableIds(prev => [...prev, 0])
+                                            else setSelectedResponsableIds(prev => prev.filter(id => id !== 0))
                                         }}
-                                        className="border-slate-500 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                                     />
-                                    <label htmlFor="resp-null" className="text-sm font-medium leading-none cursor-pointer flex-1">
-                                        Sin responsable asignado
-                                    </label>
+                                    <label className="text-sm font-bold leading-none cursor-pointer flex-1">Sin responsable asignado</label>
                                 </div>
                                 {responsables.map((resp) => (
-                                    <div key={resp.id} className="flex items-center space-x-2 p-2 border border-slate-700 rounded-md bg-slate-800/50">
+                                    <div key={resp.id} className={`flex items-center space-x-3 p-3 rounded-xl border transition-all cursor-pointer ${selectedResponsableIds.includes(resp.id) ? "bg-white/10 border-white/20" : "bg-white/5 border-transparent hover:border-white/10"}`} onClick={() => {
+                                        setSelectedResponsableIds(prev => prev.includes(resp.id) ? prev.filter(id => id !== resp.id) : [...prev, resp.id])
+                                    }}>
                                         <Checkbox
                                             id={`resp-${resp.id}`}
                                             checked={selectedResponsableIds.includes(resp.id)}
+                                            className="h-5 w-5 border-slate-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 rounded-md"
                                             onCheckedChange={(checked) => {
-                                                if (checked) {
-                                                    setSelectedResponsableIds(prev => [...prev, resp.id])
-                                                } else {
-                                                    setSelectedResponsableIds(prev => prev.filter(id => id !== resp.id))
-                                                }
+                                                if (checked) setSelectedResponsableIds(prev => [...prev, resp.id])
+                                                else setSelectedResponsableIds(prev => prev.filter(id => id !== resp.id))
                                             }}
-                                            className="border-slate-500 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                                         />
-                                        <label htmlFor={`resp-${resp.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
-                                            {resp.nombre}
-                                        </label>
+                                        <label className="text-sm font-bold leading-none cursor-pointer flex-1">{resp.nombre}</label>
                                     </div>
                                 ))}
-                            </>
+                            </div>
                         )}
                     </div>
 
-                    <AlertDialogFooter>
+                    <AlertDialogFooter className="gap-3">
                         <AlertDialogCancel
-                            className="bg-transparent border-slate-700 hover:bg-slate-800"
+                            className="bg-white/5 border-transparent hover:bg-white/10 text-white rounded-xl h-12 font-bold uppercase text-[10px] tracking-widest transition-all"
                             onClick={() => setSelectedResponsableIds([])}
                         >
                             Cancelar
@@ -573,7 +647,7 @@ export function ClientsTable() {
                         <Button
                             onClick={handleExportByResponsables}
                             disabled={isExportingResponsible || selectedResponsableIds.length === 0}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 flex-1 font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
                         >
                             {isExportingResponsible ? (
                                 <>
@@ -588,7 +662,6 @@ export function ClientsTable() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Credentials Modal */}
             <CredentialsViewer
                 open={isCredentialsModalOpen}
                 onOpenChange={setIsCredentialsModalOpen}
@@ -596,48 +669,75 @@ export function ClientsTable() {
             />
 
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent className="bg-slate-900 border-slate-700 text-white">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>¿Está seguro de dar de baja a este cliente?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-400">
-                            El cliente &quot;{clientToDelete?.razon_social}&quot; pasará a estado inactivo y no aparecerá en la lista principal.
-                            Podrá consultarlo y reactivarlo desde el historial de bajas.
+                <AlertDialogContent className="bg-slate-900/95 backdrop-blur-xl border border-white/10 text-white rounded-3xl p-8 max-w-md shadow-2xl">
+                    <AlertDialogHeader className="space-y-4">
+                        <div className="h-14 w-14 rounded-2xl bg-rose-600/20 border border-rose-600/30 flex items-center justify-center mb-2">
+                            <ShieldCheck className="h-7 w-7 text-rose-500" />
+                        </div>
+                        <AlertDialogTitle className="text-2xl font-black tracking-tight">Confirmar Baja</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400 font-medium leading-relaxed">
+                            El cliente <span className="text-white font-bold">&quot;{clientToDelete?.razon_social}&quot;</span> pasará a estado inactivo. 
+                            <br/><br/>
+                            ¿Desea continuar con esta acción irreversible de gestión?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-600">Cancelar</AlertDialogCancel>
+                    <AlertDialogFooter className="mt-8 gap-3">
+                        <AlertDialogCancel className="bg-white/5 border-transparent hover:bg-white/10 text-white h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest grow">Ignorar</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={confirmDeactivate}
-                            className="bg-red-600 hover:bg-red-700 text-white"
+                            className="bg-rose-600 hover:bg-rose-700 text-white h-12 rounded-xl grow font-bold shadow-lg shadow-rose-500/20"
                         >
-                            Dar de baja
+                            Ejecutar Baja
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
 
             <AlertDialog open={isExportConfirmOpen} onOpenChange={setIsExportConfirmOpen}>
-                <AlertDialogContent className="bg-slate-900 border-slate-700 text-white">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>¿Confirmar exportación masiva?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-400">
+                <AlertDialogContent className="bg-slate-900/95 backdrop-blur-xl border border-white/10 text-white rounded-3xl p-8 max-w-md shadow-2xl">
+                    <AlertDialogHeader className="space-y-4">
+                        <div className="h-14 w-14 rounded-2xl bg-emerald-600/20 border border-emerald-600/30 flex items-center justify-center mb-2 text-emerald-500">
+                            <Briefcase className="h-7 w-7" />
+                        </div>
+                        <AlertDialogTitle className="text-2xl font-black tracking-tight">Confirmar Exportación</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400 font-medium leading-relaxed">
                             Se descargarán todos los clientes registrados en el sistema. Dependiendo del volumen de datos, esto puede tomar unos segundos.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-600">Cancelar</AlertDialogCancel>
+                    <AlertDialogFooter className="mt-8 gap-3">
+                        <AlertDialogCancel className="bg-white/5 border-transparent hover:bg-white/10 text-white h-12 rounded-xl font-bold uppercase text-[10px] tracking-widest grow">Cerrar</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => {
                                 setIsExportConfirmOpen(false);
                                 handleExportAll();
                             }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-xl grow font-bold shadow-lg shadow-blue-500/20"
                         >
                             Confirmar y Descargar
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            
+            <style jsx global>{`
+                @keyframes fade-in {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 5px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 20px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+            `}</style>
         </div >
     )
 }

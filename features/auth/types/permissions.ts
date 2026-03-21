@@ -124,4 +124,7 @@ export enum UserPermission {
   CHANGE_RESPONSABLE = "change_responsable",
   DELETE_RESPONSABLE = "delete_responsable",
   VIEW_RESPONSABLE = "view_responsable",
+
+  // Advanced Filters
+  CAN_USE_ADVANCED_FILTERS = "can_use_advanced_filters",
 }
