@@ -22,6 +22,8 @@ import { IResponsable } from "@/features/responsables/types/responsable"
 import type { AxiosError } from "axios"
 import { categoriaConfig } from "@/features/shared/types"
 import { ExcelButton } from "./excel-button"
+import { useAuth } from "@/hooks/use-auth"
+import { UserPermission } from "@/features/auth/types/permissions"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -35,6 +37,8 @@ import {
 
 export function ClientsTable() {
     const router = useRouter()
+    const { can } = useAuth()
+    const canUseSimpleFilters = can(UserPermission.CAN_USE_SIMPLE_FILTERS)
     const [clients, setClients] = useState<ICliente[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string>("")
@@ -330,24 +334,25 @@ export function ClientsTable() {
                             disabled={isSelectionMode}
                         />
                     </div>
-                    <Button
-                        variant={isFilterOpen || Object.keys(advancedFilters).length > 0 ? "default" : "outline"}
-                        onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        disabled={isSelectionMode}
-                        className={`h-12 w-12 p-0 rounded-xl border-slate-200 dark:border-slate-800 transition-all shadow-sm ${
-                            isFilterOpen || Object.keys(advancedFilters).length > 0 
-                                ? "bg-blue-600 hover:bg-blue-700 text-black shadow-blue-500/20 text-white" 
-                                : "bg-white dark:bg-slate-950/50 hover:bg-blue-800 dark:hover:bg-blue-900"
-                        }`}
-                        title="Filtros avanzados"
-                    >
-                        <Filter className="h-5 w-5" />
-                        {Object.keys(advancedFilters).length > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
-                                {Object.keys(advancedFilters).length}
-                            </span>
-                        )}
-                    </Button>
+                    {canUseSimpleFilters && (
+                        <Button
+                            variant={isFilterOpen || Object.keys(advancedFilters).length > 0 ? "default" : "outline"}
+                            onClick={() => setIsFilterOpen(!isFilterOpen)}
+                            disabled={isSelectionMode}
+                            className={`h-12 w-12 p-0 rounded-xl border-slate-200 dark:border-slate-800 transition-all shadow-sm ${isFilterOpen || Object.keys(advancedFilters).length > 0
+                                ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
+                                : "bg-white dark:bg-slate-950/50 hover:bg-blue-50 hover:text-slate-900 dark:hover:bg-blue-900/20"
+                                }`}
+                            title="Filtros"
+                        >
+                            <Filter className="h-5 w-5" />
+                            {Object.keys(advancedFilters).length > 0 && (
+                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
+                                    {Object.keys(advancedFilters).length}
+                                </span>
+                            )}
+                        </Button>
+                    )}
                 </div>
 
                 <div className="flex flex-wrap gap-3 w-full md:w-auto">
@@ -417,22 +422,22 @@ export function ClientsTable() {
             {/* Simple Filters Panel */}
             {isFilterOpen && (
                 <div className="animate-in fade-in slide-in-from-top-4 duration-300 -mt-2">
-                    
-                    <SimpleFiltersCard
-                        filters={advancedFilters}
-                        onApplyFilters={(newFilters) => {
-                            setAdvancedFilters(newFilters)
-                            setCurrentPage(1)
-                            setIsFilterOpen(false)
-                        }}
-                        onClearFilters={() => {
-                            setAdvancedFilters({})
-                            setSearchTerm("")
-                            setCurrentPage(1)
-                            setIsFilterOpen(false)
-                        }}
-                        isLoading={loading}
-                    />
+                    {canUseSimpleFilters && (
+                        <SimpleFiltersCard
+                            filters={advancedFilters}
+                            onApplyFilters={(newFilters) => {
+                                setAdvancedFilters(newFilters)
+                                setCurrentPage(1)
+                                setIsFilterOpen(false)
+                            }}
+                            onClearFilters={() => {
+                                setAdvancedFilters({})
+                                setSearchTerm("")
+                                setIsFilterOpen(false)
+                            }}
+                            isLoading={loading}
+                        />
+                    )}
                 </div>
             )}
 
