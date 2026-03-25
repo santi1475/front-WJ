@@ -10,8 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { ClientForm } from "./client-form"
 import { CredentialsViewer } from "./credentials-viewer"
-import { Loader2, Plus, Search, Key, X, Check, ArrowBigDownDash, RefreshCw, Hash, User, ShieldCheck, Briefcase, LayoutGrid, Info } from "lucide-react"
+import { Loader2, Plus, Search, Key, X, Check, ArrowBigDownDash, RefreshCw, Hash, User, ShieldCheck, Briefcase, LayoutGrid, Info, Filter } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
+import { AdvancedFiltersCard } from "./advanced-filters-card"
+import { SimpleFiltersCard } from "./simple-filters-card"
 import { toast } from "sonner"
 import { useDebounce } from "@/hooks/use-debounce"
 import { HighlightedText } from "@/components/ui/highlighted-text"
@@ -63,9 +65,13 @@ export function ClientsTable() {
     const [prevUrl, setPrevUrl] = useState<string | null>(null)
     const [currentPage, setCurrentPage] = useState(1)
 
+    // Advanced Filters states
+    const [isFilterOpen, setIsFilterOpen] = useState(false)
+    const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({})
+
     useEffect(() => {
         fetchClients(undefined, 1)
-    }, [debouncedSearchTerm])
+    }, [debouncedSearchTerm, advancedFilters])
 
     useEffect(() => {
         const fetchResponsables = async () => {
@@ -79,6 +85,18 @@ export function ClientsTable() {
         fetchResponsables()
     }, [])
 
+    const buildApiFilters = (page: number, filters: Record<string, string>) => {
+        const apiFilters: any = { page, page_size: 50 };
+        if (filters.categoria) apiFilters.categoria = filters.categoria;
+        if (filters.responsable) apiFilters.responsable = filters.responsable;
+        if (filters.regimen_laboral_tipo) apiFilters.regimen_laboral_tipo = filters.regimen_laboral_tipo;
+        if (filters.regimen_tributario) apiFilters.regimen_tributario = filters.regimen_tributario;
+        if (filters.ultimo_digito_ruc) apiFilters.ultimo_digito_ruc = filters.ultimo_digito_ruc;
+        if (filters.libros_societarios) apiFilters.libros_societarios = filters.libros_societarios;
+        if (filters.selectivo_consumo) apiFilters.selectivo_consumo = filters.selectivo_consumo;
+        return apiFilters;
+    }
+
     const fetchClients = async (url?: string, page: number = 1) => {
         try {
             if (url) {
@@ -87,10 +105,28 @@ export function ClientsTable() {
                 setLoading(true)
             }
             setCurrentPage(page)
-            const data = await clientesService.getAll(url, debouncedSearchTerm)
-            setClients(data.results)
-            setNextUrl(data.next)
-            setPrevUrl(data.previous)
+
+            if (url) {
+                const data = await clientesService.getAll(url)
+                setClients(data.results)
+                setNextUrl(data.next)
+                setPrevUrl(data.previous)
+            } else {
+                const hasFilters = Object.keys(advancedFilters).length > 0;
+                if (hasFilters) {
+                    const apiFilters = buildApiFilters(page, advancedFilters);
+                    if (debouncedSearchTerm) apiFilters.search = debouncedSearchTerm;
+                    const data = await clientesService.list(apiFilters);
+                    setClients(data.results)
+                    setNextUrl(data.next)
+                    setPrevUrl(data.previous)
+                } else {
+                    const data = await clientesService.getAll(undefined, debouncedSearchTerm)
+                    setClients(data.results)
+                    setNextUrl(data.next)
+                    setPrevUrl(data.previous)
+                }
+            }
         } catch (err) {
             const axiosError = err as AxiosError<{ detail: string }>
             setError(axiosError.response?.data?.detail || "Error al cargar los clientes.")
@@ -193,20 +229,31 @@ export function ClientsTable() {
         let toastId;
         try {
             setIsExportingAll(true)
-            toastId = toast.loading("Generando Excel con todos los clientes de la base...", { position: "bottom-right" })
+            toastId = toast.loading("Generando Excel, por favor espere...", { position: "bottom-right" })
 
-            const blob = await clientesService.exportAll()
+            let exportParams: any = undefined;
+            const hasFilters = Object.keys(advancedFilters).length > 0;
+            if (hasFilters) {
+                exportParams = buildApiFilters(1, advancedFilters);
+                if (debouncedSearchTerm) exportParams.search = debouncedSearchTerm;
+                delete exportParams.page;
+                delete exportParams.page_size;
+            } else if (debouncedSearchTerm) {
+                exportParams = { search: debouncedSearchTerm };
+            }
+
+            const blob = await clientesService.exportAll(exportParams)
 
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement("a")
             a.href = url
-            a.download = "Todos_Los_Clientes.xlsx"
+            a.download = "Directorio_Clientes.xlsx"
             document.body.appendChild(a)
             a.click()
             window.URL.revokeObjectURL(url)
             document.body.removeChild(a)
 
-            toast.success("Exportación total completada", { id: toastId, position: "bottom-right" })
+            toast.success("Excel generado exitosamente", { id: toastId, position: "bottom-right" })
         } catch (error) {
             console.error(error)
             toast.error("Error al generar el archivo Excel", { id: toastId, position: "bottom-right" })
@@ -272,15 +319,35 @@ export function ClientsTable() {
         <div className="space-y-6 pt-2">
             {/* Search and Actions with Glassmorphism */}
             <div className="flex flex-col md:flex-row gap-4 items-center bg-white/40 dark:bg-slate-900/40 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-md shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
-                <div className="flex-1 relative w-full group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                    <Input
-                        placeholder="Buscar por razón social, RUC o propietario..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-12 h-12 bg-white/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all font-medium text-slate-900 dark:text-white"
+                <div className="flex-1 relative w-full group flex items-center gap-2">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                        <Input
+                            placeholder="Buscar por razón social, RUC o propietario..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-12 h-12 bg-white/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all font-medium text-slate-900 dark:text-white"
+                            disabled={isSelectionMode}
+                        />
+                    </div>
+                    <Button
+                        variant={isFilterOpen || Object.keys(advancedFilters).length > 0 ? "default" : "outline"}
+                        onClick={() => setIsFilterOpen(!isFilterOpen)}
                         disabled={isSelectionMode}
-                    />
+                        className={`h-12 w-12 p-0 rounded-xl border-slate-200 dark:border-slate-800 transition-all shadow-sm ${
+                            isFilterOpen || Object.keys(advancedFilters).length > 0 
+                                ? "bg-blue-600 hover:bg-blue-700 text-black shadow-blue-500/20 text-white" 
+                                : "bg-white dark:bg-slate-950/50 hover:bg-blue-800 dark:hover:bg-blue-900"
+                        }`}
+                        title="Filtros avanzados"
+                    >
+                        <Filter className="h-5 w-5" />
+                        {Object.keys(advancedFilters).length > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
+                                {Object.keys(advancedFilters).length}
+                            </span>
+                        )}
+                    </Button>
                 </div>
 
                 <div className="flex flex-wrap gap-3 w-full md:w-auto">
@@ -347,6 +414,28 @@ export function ClientsTable() {
                 </div>
             )}
 
+            {/* Simple Filters Panel */}
+            {isFilterOpen && (
+                <div className="animate-in fade-in slide-in-from-top-4 duration-300 -mt-2">
+                    
+                    <SimpleFiltersCard
+                        filters={advancedFilters}
+                        onApplyFilters={(newFilters) => {
+                            setAdvancedFilters(newFilters)
+                            setCurrentPage(1)
+                            setIsFilterOpen(false)
+                        }}
+                        onClearFilters={() => {
+                            setAdvancedFilters({})
+                            setSearchTerm("")
+                            setCurrentPage(1)
+                            setIsFilterOpen(false)
+                        }}
+                        isLoading={loading}
+                    />
+                </div>
+            )}
+
             {/* Premium Table Container */}
             <div className="bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 fill-mode-both">
                 <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
@@ -404,8 +493,17 @@ export function ClientsTable() {
                                             <p className="text-sm text-slate-500 max-w-[250px] mx-auto">
                                                 No encontramos clientes que coincidan con &quot;{searchTerm}&quot;
                                             </p>
-                                            <Button variant="outline" onClick={() => setSearchTerm("")} className="mt-2 rounded-xl text-xs font-bold uppercase">
-                                                Limpiar búsqueda
+                                            <Button 
+                                                variant="outline" 
+                                                onClick={() => {
+                                                    setSearchTerm("")
+                                                    setAdvancedFilters({})
+                                                    setCurrentPage(1)
+                                                    setIsFilterOpen(false)
+                                                }} 
+                                                className="mt-2 rounded-xl text-[11px] font-bold uppercase tracking-wider"
+                                            >
+                                                Limpiar búsqueda y filtros
                                             </Button>
                                         </div>
                                     </TableCell>
@@ -417,9 +515,12 @@ export function ClientsTable() {
                                         className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer border-b border-slate-100 dark:border-slate-800/60 transition-colors duration-200"
                                         onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
                                         style={{ 
-                                            animationDelay: `${index * 30}ms`,
                                             opacity: 0,
-                                            animation: 'fade-in 0.4s ease-out forwards'
+                                            animationName: "fade-in",
+                                            animationDuration: "0.4s",
+                                            animationTimingFunction: "ease-out",
+                                            animationFillMode: "forwards",
+                                            animationDelay: `${index * 30}ms`
                                         }}
                                     >
                                         {isSelectionMode && (
