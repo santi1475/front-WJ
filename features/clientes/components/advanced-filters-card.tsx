@@ -32,6 +32,7 @@ interface AdvancedFiltersCardProps {
     onApplyFilters: (filters: Record<string, string>) => void
     onClearFilters: () => void
     isLoading?: boolean
+    mode?: "simple" | "full"
 }
 
 const CATEGORIAS = [
@@ -72,15 +73,20 @@ export function AdvancedFiltersCard({
     onApplyFilters,
     onClearFilters,
     isLoading = false,
+    mode = "full",
 }: AdvancedFiltersCardProps) {
     const [categoria, setCategoria] = useState(filters.categoria || "")
-    const [regimenTributario, setRegimenTributario] = useState(filters.regimen_tributario || "")
+    const [regimenTributario, setRegimenTributario] = useState<string[]>(
+        filters.regimen_tributario ? filters.regimen_tributario.split(",") : []
+    )
     const [selectedResponsables, setSelectedResponsables] = useState<string[]>(
         filters.responsable ? filters.responsable.split(",") : []
     )
     const [regimenLaboral, setRegimenLaboral] = useState(filters.regimen_laboral_tipo || "")
     const [ultimoDigitoRuc, setUltimoDigitoRuc] = useState(filters.ultimo_digito_ruc || "")
-    const [libroSocietario, setLibroSocietario] = useState(filters.libros_societarios || "")
+    const [libroSocietario, setLibroSocietario] = useState<string[]>(
+        filters.libros_societarios ? filters.libros_societarios.split(",") : []
+    )
     const [selectivoConsumo, setSelectivoConsumo] = useState(filters.selectivo_consumo === "true")
 
     const [responsables, setResponsables] = useState<IResponsable[]>([])
@@ -90,11 +96,11 @@ export function AdvancedFiltersCard({
 
     useEffect(() => {
         setCategoria(filters.categoria || "")
-        setRegimenTributario(filters.regimen_tributario || "")
+        setRegimenTributario(filters.regimen_tributario ? filters.regimen_tributario.split(",") : [])
         setSelectedResponsables(filters.responsable ? filters.responsable.split(",") : [])
         setRegimenLaboral(filters.regimen_laboral_tipo || "")
         setUltimoDigitoRuc(filters.ultimo_digito_ruc || "")
-        setLibroSocietario(filters.libros_societarios || "")
+        setLibroSocietario(filters.libros_societarios ? filters.libros_societarios.split(",") : [])
         setSelectivoConsumo(filters.selectivo_consumo === "true")
     }, [filters])
 
@@ -128,33 +134,33 @@ export function AdvancedFiltersCard({
     const handleApply = useCallback(() => {
         const newFilters: Record<string, string> = {}
         if (categoria) newFilters.categoria = categoria
-        if (regimenTributario) newFilters.regimen_tributario = regimenTributario
+        if (regimenTributario.length > 0) newFilters.regimen_tributario = regimenTributario.join(",")
         if (selectedResponsables.length > 0) newFilters.responsable = selectedResponsables.join(",")
         if (regimenLaboral) newFilters.regimen_laboral_tipo = regimenLaboral
         if (ultimoDigitoRuc) newFilters.ultimo_digito_ruc = ultimoDigitoRuc
-        if (libroSocietario) newFilters.libros_societarios = libroSocietario
+        if (libroSocietario.length > 0) newFilters.libros_societarios = libroSocietario.join(",")
         if (selectivoConsumo) newFilters.selectivo_consumo = "true"
         onApplyFilters(newFilters)
     }, [categoria, regimenTributario, selectedResponsables, regimenLaboral, ultimoDigitoRuc, libroSocietario, selectivoConsumo, onApplyFilters])
 
     const handleClear = useCallback(() => {
         setCategoria("")
-        setRegimenTributario("")
+        setRegimenTributario([])
         setSelectedResponsables([])
         setRegimenLaboral("")
         setUltimoDigitoRuc("")
-        setLibroSocietario("")
+        setLibroSocietario([])
         setSelectivoConsumo(false)
         onClearFilters()
     }, [onClearFilters])
 
     const activeFilterCount = [
         categoria,
-        regimenTributario,
+        regimenTributario.length > 0 ? "yes" : "",
         selectedResponsables.length > 0 ? "yes" : "",
         regimenLaboral,
         ultimoDigitoRuc,
-        libroSocietario,
+        libroSocietario.length > 0 ? "yes" : "",
         selectivoConsumo ? "true" : "",
     ].filter(Boolean).length
 
@@ -222,130 +228,170 @@ export function AdvancedFiltersCard({
                         </div>
 
                         {/* Régimen Tributario */}
-                        <div className="flex flex-col gap-2 group">
-                            <Label htmlFor="filter-regimen-trib" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                <div className="h-1 w-1 rounded-full bg-indigo-500" />
-                                Rég. Tributario
-                            </Label>
-                            <div className="relative">
-                                <Select value={regimenTributario} onValueChange={setRegimenTributario}>
-                                    <SelectTrigger
-                                        id="filter-regimen-trib"
-                                        className="h-11 w-full bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 pr-12 font-medium"
+                        <div className="flex flex-col gap-3 group">
+                            <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-between">
+                                <span className="flex items-center gap-1.5">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                                    Régimen Tributario
+                                </span>
+                                {regimenTributario.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setRegimenTributario([])}
+                                        className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest flex items-center"
                                     >
-                                        <SelectValue placeholder="Todos" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {REGIMENES_TRIBUTARIOS.map((reg) => (
-                                            <SelectItem key={reg.value} value={reg.value} className="font-medium">
-                                                {reg.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <ClearButton visible={!!regimenTributario} onClick={() => setRegimenTributario("")} />
+                                        <X className="h-3 w-3 mr-1" />
+                                        Limpiar
+                                    </button>
+                                )}
+                            </Label>
+                            <div className="flex flex-col gap-2.5 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                                {REGIMENES_TRIBUTARIOS.map((reg) => (
+                                    <div key={reg.value} className={`flex items-start space-x-3 p-2.5 rounded-xl border transition-all cursor-pointer ${regimenTributario.includes(reg.value) ? "bg-indigo-50/50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800" : "bg-white dark:bg-slate-900/30 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"}`} onClick={() => {
+                                        setRegimenTributario(prev => prev.includes(reg.value) ? prev.filter(v => v !== reg.value) : [...prev, reg.value])
+                                    }}>
+                                        <Checkbox
+                                            id={`reg-${reg.value}`}
+                                            checked={regimenTributario.includes(reg.value)}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) setRegimenTributario(prev => [...prev, reg.value])
+                                                else setRegimenTributario(prev => prev.filter(v => v !== reg.value))
+                                            }}
+                                            className="mt-0.5 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 rounded-md"
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <Label htmlFor={`reg-${reg.value}`} className="text-sm font-medium leading-tight cursor-pointer flex-1" onClick={(e) => e.preventDefault()}>
+                                            {reg.label}
+                                        </Label>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
                         {/* Régimen Laboral */}
-                        <div className="flex flex-col gap-2 group">
-                            <Label htmlFor="filter-regimen" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                <div className="h-1 w-1 rounded-full bg-cyan-500" />
-                                Rég. Laboral
-                            </Label>
-                            <div className="relative">
-                                <Select value={regimenLaboral} onValueChange={setRegimenLaboral}>
-                                    <SelectTrigger
-                                        id="filter-regimen"
-                                        className="h-11 w-full bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 pr-12 font-medium"
-                                    >
-                                        <SelectValue placeholder="Todos" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {tiposRegimen.map((tipo) => (
-                                            <SelectItem key={tipo.id} value={tipo.descripcion} className="font-medium">
-                                                {tipo.descripcion}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <ClearButton visible={!!regimenLaboral} onClick={() => setRegimenLaboral("")} />
+                        {mode === "full" && (
+                            <div className="flex flex-col gap-2 group">
+                                <Label htmlFor="filter-regimen" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                    <div className="h-1 w-1 rounded-full bg-cyan-500" />
+                                    Rég. Laboral
+                                </Label>
+                                <div className="relative">
+                                    <Select value={regimenLaboral} onValueChange={setRegimenLaboral}>
+                                        <SelectTrigger
+                                            id="filter-regimen"
+                                            className="h-11 w-full bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 pr-12 font-medium"
+                                        >
+                                            <SelectValue placeholder="Todos" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {tiposRegimen.map((tipo) => (
+                                                <SelectItem key={tipo.id} value={tipo.descripcion} className="font-medium">
+                                                    {tipo.descripcion}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <ClearButton visible={!!regimenLaboral} onClick={() => setRegimenLaboral("")} />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Último Dígito RUC */}
-                        <div className="flex flex-col gap-2 group">
-                            <Label htmlFor="filter-digito" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                <div className="h-1 w-1 rounded-full bg-slate-400" />
-                                Últ. Dígito
-                            </Label>
-                            <div className="relative gap-2">
-                                <Select value={ultimoDigitoRuc} onValueChange={setUltimoDigitoRuc}>
-                                    <SelectTrigger
-                                        id="filter-digito"
-                                        className="h-11 w-full bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 pr-12 font-mono font-bold"
-                                    >
-                                        <SelectValue placeholder="Ok" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {DIGITOS_RUC.map((d) => (
-                                            <SelectItem key={d} value={d} className="font-mono font-bold">
-                                                {d}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <ClearButton visible={!!ultimoDigitoRuc} onClick={() => setUltimoDigitoRuc("")} />
+                        {mode === "full" && (
+                            <div className="flex flex-col gap-2 group">
+                                <Label htmlFor="filter-digito" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                    <div className="h-1 w-1 rounded-full bg-slate-400" />
+                                    Últ. Dígito
+                                </Label>
+                                <div className="relative gap-2">
+                                    <Select value={ultimoDigitoRuc} onValueChange={setUltimoDigitoRuc}>
+                                        <SelectTrigger
+                                            id="filter-digito"
+                                            className="h-11 w-full bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 pr-12 font-mono font-bold"
+                                        >
+                                            <SelectValue placeholder="Ok" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {DIGITOS_RUC.map((d) => (
+                                                <SelectItem key={d} value={d} className="font-mono font-bold">
+                                                    {d}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <ClearButton visible={!!ultimoDigitoRuc} onClick={() => setUltimoDigitoRuc("")} />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Libros Societarios */}
-                        <div className="flex flex-col gap-2 group">
-                            <Label htmlFor="filter-libros" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                <div className="h-1 w-1 rounded-full bg-purple-500" />
-                                Lib. Societarios
-                            </Label>
-                            <div className="relative">
-                                <Select value={libroSocietario} onValueChange={setLibroSocietario}>
-                                    <SelectTrigger
-                                        id="filter-libros"
-                                        className="h-11 w-full bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 pr-12 font-medium"
-                                    >
-                                        <SelectValue placeholder="Todos" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {librosSocietarios.map((libro) => (
-                                            <SelectItem key={libro.id} value={String(libro.id)} className="font-medium">
+                        {mode === "full" && (
+                            <div className="flex flex-col gap-3 group">
+                                <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-between">
+                                    <span className="flex items-center gap-1.5">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                                        Libros Societarios
+                                    </span>
+                                    {libroSocietario.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setLibroSocietario([])}
+                                            className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest flex items-center"
+                                        >
+                                            <X className="h-3 w-3 mr-1" />
+                                            Limpiar
+                                        </button>
+                                    )}
+                                </Label>
+                                <div className="flex flex-col gap-2.5 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {librosSocietarios.map((libro) => (
+                                        <div key={libro.id} className={`flex items-start space-x-3 p-2.5 rounded-xl border transition-all cursor-pointer ${libroSocietario.includes(String(libro.id)) ? "bg-purple-50/50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800" : "bg-white dark:bg-slate-900/30 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"}`} onClick={() => {
+                                            const idStr = String(libro.id)
+                                            setLibroSocietario(prev => prev.includes(idStr) ? prev.filter(v => v !== idStr) : [...prev, idStr])
+                                        }}>
+                                            <Checkbox
+                                                id={`lib-${libro.id}`}
+                                                checked={libroSocietario.includes(String(libro.id))}
+                                                onCheckedChange={(checked) => {
+                                                    const idStr = String(libro.id)
+                                                    if (checked) setLibroSocietario(prev => [...prev, idStr])
+                                                    else setLibroSocietario(prev => prev.filter(v => v !== idStr))
+                                                }}
+                                                className="mt-0.5 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600 rounded-md"
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                            <Label htmlFor={`lib-${libro.id}`} className="text-sm font-medium leading-tight cursor-pointer flex-1" onClick={(e) => e.preventDefault()}>
                                                 {libro.nombre}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <ClearButton visible={!!libroSocietario} onClick={() => setLibroSocietario("")} />
+                                            </Label>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* ISC Checkbox */}
-                        <div className="flex flex-col gap-2">
-                            <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                <div className="h-1 w-1 rounded-full bg-rose-500" />
-                                Tributación
-                            </Label>
-                            <div className="flex items-center h-11 px-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 gap-3 hover:border-blue-500/50 transition-colors duration-200">
-                                <Checkbox
-                                    id="filter-selectivo"
-                                    checked={selectivoConsumo}
-                                    onCheckedChange={(checked) => setSelectivoConsumo(checked === true)}
-                                    className="h-5 w-5 border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 rounded"
-                                />
-                                <Label
-                                    htmlFor="filter-selectivo"
-                                    className="text-sm font-semibold cursor-pointer text-slate-600 dark:text-slate-400 whitespace-nowrap"
-                                >
-                                    Sel. Consumo
+                        {mode === "full" && (
+                            <div className="flex flex-col gap-2">
+                                <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                    <div className="h-1 w-1 rounded-full bg-rose-500" />
+                                    Tributación
                                 </Label>
+                                <div className="flex items-center h-11 px-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 gap-3 hover:border-blue-500/50 transition-colors duration-200">
+                                    <Checkbox
+                                        id="filter-selectivo"
+                                        checked={selectivoConsumo}
+                                        onCheckedChange={(checked) => setSelectivoConsumo(checked === true)}
+                                        className="h-5 w-5 border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 rounded"
+                                    />
+                                    <Label
+                                        htmlFor="filter-selectivo"
+                                        className="text-sm font-semibold cursor-pointer text-slate-600 dark:text-slate-400 whitespace-nowrap"
+                                    >
+                                        Sel. Consumo
+                                    </Label>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
 

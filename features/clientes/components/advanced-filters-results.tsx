@@ -15,9 +15,11 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Search, Users } from "lucide-react"
 import { toast } from "sonner"
+import { ExcelButton } from "./excel-button"
 
 interface AdvancedFiltersResultsProps {
     filters: Record<string, string>
@@ -38,6 +40,9 @@ export function AdvancedFiltersResults({ filters }: AdvancedFiltersResultsProps)
     const [isPaginating, setIsPaginating] = useState(false)
     const [totalCount, setTotalCount] = useState(0)
 
+    const [isSelectionMode, setIsSelectionMode] = useState(false)
+    const [selectedRucs, setSelectedRucs] = useState<string[]>([])
+
     useEffect(() => {
         const hasActiveFilters = Object.keys(filters).some(
             (key) => key !== "page" && filters[key]
@@ -55,6 +60,111 @@ export function AdvancedFiltersResults({ filters }: AdvancedFiltersResultsProps)
         fetchResults(undefined, pageNum)
         setHasSearched(true)
     }, [filters])
+
+    const buildApiFilters = (page: number = 1): IClientFilters => {
+        const apiFilters: IClientFilters = { page, page_size: PAGE_SIZE }
+        if (filters.categoria) apiFilters.categoria = filters.categoria as IClientFilters["categoria"]
+        if (filters.responsable) apiFilters.responsable = filters.responsable
+        if (filters.regimen_laboral_tipo) apiFilters.regimen_laboral_tipo = filters.regimen_laboral_tipo
+        if (filters.regimen_tributario) apiFilters.regimen_tributario = filters.regimen_tributario as any
+        if (filters.ultimo_digito_ruc) apiFilters.ultimo_digito_ruc = filters.ultimo_digito_ruc
+        if (filters.libros_societarios) apiFilters.libros_societarios = filters.libros_societarios
+        if (filters.selectivo_consumo) apiFilters.selectivo_consumo = filters.selectivo_consumo
+        return apiFilters;
+    }
+
+    const [isExporting, setIsExporting] = useState(false)
+
+    const handleExportFiltered = async () => {
+        let toastId;
+        try {
+            setIsExporting(true)
+            toastId = toast.loading("Generando Excel con los resultados...", { position: "bottom-right" })
+            
+            const apiFilters = buildApiFilters(1)
+            delete apiFilters.page;
+            delete apiFilters.page_size;
+
+            const blob = await clientesService.exportAll(apiFilters)
+
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "Clientes_Filtrados.xlsx"
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success("Exportación completada", { id: toastId, position: "bottom-right" })
+        } catch (error) {
+            console.error(error)
+            toast.error("Error al exportar los resultados", { id: toastId, position: "bottom-right" })
+        } finally {
+            setIsExporting(false)
+        }
+    }
+
+    const toggleSelectionMode = () => {
+        setIsSelectionMode(!isSelectionMode)
+        setSelectedRucs([])
+    }
+
+    const toggleSelectAll = () => {
+        const visibleRucs = clients.map((c) => c.ruc)
+        const allVisibleSelected = visibleRucs.every(ruc => selectedRucs.includes(ruc));
+
+        if (allVisibleSelected) {
+            setSelectedRucs(prev => prev.filter(r => !visibleRucs.includes(r)))
+        } else {
+            setSelectedRucs(prev => {
+                const newSelection = [...prev];
+                visibleRucs.forEach(r => {
+                    if (!newSelection.includes(r)) newSelection.push(r);
+                });
+                return newSelection;
+            });
+        }
+    }
+
+    const toggleSelectClient = (ruc: string) => {
+        setSelectedRucs((prev) =>
+            prev.includes(ruc) ? prev.filter((r) => r !== ruc) : [...prev, ruc]
+        )
+    }
+
+    const handleExportSelected = async () => {
+        if (selectedRucs.length === 0) {
+            toast.error("Debe seleccionar al menos un cliente", { position: "bottom-right" })
+            return
+        }
+
+        let toastId;
+        try {
+            setIsExporting(true)
+            toastId = toast.loading("Exportando clientes...", { position: "bottom-right" })
+
+            const blob = await clientesService.exportSelected(selectedRucs)
+
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "Clientes_Seleccionados.xlsx"
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success("Exportación completada exitosamente", { id: toastId, position: "bottom-right" })
+            setIsSelectionMode(false)
+            setSelectedRucs([])
+        } catch (error) {
+            console.error(error)
+            toast.error("Error al exportar clientes", { id: toastId, position: "bottom-right" })
+        } finally {
+            setIsExporting(false)
+        }
+    }
 
     const fetchResults = async (url?: string, page: number = 1) => {
         try {
@@ -78,14 +188,7 @@ export function AdvancedFiltersResults({ filters }: AdvancedFiltersResultsProps)
                 setTotalCount(response.data.count || 0)
                 setCurrentPage(page)
             } else {
-                const apiFilters: IClientFilters = { page, page_size: PAGE_SIZE }
-                if (filters.categoria) apiFilters.categoria = filters.categoria as IClientFilters["categoria"]
-                if (filters.responsable) apiFilters.responsable = filters.responsable
-                if (filters.regimen_laboral_tipo) apiFilters.regimen_laboral_tipo = filters.regimen_laboral_tipo
-                if (filters.regimen_tributario) apiFilters.regimen_tributario = filters.regimen_tributario as any
-                if (filters.ultimo_digito_ruc) apiFilters.ultimo_digito_ruc = filters.ultimo_digito_ruc
-                if (filters.libros_societarios) apiFilters.libros_societarios = parseInt(filters.libros_societarios)
-                if (filters.selectivo_consumo) apiFilters.selectivo_consumo = filters.selectivo_consumo
+                const apiFilters = buildApiFilters(page)
 
                 const data = await clientesService.list(apiFilters)
                 setClients(data.results)
@@ -142,9 +245,45 @@ export function AdvancedFiltersResults({ filters }: AdvancedFiltersResultsProps)
                         <CardTitle className="text-lg">Resultados de Búsqueda</CardTitle>
                     </div>
                     {!loading && (
-                        <Badge variant="outline" className="text-muted-foreground">
-                            {totalCount} cliente{totalCount !== 1 ? "s" : ""} encontrado{totalCount !== 1 ? "s" : ""}
-                        </Badge>
+                        <div className="flex items-center gap-3">
+                            {isSelectionMode ? (
+                                <>
+                                    <Button
+                                        onClick={handleExportSelected}
+                                        disabled={isExporting || selectedRucs.length === 0}
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-7 px-4 shadow-sm text-xs"
+                                    >
+                                        {isExporting ? (
+                                            <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+                                        ) : null}
+                                        Exportar ({selectedRucs.length})
+                                    </Button>
+                                    <Button
+                                        onClick={toggleSelectionMode}
+                                        variant="outline"
+                                        disabled={isExporting}
+                                        className="rounded-xl h-7 px-3 border-slate-200 text-xs"
+                                    >
+                                        Cancelar
+                                    </Button>
+                                </>
+                            ) : (
+                                <>
+                                    {clients.length > 0 && (
+                                        <ExcelButton
+                                            onExportAll={handleExportFiltered}
+                                            onClickManual={toggleSelectionMode}
+                                            isExportingAll={isExporting}
+                                            isSelectionMode={isSelectionMode}
+                                            className="h-7 px-3 text-xs bg-slate-100 dark:bg-slate-800"
+                                        />
+                                    )}
+                                    <Badge variant="outline" className="text-muted-foreground hidden sm:flex">
+                                        {totalCount} cliente{totalCount !== 1 ? "s" : ""} encontrado{totalCount !== 1 ? "s" : ""}
+                                    </Badge>
+                                </>
+                            )}
+                        </div>
                     )}
                 </div>
             </CardHeader>
@@ -180,6 +319,15 @@ export function AdvancedFiltersResults({ filters }: AdvancedFiltersResultsProps)
                             <Table>
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent">
+                                        {isSelectionMode && (
+                                            <TableHead className="w-[40px] text-center px-2">
+                                                <Checkbox
+                                                    checked={clients.length > 0 && clients.every(c => selectedRucs.includes(c.ruc))}
+                                                    onCheckedChange={toggleSelectAll}
+                                                    className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                                                />
+                                            </TableHead>
+                                        )}
                                         {/* ── Columnas verticales: cada <th> apila su ícono/abrev arriba del label ── */}
                                         <TableHead className="w-[50px]">
                                             <div className="flex flex-col items-center gap-0.5 text-muted-foreground">
@@ -249,6 +397,16 @@ export function AdvancedFiltersResults({ filters }: AdvancedFiltersResultsProps)
                                             className="hover:bg-muted/70 cursor-pointer transition-colors"
                                             onDoubleClick={() => router.push(`/dashboard/clientes/${client.ruc}`)}
                                         >
+                                            {isSelectionMode && (
+                                                <TableCell className="text-center px-2">
+                                                    <Checkbox
+                                                        checked={selectedRucs.includes(client.ruc)}
+                                                        onCheckedChange={() => toggleSelectClient(client.ruc)}
+                                                        className="border-slate-300 dark:border-slate-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                </TableCell>
+                                            )}
                                             <TableCell className="text-muted-foreground">
                                                 {(currentPage - 1) * PAGE_SIZE + index + 1}
                                             </TableCell>

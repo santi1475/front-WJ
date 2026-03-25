@@ -31,7 +31,7 @@ export interface IClientFilters extends ListFilters {
   responsable?: string; 
   regimen_laboral_tipo?: string;
   ultimo_digito_ruc?: string;
-  libros_societarios?: number;
+  libros_societarios?: string | number;
   selectivo_consumo?: string; 
 }
 
@@ -65,7 +65,7 @@ const clientesServiceImplementation: ICRUDService<
     data: Partial<IClienteFormData>,
   ) => Promise<ICliente>;
   exportSelected: (rucs: string[]) => Promise<Blob>;
-  exportAll: () => Promise<Blob>;
+  exportAll: (params?: IClientFilters) => Promise<Blob>;
   exportByResponsables: (responsablesIds: number[]) => Promise<Blob>;
   darBaja: (id: string | number) => Promise<void>;
   reactivar: (id: string | number) => Promise<void>;
@@ -344,10 +344,11 @@ const clientesServiceImplementation: ICRUDService<
     }
   },
 
-  exportAll: async (): Promise<Blob> => {
+  exportAll: async (params?: IClientFilters): Promise<Blob> => {
     try {
       const axios = getAxiosInstance();
       const response = await axios.get(`${API_ENDPOINT}/exportar-filtro/`, {
+        params,
         responseType: "blob",
       });
       return response.data;
