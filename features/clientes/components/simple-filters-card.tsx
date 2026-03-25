@@ -23,6 +23,8 @@ import { Filter, Search, RotateCcw, Loader2, X, Users, Briefcase, Tag } from "lu
 import { responsableService } from "@/features/responsables/services/responsable.service"
 import { RegimenTributario } from "@/features/shared/types"
 import type { IResponsable } from "@/features/responsables/types/responsable"
+import { useAuth } from "@/hooks/use-auth"
+import { UserPermission } from "@/features/auth/types/permissions"
 
 interface SimpleFiltersCardProps {
     filters: Record<string, string>
@@ -51,6 +53,8 @@ export function SimpleFiltersCard({
     onClearFilters,
     isLoading = false,
 }: SimpleFiltersCardProps) {
+    const { user, can } = useAuth()
+    const canUseSimpleFilters = can(UserPermission.CAN_USE_SIMPLE_FILTERS)
     const [categoria, setCategoria] = useState(filters.categoria || "")
     const [regimenTributario, setRegimenTributario] = useState<string[]>(
         filters.regimen_tributario ? filters.regimen_tributario.split(",") : []
@@ -62,11 +66,14 @@ export function SimpleFiltersCard({
     const [responsables, setResponsables] = useState<IResponsable[]>([])
     const [loadingOptions, setLoadingOptions] = useState(true)
 
+    // Sincronizar estado local cuando cambian los filtros externos
     useEffect(() => {
         setCategoria(filters.categoria || "")
-        setRegimenTributario(filters.regimen_tributario ? filters.regimen_tributario.split(",") : [])
-        setSelectedResponsables(filters.responsable ? filters.responsable.split(",") : [])
+        setRegimenTributario(filters.regimen_tributario ? filters.regimen_tributario.split(",").filter(Boolean) : [])
+        setSelectedResponsables(filters.responsable ? filters.responsable.split(",").filter(Boolean) : [])
     }, [filters])
+
+    if (!canUseSimpleFilters) return null;
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -75,7 +82,7 @@ export function SimpleFiltersCard({
                 const respData = await responsableService.getAll()
                 setResponsables(respData)
             } catch (error) {
-                console.error("Error fetching filter options:", error)
+                console.error("SimpleFiltersCard - Error fetching filter options:", error)
             } finally {
                 setLoadingOptions(false)
             }

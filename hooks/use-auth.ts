@@ -10,6 +10,8 @@ export function useAuth() {
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const logout = useAuthStore((state) => state.logout);
 
+  const normalize = (p: string) => (p.includes(".") ? p.split(".")[1] : p);
+
   /**
    * Verifica si el usuario tiene al menos uno de los permisos requeridos
    * @param requiredPermissions - Array de permisos requeridos
@@ -20,7 +22,15 @@ export function useAuth() {
     if (user.is_superuser) return true;
 
     const userPermissions = user.permissions || [];
-    return requiredPermissions.some((p) => userPermissions.includes(p));
+    const normalizedUserPermissions = userPermissions.map(normalize);
+
+    return requiredPermissions.some((p) => {
+      const normalizedReq = normalize(p);
+      return (
+        userPermissions.includes(p) ||
+        normalizedUserPermissions.includes(normalizedReq)
+      );
+    });
   };
 
   /**
@@ -33,7 +43,11 @@ export function useAuth() {
     if (user.is_superuser) return true;
 
     const userPermissions = user.permissions || [];
-    return userPermissions.includes(permission);
+    const normalizedReq = normalize(permission);
+
+    return userPermissions.some((p) => {
+      return p === permission || normalize(p) === normalizedReq;
+    });
   };
 
   /**

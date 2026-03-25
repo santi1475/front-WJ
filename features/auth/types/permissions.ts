@@ -127,4 +127,5 @@ export enum UserPermission {
 
   // Advanced Filters
   CAN_USE_ADVANCED_FILTERS = "can_use_advanced_filters",
+  CAN_USE_SIMPLE_FILTERS = "can_use_simple_filters",
 }
