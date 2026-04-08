@@ -2,18 +2,11 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import Image from 'next/image';
 import { launchPortalLogin } from '../../services/portal-launcher.service';
-
-interface MitraLauncherProps {
-    ruc?: string;
-    usuario?: string;
-    clave?: string;
-    className?: string;
-    disabled?: boolean;
-}
+import { LauncherConfig } from '@/lib/interfaces/lauchers';
 
 const MITRA_URL = "https://api-seguridad.sunat.gob.pe/v1/clientessol/cf23edbf-6092-49b4-a144-497184c67b34/oauth2/login?originalUrl=https://apps.trabajo.gob.pe/pasclavesol/sunat/oauth&state=m1ntr4";
 
-export const MitraLauncher: React.FC<MitraLauncherProps> = ({ ruc, usuario, clave, className, disabled }) => {
+export const MitraLauncher: React.FC<LauncherConfig> = ({ ruc, usuario, clave, disabled }) => {
 
     const handleLogin = (e: React.MouseEvent) => {
         e.preventDefault();
