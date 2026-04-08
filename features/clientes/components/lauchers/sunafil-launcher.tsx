@@ -2,18 +2,11 @@ import React from 'react';
 import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { launchPortalLogin } from '../../services/portal-launcher.service';
-
-interface SunafilLauncherProps {
-    ruc?: string;
-    usuario?: string;
-    clave?: string;
-    className?: string;
-    disabled?: boolean;
-}
+import { LauncherConfig } from '@/lib/interfaces/lauchers';
 
 const SUNAFIL_URL = "https://api-seguridad.sunat.gob.pe/v1/clientessol/b6474e23-8a3b-4153-b301-dafcc9646250/oauth2/login?originalUrl=https://casillaelectronica.sunafil.gob.pe/si.inbox/Login/Empresa&state=s";
 
-export const SunafilLauncher: React.FC<SunafilLauncherProps> = ({ ruc, usuario, clave, className, disabled }) => {
+export const SunafilLauncher: React.FC<LauncherConfig> = ({ ruc, usuario, clave, disabled }) => {
 
     const handleLogin = (e: React.MouseEvent) => {
         e.preventDefault();

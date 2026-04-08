@@ -2,16 +2,11 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { launchPortalLogin } from '../../services/portal-launcher.service';
 import { HeartPulse } from 'lucide-react';
-
-interface SisLauncherProps {
-    ruc?: string;
-    className?: string;
-    disabled?: boolean;
-}
+import { LauncherConfig } from '@/lib/interfaces/lauchers';
 
 const SIS_URL = "http://app.sis.gob.pe/SIS_MYPES_1/frmLogin.aspx";
 
-export const SisLauncher: React.FC<SisLauncherProps> = ({ ruc, className, disabled }) => {
+export const SisLauncher: React.FC<LauncherConfig> = ({ ruc, disabled }) => {
 
     const handleLogin = (e: React.MouseEvent) => {
         e.preventDefault();

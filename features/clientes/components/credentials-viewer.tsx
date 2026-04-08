@@ -25,6 +25,7 @@ import { AfpLauncher } from "./lauchers/afp-launcher"
 import { SisLauncher } from "./lauchers/sis-launcher"
 import { PagosLauncher } from "./lauchers/pagos-launche"
 import { MitraLauncher } from "./lauchers/mintra-launcher"
+import { DeclaracionLauncher } from "./lauchers/declaracion-launcher"
 
 interface CredentialsViewerProps {
     client: ICliente | null
@@ -255,6 +256,11 @@ export function CredentialsViewer({ client, open, onOpenChange }: CredentialsVie
                                                 usuario={client.credenciales.sol_usuario}
                                                 clave={client.credenciales.sol_clave}
                                             />
+                                            <DeclaracionLauncher
+                                                ruc={client.ruc}
+                                                usuario={client.credenciales.sol_usuario}
+                                                clave={client.credenciales.sol_clave}
+                                            />
                                             <SunafilLauncher
                                                 ruc={client.ruc}
                                                 usuario={client.credenciales.sol_usuario}
@@ -265,6 +271,8 @@ export function CredentialsViewer({ client, open, onOpenChange }: CredentialsVie
                                                 usuario={client.credenciales.sol_usuario}
                                                 clave={client.credenciales.sol_clave}
                                             />
+                                            
+
                                         </div>
                                     }
                                 >

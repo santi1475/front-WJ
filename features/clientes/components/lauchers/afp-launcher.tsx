@@ -2,18 +2,11 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { launchPortalLogin } from '../../services/portal-launcher.service';
 import { Building2 } from 'lucide-react';
-
-interface AfpLauncherProps {
-    ruc?: string;
-    usuario?: string;
-    clave?: string;
-    className?: string;
-    disabled?: boolean;
-}
+import { LauncherConfig } from '@/lib/interfaces/lauchers';
 
 const AFP_URL = "https://www.afpnet.com.pe/";
 
-export const AfpLauncher: React.FC<AfpLauncherProps> = ({ ruc, usuario, clave, className, disabled }) => {
+export const AfpLauncher: React.FC<LauncherConfig> = ({ ruc, usuario, clave, disabled }) => {
 
     const handleLogin = (e: React.MouseEvent) => {
         e.preventDefault();
